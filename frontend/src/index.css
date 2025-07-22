@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+:root {
+  font-family: 'Euclid Circular', 'Sofia Pro Regular', 'sans serif';
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 0.87rem;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-hero: 'Recoleta', 'Sofia Pro Light', 'Euclid Circular';
+  --font-custom: 'Sofia Pro Light', 'Euclid Circular';
+
+  --breakpoint-2xl: 1540px;
+  --color-accent: #E7A608;
+  --color-accent-bg: #94A3BB;
+  --color-accent2: #162241;
+  --color-primary: #212121;
+  --color-primary-bg: #f4eeeb;
+  --color-secondary: #6a6a6a;
+  --color-secondary-bg: #F6F6F6;
+  --color-light_bg: #f6f8fa;
+  --color-placeholder: #adadad;
+
+  --color-success: #4DC281;
+  --color-success-bg: #C5F1DE;
+  --color-success-bg-light: #e1f2ee;
+  --color-pending: #5e63ff;
+  --color-pending-bg: #adb0fd6b;
+  --color-pending-bg-light: #edf0f7;
+  --color-pending1: #713DC9;
+  --color-pending1-bg: #E1CFFD5b;
+  --color-pending1-bg-light: #EAE6F8;
+  --color-warning: #E2796C;
+  --text-warning: #E2796C;
+  --color-warning-bg: #F6D4CA;
+  --color-warning-bg-light: #F3F1F2;
+  --color-error: #FF5540;
+  --color-error-bg: #ffc9cac1;
+  --color-error-bg-light: #F4E2EE;
+  --color-border_clr: '#C2C21C2';
+  --color-line_clr: #DCDEE3;
+}
+
+@layer components {
+  .container {
+    @apply mx-auto px-1 max-w-[840px];
+  }
+
+  .btn {
+    @apply px-4 py-2 font-medium rounded-xs text-base min-w-32 min-h-[45px] transition duration-150 ease-in-out hover:opacity-75;
+  }
+
+  .primarybtn {
+    @apply bg-accent text-white hover:opacity-75;
+  }
+
+  .secondarybtn {
+    @apply bg-primary text-white hover:opacity-75 border border-border_clr;
+  }
+}
+
+@layer utilities {
+  .default_transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .flexbox {
+    @apply flex items-center justify-center
+  }
+}
+
+.nav_active, .nav_item:hover {
+  color: var(--color-accent);
+  position: relative;
+  transition: ease 0.3s;
+
+  &::after {
+    content: '';
+    display: block;
+    height: 3px;
+    width: 100%;
+    left: 0;
+    background-color: var(--color-accent-bg);
+    position: absolute;
+    bottom: -25%;
+    transition: all ease 0.3s;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.2s ease;
+}

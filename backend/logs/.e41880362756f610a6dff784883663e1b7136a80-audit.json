@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 10
+    },
+    "auditLog": "D:\\Projects\\braid_commerce\\backend\\logs\\.e41880362756f610a6dff784883663e1b7136a80-audit.json",
+    "files": [
+        {
+            "date": 1753199389718,
+            "name": "D:\\Projects\\braid_commerce\\backend\\logs\\Error_2025-07-22.log",
+            "hash": "9cf1c7763640f100bf5a67e8bac7f2d24eed034045d83933160955405e966404"
+        }
+    ],
+    "hashType": "sha256"
+}
