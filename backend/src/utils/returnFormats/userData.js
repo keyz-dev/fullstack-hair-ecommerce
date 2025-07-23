@@ -13,8 +13,6 @@ const formatUserData = (user) => {
     name: user.name,
     email: user.email,
     phone: user.phone,
-    dob: user.dob,
-    gender: user.gender,
     address: user.address,
     role: user.role,
     avatar: formatImageUrl(user.avatar),

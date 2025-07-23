@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
-const ThemeContext = createContext();
+const ThemeContext = createContext(null);
 
 const getInitialTheme = () => {
   if (typeof window === "undefined") return "system";
@@ -43,4 +43,4 @@ export const ThemeProvider = ({ children }) => {
   );
 };
 
-export const useTheme = () => useContext(ThemeContext);
+export { ThemeContext };

@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Globe } from "lucide-react";
+import { useIsMobile } from "../../hooks";
 
 const LanguageSelector = () => {
   const [open, setOpen] = useState(false);
   const [lang, setLang] = useState("EN");
   const languageRef = useRef(null)
+  const isMobile = useIsMobile();
 
   useEffect(()=>{ 
     const handleClickOutside = (event) => {
@@ -25,7 +27,8 @@ const LanguageSelector = () => {
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <Globe size={18} />
+        <Globe size={isMobile ? 16 : 18} />
+        {isMobile && <span className="capitalize">{lang}</span>}
       </button>
       {open && (
         <ul className="absolute right-0 mt-1 w-24 bg-white dark:bg-gray-900 border border-line_clr rounded shadow-sm z-20">

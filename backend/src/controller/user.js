@@ -16,10 +16,9 @@ exports.updateProfile = async (req, res, next) => {
   if (error) return next(new BadRequestError(error.details[0].message));
   const user = await User.findById(req.rootUser._id);
   if (!user) return next(new NotFoundError('User not found'));
-  const { name, email, address, avatar } = req.body;
+  const { name, email, avatar } = req.body;
   if (name) user.name = name;
   if (email) user.email = email;
-  if (address) user.address = address;
   if (avatar) user.avatar = avatar;
   await user.save();
   res.status(200).json({ success: true, message: 'Profile updated successfully', user });

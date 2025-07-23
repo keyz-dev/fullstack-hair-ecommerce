@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Sun, Moon, Monitor } from "lucide-react";
-import { useTheme } from "../../contexts";
+import { useTheme, useIsMobile } from "../../hooks";
 
 const themes = [
   { key: "light", label: "Light", icon: <Sun size={16} /> },
@@ -12,7 +12,8 @@ const ThemeSelector = () => {
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const themeRef = useRef(null)
-
+  const isMobile = useIsMobile();
+  
   useEffect(()=>{
     const handleClickOutside = (event) => {
       if (themeRef.current && !themeRef.current.contains(event.target)) {
@@ -33,6 +34,7 @@ const ThemeSelector = () => {
         aria-expanded={open}
       >
         {themes.find((t) => t.key === theme)?.icon}
+        {isMobile && <span className="capitalize">{theme}</span>}
       </button>
       {open && (
         <ul className="absolute right-0 mt-1 w-28 bg-white dark:bg-gray-900 border border-line_clr rounded shadow-sm z-20">

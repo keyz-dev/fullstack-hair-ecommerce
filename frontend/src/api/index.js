@@ -1,7 +1,7 @@
 // api.js
 import axios from "axios";
 
-const API_BASE_URL = "http://10.5.50.102:5000/api";
+export const API_BASE_URL = "http://localhost:5000/v2/api";
 // const API_BASE_URL = "https://omnibuzz.onrender.com/api";
 
 const api = axios.create({

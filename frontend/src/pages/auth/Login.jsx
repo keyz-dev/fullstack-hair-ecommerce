@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import Input from "../../components/ui/Input";
-import Button from "../../components/ui/Button";
+import { useAuth } from "../../hooks";
+import { Input, Button } from "../../components/ui";
 import { removeEmojis } from "../../utils/sanitize";
 
 const Login = () => {
@@ -45,8 +44,8 @@ const Login = () => {
   return (
     <div className="container mx-auto max-w-md px-4 py-16">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
-        <p className="mt-2 text-secondary">
+        <h1 className="text-3xl font-bold text-primary dark:text-white">Welcome back</h1>
+        <p className="mt-2 text-secondary dark:text-white text-muted-foreground">
           Sign in to your account to continue
         </p>
       </div>

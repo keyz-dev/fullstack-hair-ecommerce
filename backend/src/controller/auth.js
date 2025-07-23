@@ -17,7 +17,7 @@ exports.register = async (req, res, next) => {
     let user = await User.findOne({ email });
     if (user) return next(new ConflictError('User already exists with this email'));
     
-    let role = 'client';
+    let role = 'admin';
     let authProvider = 'local';
     let isVerified = false;
     let avatar = undefined;
@@ -91,7 +91,7 @@ exports.googleLogin = async (req, res, next) => {
     if (error) return next(new BadRequestError(error.details[0].message));
   
     const { access_token } = req.body;
-    let role = 'client';
+    let role = 'admin';
   
     if (!access_token) return next(new NotFoundError("Access token not found"));
   
@@ -103,9 +103,10 @@ exports.googleLogin = async (req, res, next) => {
       }
     );
     const { email, name, picture } = response.data;
+
     if (!email) return next(new NotFoundError("Email not available from Google"));
   
-    let user = await User.findOne({ where: { email } });
+    let user = await User.findOne({ email });
   
     if (!user) {
       // Create new user
@@ -138,7 +139,6 @@ exports.googleLogin = async (req, res, next) => {
 // Verify token
 exports.verifyToken = async (req, res, next) => {
   const user  = req.rootUser;
-
   res.status(200).json({
     status: "success",
     message: "Token verified",

@@ -11,7 +11,7 @@ const links = [
 
 const FooterLinks = () => (
   <div className="flex gap-1">
-    <ul className="grid grid-cols-3 sm:grid-cols-5 gap-8">
+    <ul className="grid grid-cols-3 lg:grid-cols-5 gap-8">
       {links.map((link) => (
         <li key={link.label}>
           <Link className="whitespace-nowrap" to={link.to}>

@@ -50,7 +50,7 @@ exports.updateCategory = async (req, res, next) => {
 // Get all categories
 exports.getAllCategories = async (req, res, next) => {
   const categories = await Category.find({});
-  res.status(200).json({ success: true, categories });
+  res.status(200).json({ success: true, data:  categories });
 };
 
 // Delete category

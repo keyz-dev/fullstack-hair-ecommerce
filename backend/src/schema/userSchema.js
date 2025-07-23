@@ -4,11 +4,8 @@ const userRegisterSchema = Joi.object({
   name: Joi.string().min(3).max(30).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
-  phone: Joi.string().optional(),
+  phone: Joi.string().required(),
   avatar: Joi.string().uri().optional(),
-  dob: Joi.date().optional(),
-  gender: Joi.string().valid("male", "female", "other").optional(),
-  address: Joi.string().optional(),
 });
 
 const userLoginSchema = Joi.object({
@@ -26,9 +23,6 @@ const userUpdateSchema = Joi.object({
   email: Joi.string().email().optional(),
   phone: Joi.string().optional(),
   avatar: Joi.string().uri().optional(),
-  dob: Joi.date().optional(),
-  gender: Joi.string().valid("male", "female", "other").optional(),
-  address: Joi.string().optional(),
 });
 
 const userUpdatePasswordSchema = Joi.object({

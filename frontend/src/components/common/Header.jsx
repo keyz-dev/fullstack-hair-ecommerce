@@ -2,33 +2,41 @@ import React, { useState, useEffect } from "react";
 import { NavLinks, CartButton, ProfileInfo, LanguageSelector, ThemeSelector, MobileMenu } from "../header";
 import { Menu, X } from "lucide-react";
 import { Logo } from "../ui";
-import { useAuth } from "../../contexts/AuthContext";
-import { useTheme } from "../../contexts";
+import { useAuth } from "../../hooks";
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
-  const { theme } = useTheme();
+
+  // I want to check if the user info is saved in local storage
+  const storedUser = localStorage.getItem("userData");
+  const storedToken = localStorage.getItem("token");
 
   useEffect(() => {
-    console.log(theme);
-  }, [theme]);
+    if (!storedUser && !storedToken) {
+      console.log("No user info found");
+    }
+    else {
+      console.log("User info found", storedUser, storedToken);
+    }
+  }, []);
+
 
   return (
     <header className="w-full flex flex-col fixed left-0 top-0 z-20">
       <nav className="container flex items-center justify-between py-5 px-3 lg:px-2 relative z-10 bg-white dark:bg-primary">
         <button
           type="button"
-          className="text-xl md:hidden z-10 min-w-fit min-h-fit"
+          className="text-xl lg:hidden z-10 min-w-fit min-h-fit dark:text-white"
           onClick={() => setMobileOpen((open) => !open)}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
         >
           {mobileOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
-        <div className="flex-1 grid place-items-center md:place-items-start">
+        <div className="flex-1 grid place-items-center lg:place-items-start">
           <Logo size={110} />
         </div>
-        <div className="hidden md:flex items-center gap-6 justify-between flex-1/2">
+        <div className="hidden lg:flex items-center gap-6 justify-between flex-1/2">
           <NavLinks />
           <div className="flex items-center gap-2">
             <LanguageSelector />
@@ -37,10 +45,11 @@ const Header = () => {
             <ProfileInfo user={user} />
           </div>
         </div>
-        <div className="md:hidden flex items-center gap-2">
+        <div className="lg:hidden flex items-center gap-2">
           <CartButton count={3} />
         </div>
       </nav>
+
       <MobileMenu
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}

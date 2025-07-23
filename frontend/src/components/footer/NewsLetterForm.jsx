@@ -11,8 +11,8 @@ const NewsletterForm = () => {
   };
 
   return (
-    <form className="flex-2 w-full md:w-auto" onSubmit={handleSubmit}>
-      <div className="flex items-end gap-[10px] h-full w-full justify-start md:justify-center">
+    <form className="flex-2 w-full lg:w-auto" onSubmit={handleSubmit}>
+      <div className="flex items-end gap-[10px] h-full w-full justify-start lg:justify-center">
         <div>
           <label htmlFor="newsletter" className="block">
             Join Our Newsletter

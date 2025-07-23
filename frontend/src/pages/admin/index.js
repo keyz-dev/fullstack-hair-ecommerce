@@ -1,0 +1,9 @@
+export { default as Dashboard } from "./Dashboard";
+export { default as Categories } from "./Categories";
+export { default as Orders } from "./Orders";
+export { default as Users } from "./Users";
+export { default as Staff } from "./Staff";
+export { default as Notifications } from "./Notifications";
+export { default as Reports } from "./Reports";
+export { default as Profile } from "./Profile";
+export { default as Settings } from "./Settings";

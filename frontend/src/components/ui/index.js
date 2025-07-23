@@ -15,3 +15,5 @@ export { default as SubHeading } from "./SubHeading";
 export { default as CategoryCard } from "./CategoryCard";
 export { default as UserInfo } from "./UserInfo";
 export { default as ToastMessage } from "./ToastMessage";
+export { default as HeroLoader } from "./HeroLoader";
+export { default as FileUploader } from "./FileUploader";

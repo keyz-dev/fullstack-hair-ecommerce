@@ -16,6 +16,7 @@ html {
   --font-custom: 'Sofia Pro Light', 'Euclid Circular';
 
   --breakpoint-2xl: 1540px;
+  --color-white: #f4f4f5;
   --color-accent: #E7A608;
   --color-accent-bg: #94A3BB;
   --color-accent2: #162241;
@@ -39,9 +40,12 @@ html {
   --text-warning: #E2796C;
   --color-warning-bg: #F6D4CA;
   --color-warning-bg-light: #F3F1F2;
+  --color-warning-bg-dark: #F6D4CA;
   --color-error: #FF5540;
   --color-error-bg: #ffc9cac1;
   --color-error-bg-light: #F4E2EE;
+  --color-error-bg-dark: #F42311;
+  --color-error-text-dark: #F42311;
   --color-border_clr: '#C2C21C2';
   --color-line_clr: #DCDEE3;
 }

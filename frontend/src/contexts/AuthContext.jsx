@@ -1,14 +1,17 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api";
+import { authApi } from "../api/auth";
 import { useGoogleLogin } from "@react-oauth/google";
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("userData");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(null);
   const [authError, setAuthError] = useState(null);
   const navigate = useNavigate();
 
@@ -27,18 +30,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const redirectBasedOnRole = (user) => {
-    // Redirect based on role
     switch (user.role) {
-      case "passenger":
-        navigate("/passenger");
-        break;
-      case "agency_admin":
-        navigate("/agency/admin");
-        break;
-      case "station_manager":
-        navigate("/agency/manager");
-        break;
-      case "system_admin":
+      case "admin":
         navigate("/admin");
         break;
       default:
@@ -52,13 +45,11 @@ export const AuthProvider = ({ children }) => {
       try {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
-          // Validate token with backend
-          const response = await api.get("/user/verify-token");
-          if (response.data.valid) {
-            const { user } = response.data.data;
+          const response = await authApi.verifyToken();
+          if (response.valid) {
+            const { user } = response.data;
             setUserAndToken(user, storedToken);
           } else {
-            // Token is invalid, clear everything
             invalidateToken();
           }
         } else {
@@ -71,7 +62,6 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     };
-
     checkAuth();
   }, []);
 
@@ -79,8 +69,10 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
     setLoading(true);
     try {
-      const response = await api.post("/user/login", { email, password });
-      const { user } = response.data.data;
+      const response = await authApi.login(email, password);
+      const { user, token } = response.data;
+      setUserAndToken(user, token);
+      redirectBasedOnRole(user);
       return { success: true, user };
     } catch (error) {
       setAuthError(
@@ -99,26 +91,11 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     setAuthError(null);
     setLoading(true);
-
     try {
-      // Create FormData object
-      const formData = new FormData();
-
-      // Append all user data
-      Object.keys(userData).forEach((key) => {
-        if (key == "avatar" && userData[key]) {
-          formData.append("avatar", userData[key]);
-        } else {
-          formData.append(key, userData[key]);
-        }
-      });
-
-      const response = await api.post("/user/register", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      const { user } = response.data.data;
+      const response = await authApi.register(userData);
+      const { user, token } = response.data;
+      setUserAndToken(user, token);
+      redirectBasedOnRole(user);
       return { success: true, user };
     } catch (error) {
       setAuthError(
@@ -128,6 +105,7 @@ export const AuthProvider = ({ children }) => {
         error.message ||
         "Registration failed"
       );
+      return { success: false };
     } finally {
       setLoading(false);
     }
@@ -136,14 +114,9 @@ export const AuthProvider = ({ children }) => {
   const verifyAccount = async (email, code, origin) => {
     setLoading(true);
     try {
-      const response = await api.post("/user/verify-email", {
-        email,
-        code,
-        origin,
-      });
-      const { user, token } = response.data.data;
+      const response = await authApi.verifyEmail(email, code, origin);
+      const { user, token } = response.data;
       setUserAndToken(user, token);
-
       return { success: true, user };
     } catch (error) {
       return {
@@ -161,7 +134,7 @@ export const AuthProvider = ({ children }) => {
   const resendVerification = async (email) => {
     setLoading(true);
     try {
-      await api.post("/user/resend-verification", { email });
+      await authApi.resendVerification(email);
       return { success: true };
     } catch (error) {
       console.error("Resend verification failed:", error);
@@ -171,55 +144,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const registerAgency = async (agencyData) => {
-    try {
-      // TODO: Replace with actual API call
-      // Mock API call
-      const response = await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            token: "mock-token",
-            user: {
-              id: "1",
-              ...agencyData,
-              role: "agency_admin",
-            },
-          });
-        }, 1000);
-      });
-
-      setUserAndToken(response.user, response.token);
-      navigate("/agency/admin");
-      return { success: true };
-    } catch (error) {
-      console.error("Agency registration failed:", error);
-      return {
-        success: false,
-        error:
-          error.response?.data?.error ||
-          error.response?.data?.error?.[0]?.message ||
-          error.response?.data?.message ||
-          error.message ||
-          "Agency registration failed",
-      };
-    }
-  };
-
-  // Function called when user clicks "Sign in with Google"
   const handleGoogleLogin = useGoogleLogin({
     scope: "profile email openid",
     onSuccess: async (tokenResponse) => {
       const { access_token } = tokenResponse;
-
-      // send the token to the backend.
       if (access_token) {
         try {
-          const response = await api.post("/user/google-oauth", {
-            access_token,
-          });
-
-          if (response.data?.data) {
-            const { user, token } = response.data.data;
+          const response = await authApi.googleOAuth(access_token);
+          if (response.data) {
+            const { user, token } = response.data;
             setUserAndToken(user, token);
             setAuthError(null);
             redirectBasedOnRole(user);
@@ -242,41 +175,6 @@ export const AuthProvider = ({ children }) => {
     navigate("/");
   };
 
-  const acceptInvitation = async (userData) => {
-    setAuthError(null);
-    setLoading(true);
-
-    try {
-      const formData = new FormData();
-      // Append all user data
-      Object.keys(userData).forEach((key) => {
-        if (key == "avatar" && userData[key]) {
-          formData.append("avatar", userData[key]);
-        } else {
-          formData.append(key, userData[key]);
-        }
-      });
-
-      const response = await api.post("/user/accept-invitation", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      const { user } = response.data.data;
-      return { success: true, user };
-    } catch (error) {
-      setAuthError(
-        error.response?.data?.error ||
-        error.response?.data?.error?.[0]?.message ||
-        error.response?.data?.message ||
-        error.message ||
-        "Profile completion failed"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
   const value = {
     user,
     loading,
@@ -285,7 +183,6 @@ export const AuthProvider = ({ children }) => {
     setLoading,
     login,
     register,
-    registerAgency,
     logout,
     setAuthError,
     verifyAccount,
@@ -293,16 +190,9 @@ export const AuthProvider = ({ children }) => {
     setUserAndToken,
     handleGoogleLogin,
     redirectBasedOnRole,
-    acceptInvitation,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+export { AuthContext };

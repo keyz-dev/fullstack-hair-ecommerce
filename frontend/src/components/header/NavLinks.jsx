@@ -8,12 +8,12 @@ const links = [
   { to: "/#guarantee", label: "Guarantee" },
 ];
 
-const NavLinks = () => {
+const NavLinks = ({ mobile = false }) => {
   const location = useLocation();
   return (
-    <ul className="flex flex-row gap-6 items-center h-full space-x-5 mb-0">
+    <ul className={`w-full flex gap-6 ${mobile ? "flex-col items-start" : "flex-row items-center h-full space-x-5 mb-0"}`}>
       {links.map((link) => (
-        <li key={link.label} className="list-none m-0 p-1 ml-5 dark:text-white">
+        <li key={link.label} className={`list-none m-0 p-1 ${mobile ? '': 'ml-5'} dark:text-white`}>
           <Link
             to={link.to}
             className={`relative overflow-hidden transition-colors ${

@@ -1,0 +1,6 @@
+{"level":"error","message":"User validation failed: address: Path `address` is required., phone: Path `phone` is required., password: Path `password` is required.","timestamp":"2025-07-23T14:09:16.340Z"}
+{"level":"error","message":"User validation failed: phone: Path `phone` is required., password: Path `password` is required.","timestamp":"2025-07-23T14:13:10.553Z"}
+{"level":"error","message":"E11000 duplicate key error collection: braid_commerce.users index: email_1 dup key: { email: \"keyzglobal0313@gmail.com\" }","timestamp":"2025-07-23T14:26:17.061Z"}
+{"level":"error","message":"E11000 duplicate key error collection: braid_commerce.users index: email_1 dup key: { email: \"keyzglobal0313@gmail.com\" }","timestamp":"2025-07-23T14:29:35.883Z"}
+{"level":"error","message":"user.generateAuthToken is not a function","timestamp":"2025-07-23T14:30:36.150Z"}
+{"level":"error","message":"Login first to access this resource.","timestamp":"2025-07-23T14:51:52.434Z"}

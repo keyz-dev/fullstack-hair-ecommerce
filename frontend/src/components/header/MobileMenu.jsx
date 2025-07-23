@@ -1,11 +1,7 @@
 import React from "react";
-import NavLinks from "./NavLinks";
-import CartButton from "./CartButton";
-import ProfileInfo from "./ProfileInfo";
-import LanguageSelector from "./ThemeSelector";
-import ThemeSelector from "./ThemeSelector";
+import { NavLinks, CartButton, ProfileInfo, LanguageSelector, ThemeSelector } from ".";
 
-const MobileMenu = ({ open, onClose }) => {
+const MobileMenu = ({ open, onClose, user }) => {
   return (
     <div
       className={`fixed inset-0 z-30 bg-black/40 transition-opacity duration-300 ${
@@ -21,12 +17,12 @@ const MobileMenu = ({ open, onClose }) => {
         onClick={(e) => e.stopPropagation()}
         aria-label="Mobile menu"
       >
-        <NavLinks />
-        <div className="flex flex-col gap-2 mt-4">
+        <NavLinks mobile={true} />
+        <div className="flex flex-col gap-6 mt-0">
           <LanguageSelector />
           <ThemeSelector />
           <CartButton count={3} />
-          <ProfileInfo />
+          <ProfileInfo user={user} mobile />
         </div>
       </nav>
     </div>
