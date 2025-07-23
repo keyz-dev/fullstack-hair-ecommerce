@@ -11,9 +11,9 @@ export const ROLE_CONFIGS = {
     navItems: [
       { path: "", label: "Overview", icon: "LayoutDashboard" },
       { path: "categories", label: "Categories", icon: "Building2" },
-      { path: "orders", label: "Orders", icon: "FileText" },
-      { path: "users", label: "Users", icon: "FileText" },
-      { path: "staff", label: "Staff", icon: "FileText" },
+      { path: "orders", label: "Orders", icon: "Package" },
+      { path: "users", label: "Users", icon: "Users" },
+      { path: "staff", label: "Staff", icon: "UserCog" },
       { path: "notifications", label: "Notifications", icon: "Bell" },
       { path: "reports", label: "Reports", icon: "BarChart3" },
       { path: "profile", label: "My Profile", icon: "User" },

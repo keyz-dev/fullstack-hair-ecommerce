@@ -11,7 +11,7 @@ import {
 import { Logo, Button } from "../ui";
 import { useNavigate } from "react-router-dom";
 
-const Header = () => {
+const DashboardHeader = () => {
   const { pageTitle, sidebarCollapsed, setSidebarCollapsed, roleConfig } =
     useBaseDashboard();
 
@@ -71,7 +71,7 @@ const Header = () => {
       {/* Left Side */}
       <div className="flex items-center gap-4">
         {/* Logo */}
-        <Logo size={150} destination={roleConfig.basePath} />
+        <Logo destination={roleConfig.basePath} />
 
         {/* Hamburger Menu - Mobile Only */}
         <button
@@ -210,4 +210,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default DashboardHeader;

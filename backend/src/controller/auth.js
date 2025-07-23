@@ -86,12 +86,11 @@ exports.login = async (req, res, next) => {
 // Google OAuth login
 exports.googleLogin = async (req, res, next) => {
   try{
-    
     const { error } = googleLoginSchema.validate(req.body);
     if (error) return next(new BadRequestError(error.details[0].message));
   
     const { access_token } = req.body;
-    let role = 'admin';
+    let role = 'client';
   
     if (!access_token) return next(new NotFoundError("Access token not found"));
   

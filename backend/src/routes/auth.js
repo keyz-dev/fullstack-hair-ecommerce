@@ -12,10 +12,10 @@ router.post('/register', upload.single('avatar'), handleCloudinaryUpload, format
 router.post('/login', validate(userLoginSchema), authController.login);
 router.post('/google-oauth', validate(googleLoginSchema), authController.googleLogin);
 router.post('/resend-verification-email', authController.resendVerificationEmail);
-router.get('/verify-email/:code', authController.verifyEmail);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', validatePasswordResetToken, authController.resetPassword);
 
+router.get('/verify-email/:code', authController.verifyEmail);
 router.get('/verify-token', authenticateUser, authController.verifyToken);
 
 module.exports = router;

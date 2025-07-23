@@ -41,8 +41,8 @@ const DashboardSidebar = () => {
               } space-x-3 p-3 rounded-md transition-colors ${
                 isActive(item.path)
                   ? sidebarCollapsed
-                    ? "bg-blue-50 text-accent"
-                    : "bg-blue-50 text-accent border-r-4 border-accent"
+                    ? "bg-accent-light text-accent"
+                    : "bg-accent-light text-accent border-r-4 border-accent"
                   : "text-secondary hover:bg-light_bg"
               }`}
             >
