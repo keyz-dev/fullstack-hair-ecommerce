@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { NavLinks, CartButton, ProfileInfo, LanguageSelector, ThemeSelector, MobileMenu } from "../header";
 import { Menu, X } from "lucide-react";
 import { Logo } from "../ui";
@@ -7,20 +7,6 @@ import { useAuth } from "../../hooks";
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
-
-  // I want to check if the user info is saved in local storage
-  const storedUser = localStorage.getItem("userData");
-  const storedToken = localStorage.getItem("token");
-
-  useEffect(() => {
-    if (!storedUser && !storedToken) {
-      console.log("No user info found");
-    }
-    else {
-      console.log("User info found", storedUser, storedToken);
-    }
-  }, []);
-
 
   return (
     <header className="w-full flex flex-col fixed left-0 top-0 z-20">

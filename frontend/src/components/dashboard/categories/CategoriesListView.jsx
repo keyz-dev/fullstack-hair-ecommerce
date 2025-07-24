@@ -6,72 +6,44 @@ const CategoriesListView = ({ onEdit, onDelete, loading, categories }) => {
   const columns = React.useMemo(
     () => [
       {
-        Header: "Route",
-        accessor: "route",
-        Cell: ({ row }) => {
-          return (
-            <div className="flex flex-col gap-2">
-              <span>
-                {row.route?.originStation?.name} (
-                {row.route?.originStation?.baseTown}) -
-              </span>
-              <span>
-                {row.route?.destinationStation?.name} (
-                {row.route?.destinationStation?.baseTown})
-              </span>
+        Header: "Image",
+        accessor: "image",
+        Cell: ({ row }) =>
+          row.image ? (
+            <img
+              src={row.image}
+              alt={row.name}
+              className="w-12 h-12 object-cover rounded-full border"
+            />
+          ) : (
+            <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-500">
+              No Image
             </div>
-          );
-        },
+          ),
       },
       {
-        Header: "Travel Timeline",
-        accessor: "departureTime",
-        Cell: ({ row }) => {
-          const departureTime = row.departureTime;
-          const arrivalTime = row.estimatedArrivalTime;
-          return (
-            <div className="flex flex-wrap">
-              <span>
-                {departureTime || "N/A"} - {arrivalTime || "N/A"}
-              </span>
-            </div>
-          );
-        },
+        Header: "Name",
+        accessor: "name",
+        Cell: ({ row }) => <span className="font-semibold">{row.name}</span>,
       },
       {
-        Header: "Frequency",
-        accessor: "frequency",
-        Cell: ({ row }) => (
-          <span>
-            {row.frequency.charAt(0).toUpperCase() + row.frequency.slice(1) ||
-              "N/A"}
-          </span>
-        ),
+        Header: "Products",
+        accessor: "productCount",
+        Cell: ({ row }) => <span>{row.productCount}</span>,
       },
       {
-        Header: "Bus Type",
-        accessor: "busType",
+        Header: "Services",
+        accessor: "serviceCount",
+        Cell: ({ row }) => <span>{row.serviceCount}</span>,
       },
       {
-        Header: "Session",
-        accessor: "session",
-        Cell: ({ row }) => (
-          <span>
-            {row.session.charAt(0).toUpperCase() + row.session.slice(1) ||
-              "N/A"}
-          </span>
-        ),
-      },
-
-      {
-        Header: "Status",
-        accessor: "status",
-        Cell: ({ row }) => <StatusPill status={row.status} />,
+        Header: "Created",
+        accessor: "createdAt",
+        Cell: ({ row }) => new Date(row.createdAt).toLocaleDateString(),
       },
       {
         id: "actions",
         Cell: ({ row }) => {
-          console.log(row);
           const menuItems = [
             {
               label: "Edit Category",
