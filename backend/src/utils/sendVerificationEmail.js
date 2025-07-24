@@ -1,4 +1,4 @@
-const { sendEmail } = require('../services/emailService');
+const emailService = require('../services/emailService');
 const crypto = require('crypto');
 
 /**
@@ -11,13 +11,13 @@ const crypto = require('crypto');
 async function sendVerificationEmail(user, email, name, template='emailVerification') {
   // Generate verification code
   const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-  await user.update({
+  await user.updateOne({
     emailVerificationCode: verificationCode,
     emailVerificationCodeExpiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 mins
   });
   // Send verification email
   try {
-    await sendEmail({
+    await emailService.sendEmail({
       to: email,
       subject: 'Verify your email',
       template,
@@ -27,6 +27,7 @@ async function sendVerificationEmail(user, email, name, template='emailVerificat
       },
     });
   } catch (err) {
+    console.log('Error sending verification email:', err);
     throw new Error('Failed to send verification email. Please try again later.');
   }
 }

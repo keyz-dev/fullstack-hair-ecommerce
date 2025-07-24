@@ -7,10 +7,12 @@ const { BadRequestError, NotFoundError } = require("../utils/errors");
 
 // Create category
 exports.addCategory = async (req, res, next) => {
-  const { error } = categoryCreateSchema.validate(req.body);
+  const { error, value } = categoryCreateSchema.validate(req.body);
   if (error) return next(new BadRequestError(error.details[0].message));
   let image = req.file ? req.file.path : undefined;
-  const category = await Category.create({ ...req.body, image });
+
+  console.log("Entry data: ", { ...value, image });
+  const category = await Category.create({ ...value, image });
   res
     .status(201)
     .json({

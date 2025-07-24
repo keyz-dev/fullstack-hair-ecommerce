@@ -17,7 +17,7 @@ exports.register = async (req, res, next) => {
     let user = await User.findOne({ email });
     if (user) return next(new ConflictError('User already exists with this email'));
     
-    let role = 'admin';
+    let role = 'client';
     let authProvider = 'local';
     let isVerified = false;
     let avatar = undefined;
@@ -167,8 +167,8 @@ exports.resendVerificationEmail = async (req, res, next) => {
 
 // Verify email
 exports.verifyEmail = async (req, res, next) => {
-  const { code } = req.params;
-  const user = await User.findOne({ emailVerificationCode: code, emailVerificationCodeExpiresAt: { $gt: Date.now() } });
+  const { email, code } = req.body;
+  const user = await User.findOne({ email, emailVerificationCode: code, emailVerificationCodeExpiresAt: { $gt: Date.now() } });
   if (!user) return next(new NotFoundError('Invalid verification code'));
 
   await user.updateOne({

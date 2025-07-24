@@ -82,7 +82,7 @@ const Login = () => {
               id="remember"
               name="remember"
               type="checkbox"
-              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="h-4 w-4 rounded border-gray-300 text-accent focus:ring-accent"
             />
             <label
               htmlFor="remember"
@@ -91,10 +91,9 @@ const Login = () => {
               Remember me
             </label>
           </div>
-
           <RouterLink
             to="/forgot-password"
-            className="text-sm text-blue-600 hover:text-blue-500"
+            className="text-sm text-accent hover:opacity-80"
           >
             Forgot password?
           </RouterLink>

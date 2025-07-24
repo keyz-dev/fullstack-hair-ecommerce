@@ -12,7 +12,11 @@ export const categoryApi = {
     return response.data;
   },
   createCategory: async (data) => {
-    const response = await api.post(`${URL_PREFIX}/`, data);
+    const response = await api.post(`${URL_PREFIX}/`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   },
   updateCategory: async (id, data) => {

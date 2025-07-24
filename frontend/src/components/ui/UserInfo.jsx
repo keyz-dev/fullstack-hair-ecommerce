@@ -8,10 +8,10 @@ const UserInfo = ({ user, placeholder }) => {
             <img
                 className="h-8 w-8 rounded-full object-cover"
                 src={user?.avatar || imagePlaceholder}
-                alt={user?.fullName || 'User'}
+                alt={user?.name || 'User'}
             />
             <div className="ml-3">
-                <div className="text-sm font-medium text-gray-900">{user?.fullName || 'N/A'}</div>
+                <div className="text-sm font-medium text-gray-900">{user?.name || 'N/A'}</div>
                 <div className="text-sm text-gray-500">{user?.email || ''}</div>
             </div>
         </div>

@@ -7,7 +7,7 @@ const TextArea = ({
   rows = 4,
   id,
   placeholder = null,
-  additionalClasses = "",
+  additionalClasses = "border-transparent",
   labelClasses = "",
   value,
   onChangeHandler,
@@ -42,7 +42,7 @@ const TextArea = ({
         rows={rows}
         placeholder={placeholder}
         className={`placeholder:text-xs placeholder:font-normal placeholder:text-placeholder outline-none p-2 form-input w-full bg-light_bg border-2  focus:border-accent transition-all ease-in-out duration-600 ${additionalClasses} ${
-          error ? "border-error" : "border-transparent"
+          error && "border-error"
         }`}
         value={value}
         onChange={onChangeHandler}

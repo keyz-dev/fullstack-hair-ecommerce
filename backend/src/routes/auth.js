@@ -14,8 +14,8 @@ router.post('/google-oauth', validate(googleLoginSchema), authController.googleL
 router.post('/resend-verification-email', authController.resendVerificationEmail);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', validatePasswordResetToken, authController.resetPassword);
+router.post('/verify-email/', authController.verifyEmail);
 
-router.get('/verify-email/:code', authController.verifyEmail);
 router.get('/verify-token', authenticateUser, authController.verifyToken);
 
 module.exports = router;

@@ -22,7 +22,7 @@ const FileUploader = ({ preview, onChange, className = "", text = null, accept =
   return (
     <div
       className={
-        "flex min-w-[35%] flex-col items-center justify-center border-2 border-dashed border-pending-bg rounded-xs min-h-[140px] cursor-pointer bg-blue-50/30 relative overflow-hidden " +
+        "flex min-w-[35%] flex-col items-center justify-center border-2 border-dashed border-line_clr rounded-xs min-h-[140px] cursor-pointer bg-blue-50/30 relative overflow-hidden " +
         className
       }
       onClick={() => fileInputRef.current.click()}

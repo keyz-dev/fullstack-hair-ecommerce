@@ -1,0 +1,4 @@
+{"level":"error","message":"\"image\" must be a string","timestamp":"2025-07-24T08:38:46.217Z"}
+{"level":"error","message":"\"categoryImage\" is not allowed","timestamp":"2025-07-24T09:01:05.743Z"}
+{"level":"error","message":"\"categoryImage\" is not allowed","timestamp":"2025-07-24T09:02:11.102Z"}
+{"level":"error","message":"\"categoryImage\" must be a string","timestamp":"2025-07-24T09:07:34.006Z"}

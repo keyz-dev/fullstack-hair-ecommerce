@@ -24,11 +24,12 @@ class EmailService {
    * @param {Object} data - Data to inject into the template
    * @returns {Promise<string>} - Compiled HTML
    */
+
   async compileTemplate(templateName, data) {
     try {
       const templatePath = path.join(
         __dirname,
-        "../templates/emails",
+        "../email_templates/",
         `${templateName}.hbs`
       );
       const template = await fs.readFile(templatePath, "utf-8");
@@ -46,7 +47,7 @@ class EmailService {
 
       // If template is provided, compile it
       if (template) {
-        finalHtml = await this.compileTemplate(template, data);
+        finalHtml = await this.compileTemplate(template, data || {});
       }
 
       const info = await this.transporter.sendMail({

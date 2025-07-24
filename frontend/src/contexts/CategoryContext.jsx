@@ -44,13 +44,23 @@ export const CategoryProvider = ({ children }) => {
   const createCategory = async (data) => {
     setLoading(true);
     setError(null);
+
+    const formData = new FormData();
+    Object.keys(data).forEach((key) => {
+      if (key === "categoryImage" && data[key]) {
+        formData.append("categoryImage", data[key]);
+      } else {
+        formData.append(key, data[key]);
+      }
+    });
+
     try {
-      const newCategory = await categoryApi.createCategory(data);
+      const newCategory = await categoryApi.createCategory(formData);
       setCategories((prev) => [...prev, newCategory]);
-      return newCategory;
+      return {success: true };
     } catch (err) {
       setError(err);
-      return null;
+      return {success: false, error: err.message};
     } finally {
       setLoading(false);
     }
@@ -107,6 +117,7 @@ export const CategoryProvider = ({ children }) => {
         categories,
         loading,
         error,
+        
         fetchCategories,
         getCategory,
         createCategory,

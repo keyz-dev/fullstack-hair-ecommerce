@@ -10,7 +10,7 @@ const Register = () => {
   const { register, loading, handleGoogleLogin, authError, setAuthError } =
     useAuth();
   const [formData, setFormData] = useState({
-    fullName: "",
+    name: "",
     email: "",
     phone: "+237 6",
     password: "",
@@ -75,10 +75,10 @@ const Register = () => {
         <div className="space-y-4">
           <Input
             label="Full Name"
-            name="fullName"
-            value={formData.fullName}
+            name="name"
+            value={formData.name}
             placeholder="Enter your full name"
-            error={errors.fullName}
+            error={errors.name}
             onChangeHandler={handleChange}
             required
           />

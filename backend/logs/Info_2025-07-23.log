@@ -5,3 +5,19 @@
 {"level":"error","message":"user.generateAuthToken is not a function","timestamp":"2025-07-23T14:30:36.150Z"}
 {"level":"error","message":"Login first to access this resource.","timestamp":"2025-07-23T14:51:52.434Z"}
 {"level":"error","message":"Login first to access this resource.","timestamp":"2025-07-23T14:53:33.652Z"}
+{"level":"error","message":"\"name\" is required. \"fullName\" is not allowed","timestamp":"2025-07-23T16:47:12.058Z"}
+{"level":"error","message":"user.update is not a function","timestamp":"2025-07-23T16:49:02.378Z"}
+{"error":{},"level":"error","message":"Error sending email","timestamp":"2025-07-23T16:50:34.212Z"}
+{"level":"error","message":"Failed to send verification email. Please try again later.","timestamp":"2025-07-23T16:50:34.219Z"}
+{"error":{},"level":"error","message":"Error sending email","timestamp":"2025-07-23T16:51:11.901Z"}
+{"level":"error","message":"Failed to send verification email. Please try again later.","timestamp":"2025-07-23T16:51:11.911Z"}
+{"error":{},"level":"error","message":"Error sending email","timestamp":"2025-07-23T16:52:33.916Z"}
+{"level":"error","message":"Failed to send verification email. Please try again later.","timestamp":"2025-07-23T16:52:33.924Z"}
+{"error":{"code":"ENOENT","errno":-4058,"path":"D:\\Projects\\braid_commerce\\backend\\src\\templates\\emails\\emailVerification.hbs","syscall":"open"},"level":"error","message":"Error compiling email template","templateName":"emailVerification","timestamp":"2025-07-23T16:57:59.283Z"}
+{"error":{},"level":"error","message":"Error sending email","timestamp":"2025-07-23T16:57:59.286Z"}
+{"level":"error","message":"Failed to send verification email. Please try again later.","timestamp":"2025-07-23T16:57:59.293Z"}
+{"error":{"code":"ENOENT","errno":-4058,"path":"D:\\Projects\\braid_commerce\\backend\\src\\email_templates\\emails\\emailVerification.hbs","syscall":"open"},"level":"error","message":"Error compiling email template","templateName":"emailVerification","timestamp":"2025-07-23T16:59:36.853Z"}
+{"error":{},"level":"error","message":"Error sending email","timestamp":"2025-07-23T16:59:36.856Z"}
+{"level":"error","message":"Failed to send verification email. Please try again later.","timestamp":"2025-07-23T16:59:36.862Z"}
+{"level":"info","message":"Email sent successfully","messageId":"<113cce1e-7bc0-7279-efa7-01b9b1302806@localhost>","timestamp":"2025-07-23T17:01:44.606Z"}
+{"level":"info","message":"Email sent successfully","messageId":"<3b414557-8f56-b4d5-bda4-5761716fce81@localhost>","timestamp":"2025-07-23T17:18:54.207Z"}

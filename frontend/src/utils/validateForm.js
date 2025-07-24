@@ -9,13 +9,13 @@ export const validateRegisterForm = (formData, setErrors) => {
   const newErrors = {};
   // Sanitize all text fields
   const sanitized = {
-    fullName: removeEmojis(formData.fullName || ""),
+    name: removeEmojis(formData.name || ""),
     email: removeEmojis(formData.email || ""),
     phone: removeEmojis(formData.phone || ""),
     password: removeEmojis(formData.password || ""),
     confirmPassword: removeEmojis(formData.confirmPassword || ""),
   };
-  if (!sanitized.fullName.trim()) newErrors.fullName = "Full Name is required";
+  if (!sanitized.name.trim()) newErrors.name = "Full Name is required";
   if (!sanitized.email.trim()) newErrors.email = "Email is required";
   if (!sanitized.phone.trim()) newErrors.phone = "Phone Number is required";
   if (!sanitized.password) newErrors.password = "Password is required";

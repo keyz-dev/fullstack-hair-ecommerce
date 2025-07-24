@@ -9,7 +9,7 @@ const Input = ({
   name,
   id,
   placeholder,
-  additionalClasses = "",
+  additionalClasses = "border-transparent",
   disabled = false,
   icon,
   onClickHandler,
@@ -57,7 +57,7 @@ const Input = ({
           value={value}
           placeholder={placeholder}
           className={`placeholder:text-xs placeholder:text-[#ADADAD] placeholder:font-normal bg-light_bg outline-none p-2 w-full border-2 focus:border-accent transition-all ease-in-out text-secondary text-md duration-600 rounded-xs ${additionalClasses} ${
-            error ? "border-error" : "border-transparent"
+            error && "border-error"
           }`}
           disabled={disabled}
           required={required}
