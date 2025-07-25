@@ -5,21 +5,24 @@ const {
 } = require("../schema/categorySchema");
 const { BadRequestError, NotFoundError } = require("../utils/errors");
 const { formatImageUrl } = require("../utils/imageUtils");
+const { cleanUpFileImages, cleanUpInstanceImages } = require("../utils/imageCleanup");
 
 // Create category
 exports.addCategory = async (req, res, next) => {
-  const { error, value } = categoryCreateSchema.validate(req.body);
-  if (error) return next(new BadRequestError(error.details[0].message));
-  let image = req.file ? req.file.path : undefined;
-
-  const category = await Category.create({ ...value, image });
-  res
-    .status(201)
-    .json({
+  try {
+    const { error, value } = categoryCreateSchema.validate(req.body);
+    if (error) return next(new BadRequestError(error.details[0].message));
+    let image = req.file ? req.file.path : undefined;
+    const category = await Category.create({ ...value, image });
+    res.status(201).json({
       success: true,
       message: "Category created successfully",
       category,
     });
+  } catch (err) {
+    await cleanUpFileImages(req);
+    next(err);
+  }
 };
 
 // Get single category
@@ -31,22 +34,25 @@ exports.readSingleCategory = async (req, res, next) => {
 
 // Update category
 exports.updateCategory = async (req, res, next) => {
-  const { error } = categoryUpdateSchema.validate(req.body);
-  if (error) return next(new BadRequestError(error.details[0].message));
-  let category = await Category.findById(req.params.id);
-  if (!category) return next(new NotFoundError("Category not found"));
-  const { name, description } = req.body;
-  if (name) category.name = name;
-  if (description) category.description = description;
-  if (req.file) category.image = req.file.path;
-  await category.save();
-  res
-    .status(200)
-    .json({
+  try {
+    const { error } = categoryUpdateSchema.validate(req.body);
+    if (error) return next(new BadRequestError(error.details[0].message));
+    let category = await Category.findById(req.params.id);
+    if (!category) return next(new NotFoundError("Category not found"));
+    const { name, description } = req.body;
+    if (name) category.name = name;
+    if (description) category.description = description;
+    if (req.file) category.image = req.file.path;
+    await category.save();
+    res.status(200).json({
       success: true,
       message: "Category updated successfully",
       category,
     });
+  } catch (err) {
+    await cleanUpFileImages(req);
+    next(err);
+  }
 };
 
 // Get all categories
@@ -93,10 +99,13 @@ exports.getAllCategories = async (req, res, next) => {
 
 // Delete category
 exports.deleteCategory = async (req, res, next) => {
-  const category = await Category.findById(req.params.id);
-  if (!category) return next(new NotFoundError("Category not found"));
-  await category.deleteOne();
-  res
-    .status(200)
-    .json({ success: true, message: "Category deleted successfully" });
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) return next(new NotFoundError("Category not found"));
+    await cleanUpInstanceImages(category);
+    await category.deleteOne();
+    res.status(200).json({ success: true, message: "Category deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
 };

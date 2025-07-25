@@ -34,7 +34,7 @@ const Hero = () => {
   const current = heroSlides[currentSlide];
 
   return (
-    <section className="h-[80vh] max-w-[100vh] md:max-w-[90vw] w-full relative overflow-hidden">
+    <section className="min-h-[80vh]  md:max-w-[90vw] w-full relative overflow-hidden flex justify-center items-center">
       {/* Loading Screen */}
       {!imagesLoaded && <HeroLoader />}
       
@@ -54,105 +54,111 @@ const Hero = () => {
               // Additional background positioning for fine control
               backgroundPosition: 'left center',
               // On larger screens, use center positioning
-              ...(window.innerWidth >= 640 && { backgroundPosition: 'center center' })
+              ...(window.innerWidth >= 1024 && { backgroundPosition: 'center center' })
             }}
           />
         ))}
       </div>
 
+      {/* Dark overlay for better text visibility (only on mobile/tablet) */}
+      <div className="absolute inset-0 bg-black/40 lg:bg-transparent z-5 pointer-events-none" />
+
       {/* Content Overlay - Only visible when images are loaded */}
       <div className={`container w-full h-full relative z-10 transition-opacity duration-500 ${
         imagesLoaded ? 'opacity-100' : 'opacity-0'
       }`}>
-        <div className="w-full sm:w-3/4 md:w-full h-[90%] flex flex-col items-end justify-center gap-3 sm:gap-7 px-2 sm:px-0">
+        <div className="w-full sm:w-3/4 md:w-full h-[90%] flex flex-col items-end justify-center gap-7 p-4 sm:px-0">
           {/* Branding */}
           <div className="flex items-center justify-center gap-5">
             <hr className="border-none bg-accent w-[2px] h-16" />
             <div className="text-white">
               <p>Leila Brands</p>
-              <p>&copy; 2024</p>
+              <p>&copy; 2025</p>
             </div>
           </div>
-          
-          {/* Subheading with Animation */}
-          <div className="text-xs font-bold text-white h-8">
-            {current.subheading && (
+
+          <div className="w-full flex flex-col items-center sm:items-end justify-center gap-7 p-4 sm:px-0">
+
+            {/* Subheading with Animation */}
+            <div className="text-xs font-bold text-white h-8">
+              {current.subheading && (
+                <div
+                  className={`transition-all duration-1000 ${
+                    isTransitioning 
+                      ? 'opacity-0 -translate-y-4' 
+                      : 'opacity-100 translate-y-0'
+                  }`}
+                >
+                  <h2>{current.subheading}</h2>
+                  <hr className="border-none mt-3 bg-accent w-10 h-[2px]" />
+                </div>
+              )}
+            </div>
+            
+            {/* Headline with Animation */}
+            <div className="text-[42px] flex flex-col items-center sm:items-end sm:text-[64px] sm:leading-[80px] text-right sm:text-center">
+              <h1
+                className={`font-custom text-white text-center sm:text-right transition-opacity duration-1000 ${
+                  isTransitioning ? 'opacity-0' : 'opacity-100'
+                }`}
+              >
+                <p>{current.heading.line1}</p>
+                <p className="font-hero">
+                  <span className={`font-hero ${current.heading.line2Accent ? 'text-accent' : 'text-white'}`}>
+                    {current.heading.line2}
+                  </span> {current.heading.line3}
+                </p>
+              </h1>
+              
+              {/* Tag with Animation */}
+              <p
+                className={`text-gray-200 mt-10 text-sm text-center sm:text-right w-[55%] transition-all duration-1000 ${
+                  isTransitioning 
+                    ? 'opacity-0 translate-y-4' 
+                    : 'opacity-100 translate-y-0'
+                }`}
+                style={{ 
+                  transitionDelay: isTransitioning ? '0ms' : '200ms' 
+                }}
+              >
+                {current.tag}
+              </p>
+            </div>
+            
+            {/* CTA Section with Sequential Animation */}
+            <div className="flex flex-col items-end gap-4">
+              {/* HR Line */}
               <div
                 className={`transition-all duration-1000 ${
                   isTransitioning 
-                    ? 'opacity-0 -translate-y-4' 
+                    ? 'opacity-0 translate-y-4' 
                     : 'opacity-100 translate-y-0'
                 }`}
+                style={{ 
+                  transitionDelay: isTransitioning ? '0ms' : '400ms' 
+                }}
               >
-                <h2>{current.subheading}</h2>
-                <hr className="border-none mt-3 bg-accent w-1/2 h-[2px]" />
+                <hr className="border-none bg-accent w-10 h-[2.5px]" />
               </div>
-            )}
-          </div>
-          
-          {/* Headline with Animation */}
-          <div className="text-[42px] flex flex-col items-end sm:text-[64px] sm:leading-[80px] text-right">
-            <h1
-              className={`font-custom text-white text-right transition-opacity duration-1000 ${
-                isTransitioning ? 'opacity-0' : 'opacity-100'
-              }`}
-            >
-              <p>{current.heading.line1}</p>
-              <p className="font-hero">
-                <span className={`font-hero ${current.heading.line2Accent ? 'text-accent' : 'text-white'}`}>
-                  {current.heading.line2}
-                </span> {current.heading.line3}
-              </p>
-            </h1>
-            
-            {/* Tag with Animation */}
-            <p
-              className={`text-gray-200 mt-10 text-sm text-right w-[55%] transition-all duration-1000 ${
-                isTransitioning 
-                  ? 'opacity-0 translate-y-4' 
-                  : 'opacity-100 translate-y-0'
-              }`}
-              style={{ 
-                transitionDelay: isTransitioning ? '0ms' : '200ms' 
-              }}
-            >
-              {current.tag}
-            </p>
-          </div>
-          
-          {/* CTA Section with Sequential Animation */}
-          <div className="flex flex-col items-end gap-4">
-            {/* HR Line */}
-            <div
-              className={`transition-all duration-1000 ${
-                isTransitioning 
-                  ? 'opacity-0 translate-y-4' 
-                  : 'opacity-100 translate-y-0'
-              }`}
-              style={{ 
-                transitionDelay: isTransitioning ? '0ms' : '400ms' 
-              }}
-            >
-              <hr className="border-none bg-accent w-10 h-[2.5px]" />
-            </div>
-            
-            {/* CTA Button */}
-            <div
-              className={`transition-all duration-1000 ${
-                isTransitioning 
-                  ? 'opacity-0 translate-y-4' 
-                  : 'opacity-100 translate-y-0'
-              }`}
-              style={{ 
-                transitionDelay: isTransitioning ? '0ms' : '600ms' 
-              }}
-            >
-              <a href="#">
-                <Button
-                  text={current.cta}
-                  additionalClasses="primarybtn"
-                />
-              </a>
+              
+              {/* CTA Button */}
+              <div
+                className={`transition-all duration-1000 ${
+                  isTransitioning 
+                    ? 'opacity-0 translate-y-4' 
+                    : 'opacity-100 translate-y-0'
+                }`}
+                style={{ 
+                  transitionDelay: isTransitioning ? '0ms' : '600ms' 
+                }}
+              >
+                <a href="#">
+                  <Button
+                    text={current.cta}
+                    additionalClasses="primarybtn"
+                  />
+                </a>
+              </div>
             </div>
           </div>
         </div>

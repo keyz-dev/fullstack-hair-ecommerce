@@ -13,5 +13,6 @@ router.get('/:id', productController.getSingleProduct);
 router.post('/', authenticateUser, authorizeRoles(['admin', 'staff']), upload.array('productImages', 10), handleCloudinaryUpload, formatFilePaths, validate(productCreateSchema), productController.createProduct);
 router.put('/:id', authenticateUser, authorizeRoles(['admin', 'staff']), upload.array('productImages', 10), handleCloudinaryUpload, formatFilePaths, validate(productUpdateSchema), productController.updateProduct);
 router.delete('/:id', authenticateUser, authorizeRoles(['admin', 'staff']), productController.deleteProduct);
+router.get('/stats', productController.getProductStats);
 
 module.exports = router;

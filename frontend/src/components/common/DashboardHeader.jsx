@@ -145,8 +145,11 @@ const DashboardHeader = () => {
               <Bell size={20} />
               <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>
             </button>
-            <LanguageSelector />
-            <ThemeSelector />
+            {/* Desktop only: Language and Theme selectors */}
+            <div className="hidden md:flex items-center gap-2">
+              <LanguageSelector />
+              <ThemeSelector />
+            </div>
 
             {/* User Profile */}
             <div className="relative" ref={dropdownRef}>
@@ -171,17 +174,15 @@ const DashboardHeader = () => {
 
               {showUserDropdown && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-2 z-50">
-                  {/* Mobile-only language option */}
+                  {/* Mobile-only language and theme options */}
                   <div className="md:hidden border-b border-gray-100 pb-2 mb-2">
                     <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      Language
+                      Preferences
                     </div>
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                      🇺🇸 English
-                    </button>
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                      🇫🇷 French
-                    </button>
+                    <div className="px-4 py-2 flex flex-col gap-2">
+                      <LanguageSelector />
+                      <ThemeSelector />
+                    </div>
                   </div>
 
                   <button

@@ -11,70 +11,6 @@ import {
 import { X } from "lucide-react";
 import { toast } from "react-toastify";
 
-const styles = [
-  {
-    "id": "afro",
-    "name": "Afro",
-    "description": "A naturally voluminous and rounded hairstyle typically worn by individuals with Type 4 hair textures. It embraces the hair's natural curl pattern."
-  },
-  {
-    "id": "braids",
-    "name": "Braids",
-    "description": "A protective hairstyle where hair is sectioned and woven into various patterns such as box braids, cornrows, or micro braids."
-  },
-  {
-    "id": "curls",
-    "name": "Curls",
-    "description": "Hair styled to have defined curls, ranging from loose waves to tight ringlets. Can be natural or achieved with styling tools."
-  },
-  {
-    "id": "locs",
-    "name": "Locs",
-    "description": "Also called dreadlocks, this style involves sections of hair that are matted and locked into rope-like strands. Often worn long and can be styled in various ways."
-  },
-  {
-    "id": "straight",
-    "name": "Straight",
-    "description": "Hair that falls naturally or is styled to be smooth and without curls or waves. Can be natural or achieved through straightening techniques."
-  },
-  {
-    "id": "twists",
-    "name": "Twists",
-    "description": "Two strands of hair twisted together to form a rope-like appearance. Often used as a protective style and can be worn short or long."
-  },
-  {
-    "id": "buns",
-    "name": "Buns",
-    "description": "Hair gathered and wrapped into a rounded shape, usually secured at the back or top of the head. Can be sleek, messy, or braided."
-  },
-  {
-    "id": "ponytail",
-    "name": "Ponytail",
-    "description": "Hair pulled together and secured at a single point, often at the back or top of the head. Can be styled high, low, braided, or curly."
-  },
-  {
-    "id": "weave",
-    "name": "Weave",
-    "description": "Hair extensions sewn or glued into natural hair to add length, volume, or a new style. Can mimic any hair texture or color."
-  },
-  {
-    "id": "wig",
-    "name": "Wig",
-    "description": "A head covering made from human or synthetic hair. Allows for quick changes in hairstyle, length, or color without altering natural hair."
-  },
-  {
-    "id": "pixie",
-    "name": "Pixie Cut",
-    "description": "A short hairstyle that is typically cut close to the scalp around the back and sides, with slightly longer top layers for styling."
-  },
-  {
-    "id": "bob",
-    "name": "Bob",
-    "description": "A short-to-medium length hairstyle where hair is cut straight around the head, usually at jaw level. Can be sleek, curly, or layered."
-  }
-]
-
-
 const AddCategoryModal = ({ isOpen, onClose }) => {
   const { createCategory, error, success } = useCategory();
 
@@ -130,7 +66,7 @@ const AddCategoryModal = ({ isOpen, onClose }) => {
 
         <FormHeader
           title="Add a category"
-          subtitle="Define the categories for your hair brand"
+          description="Define the categories for your hair brand"
         />
         <form
           onSubmit={handleSave}

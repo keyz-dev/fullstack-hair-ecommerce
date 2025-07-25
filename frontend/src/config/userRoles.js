@@ -10,6 +10,7 @@ export const ROLE_CONFIGS = {
     displayName: "Administrator",
     navItems: [
       { path: "", label: "Overview", icon: "LayoutDashboard" },
+      { path: "products", label: "Products", icon: "Package" },
       { path: "categories", label: "Categories", icon: "Building2" },
       { path: "orders", label: "Orders", icon: "Package" },
       { path: "users", label: "Users", icon: "Users" },

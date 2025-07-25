@@ -4,3 +4,4 @@ export { useCategory } from "./useCategory";
 export { useIsMobile } from "./useIsMobile";
 export { useImagePreloader } from "./useImagePreloader";
 export { useBaseDashboard } from "./useBaseDashboard"
+export { useProducts } from "./useProducts"

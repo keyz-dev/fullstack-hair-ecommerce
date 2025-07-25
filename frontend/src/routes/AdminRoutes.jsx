@@ -13,6 +13,7 @@ import {
   Reports,
   Profile,
   Settings,
+  Products,
 } from "../pages/admin";
 
 
@@ -32,6 +33,7 @@ export const adminRoutes = [
       <Route path="reports" element={<Reports />} />
       <Route path="profile" element={<Profile />} />
       <Route path="settings" element={<Settings />} />
+      <Route path="products" element={<Products />} />
     </Route>
   </Route>,
 ];

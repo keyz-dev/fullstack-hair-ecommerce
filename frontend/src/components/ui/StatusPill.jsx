@@ -4,6 +4,7 @@ const StatusPill = ({ status }) => {
   const statusStyles = (status) => {
     switch (status.toLowerCase()) {
       case "active":
+      case "in_stock":
       case "approved":
         return {
           bg: "bg-green-100",
@@ -11,6 +12,7 @@ const StatusPill = ({ status }) => {
           dot: "bg-green-400",
         };
       case "inactive":
+      case "out_of_stock":
       case "rejected":
       case "invalid":
       case "unavailable":
@@ -22,6 +24,7 @@ const StatusPill = ({ status }) => {
         };
       case "pending":
       case "available":
+      case "limited_stock":
       case "under_maintenance":
         return {
           bg: "bg-blue-100",

@@ -62,6 +62,11 @@ const storage = inProduction
 
 // --- File Filter ---
 const fileFilter = (req, file, cb) => {
+  console.log("\n------------------")
+  console.log("The multer middle ware has been accessed:", req.body)
+  console.log(req.files)
+  console.log("\n------------------")
+
   if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|avif)$/)) {
     return cb(new BadRequestError('Only image files are allowed!'), false);
   }

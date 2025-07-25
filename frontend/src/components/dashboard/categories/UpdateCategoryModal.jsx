@@ -76,7 +76,7 @@ const UpdateCategoryModal = ({ isOpen, onClose, initialData }) => {
 
         <FormHeader
           title="Update category"
-          subtitle="Edit the details for this category"
+          description="Edit the details for this category"
         />
         <form
           onSubmit={e => { e.preventDefault(); handleUpdate(); }}

@@ -8,23 +8,23 @@ const Categories = () => {
   if (error) return <div className="text-center text-red-500 py-8">{error}</div>;
 
   return (
-    <section className="container mx-auto py-12">
-      <h2 className="text-2xl font-bold mb-6 text-center">Categories</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-        {categories.map((cat) => (
-          <div
-            key={cat.id}
-            className="bg-white rounded-lg shadow hover:shadow-lg transition p-4 flex flex-col items-center"
-          >
-            <img
-              src={cat.image}
-              alt={cat.name}
-              className="w-24 h-24 object-cover rounded-full mb-3"
-            />
-            <span className="font-semibold text-lg">{cat.name}</span>
+    <section className="container grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 place-items-center justify-center lg:flex lg:items-center lg:justify-center">
+      {categories.map((category, index) => (
+        <div key={index} className="flex flex-col gap-4 justify-center items-center">
+          <div className="size-[140px] sm:size-[200px] p-2 border-4 border-accent">
+            <div className="h-full w-full border-4 border-accent grid place-items-center">
+              <img 
+                src={category.image} 
+                alt={category.name} 
+                className="size-20 sm:size-36 object-contain"
+              />
+            </div>
           </div>
-        ))}
-      </div>
+          <p className="text-base font-semibold">
+            {category.name.charAt(0).toUpperCase() + category.name.slice(1)}
+          </p>
+        </div>
+      ))}
     </section>
   );
 };
