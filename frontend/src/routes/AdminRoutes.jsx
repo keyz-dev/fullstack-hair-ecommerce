@@ -1,5 +1,5 @@
 import React from 'react'
-import { Outlet, Route } from "react-router-dom";
+import { Route } from "react-router-dom";
 import { DashboardLayout } from "../components/layout";
 import ProtectedRoute from "../components/routing/ProtectedRoute";
 
@@ -8,12 +8,13 @@ import {
   Categories,
   Orders,
   Users,
-  Staff,
   Notifications,
-  Reports,
   Profile,
-  Settings,
   Products,
+  Services,
+  Bookings,
+  Blogs,
+  Posts,
 } from "../pages/admin";
 
 
@@ -28,11 +29,12 @@ export const adminRoutes = [
       <Route path="categories" element={<Categories />} />
       <Route path="orders" element={<Orders />} />
       <Route path="users" element={<Users />} />
-      <Route path="staff" element={<Staff />} />
       <Route path="notifications" element={<Notifications />} />
-      <Route path="reports" element={<Reports />} />
       <Route path="profile" element={<Profile />} />
-      <Route path="settings" element={<Settings />} />
+      <Route path="blog" element={<Blogs />} />
+      <Route path="posts" element={<Posts />} />
+      <Route path="services" element={<Services />} />
+      <Route path="bookings" element={<Bookings />} />
       <Route path="products" element={<Products />} />
     </Route>
   </Route>,
