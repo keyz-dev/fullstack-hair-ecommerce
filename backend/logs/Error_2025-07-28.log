@@ -63,3 +63,7 @@
 {"level":"error","message":"Login first to access this resource.","timestamp":"2025-07-28T10:02:35.631Z"}
 {"level":"error","message":"Cast to ObjectId failed for value \"[object Object]\" (type string) at path \"_id\" for model \"PaymentMethod\"","timestamp":"2025-07-28T10:22:47.661Z"}
 {"level":"error","message":"Cast to ObjectId failed for value \"[object Object]\" (type string) at path \"_id\" for model \"PaymentMethod\"","timestamp":"2025-07-28T10:26:35.247Z"}
+{"level":"error","message":"User not found.","timestamp":"2025-07-28T14:32:46.873Z"}
+{"level":"error","message":"User not found.","timestamp":"2025-07-28T14:32:46.902Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Product\"","timestamp":"2025-07-28T14:33:51.749Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Product\"","timestamp":"2025-07-28T14:33:51.802Z"}

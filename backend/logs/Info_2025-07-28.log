@@ -64,3 +64,7 @@
 {"level":"error","message":"Cast to ObjectId failed for value \"[object Object]\" (type string) at path \"_id\" for model \"PaymentMethod\"","timestamp":"2025-07-28T10:22:47.661Z"}
 {"level":"error","message":"Cast to ObjectId failed for value \"[object Object]\" (type string) at path \"_id\" for model \"PaymentMethod\"","timestamp":"2025-07-28T10:26:35.247Z"}
 {"level":"info","message":"Email sent successfully","messageId":"<3e74a366-29ff-b0e1-2856-0365953a2161@localhost>","timestamp":"2025-07-28T13:37:30.847Z"}
+{"level":"error","message":"User not found.","timestamp":"2025-07-28T14:32:46.873Z"}
+{"level":"error","message":"User not found.","timestamp":"2025-07-28T14:32:46.902Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Product\"","timestamp":"2025-07-28T14:33:51.749Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Product\"","timestamp":"2025-07-28T14:33:51.802Z"}

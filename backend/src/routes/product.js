@@ -9,13 +9,12 @@ const productController = require('../controller/product');
 const router = express.Router();
 
 router.get('/', productController.getAllProducts);
+
+router.post('/', authenticateUser, authorizeRoles(['admin', 'staff']), upload.array('productImages', 10), handleCloudinaryUpload, formatFilePaths, validate(productCreateSchema), productController.createProduct);
+router.get('/stats', authenticateUser, authorizeRoles(['admin', 'staff']), productController.getProductStats);
+
 router.get('/:id', productController.getSingleProduct);
-
-router.use(authenticateUser, authorizeRoles(['admin', 'staff']));
-
-router.get('/stats', productController.getProductStats);
-router.post('/', upload.array('productImages', 10), handleCloudinaryUpload, formatFilePaths, validate(productCreateSchema), productController.createProduct);
-router.put('/:id', upload.array('productImages', 10), handleCloudinaryUpload, formatFilePaths, validate(productUpdateSchema), productController.updateProduct);
-router.delete('/:id', productController.deleteProduct);
+router.put('/:id', authenticateUser, authorizeRoles(['admin', 'staff']), upload.array('productImages', 10), handleCloudinaryUpload, formatFilePaths, validate(productUpdateSchema), productController.updateProduct);
+router.delete('/:id', authenticateUser, authorizeRoles(['admin', 'staff']), productController.deleteProduct);
 
 module.exports = router;
