@@ -191,7 +191,7 @@ const Hero = () => {
       </div>
 
       {/* Progress Bar - Only visible when images are loaded */}
-      <div className={`absolute bottom-0 left-0 w-full h-1 bg-black/20 z-20 transition-opacity duration-500 ${
+      <div className={`absolute bottom-0 left-0 w-full h-1 bg-black/20 z-9 transition-opacity duration-500 ${
         imagesLoaded ? 'opacity-100' : 'opacity-0'
       }`}>
         <div 
