@@ -80,15 +80,12 @@ const getProductStats = async (req, res, next) => {
     const total = await Product.countDocuments();
     const inStock = await Product.countDocuments({ stock: { $gt: 0 } });
     const outOfStock = await Product.countDocuments({ stock: 0 });
-    // If you have a 'featured' field, add this:
-    // const featured = await Product.countDocuments({ featured: true });
     res.status(200).json({
       success: true,
       stats: {
         total,
         inStock,
         outOfStock,
-        // featured,
       },
     });
   } catch (err) {

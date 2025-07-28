@@ -22,8 +22,6 @@ export const PaymentMethodSettings = () => {
     return success;
   };
 
-  console.log("payment methods: ", paymentMethods)
-
   return (
     <section className="p-6">
       <div className="flex justify-end items-center mb-4">
@@ -34,7 +32,7 @@ export const PaymentMethodSettings = () => {
       <PaymentMethodListView
         paymentMethods={paymentMethods}
         loading={loading}
-        onEdit={() => {}} // Implement edit modal
+        onEdit={() => {}}
         onDelete={deletePaymentMethod}
         onToggleStatus={togglePaymentMethodStatus}
       />

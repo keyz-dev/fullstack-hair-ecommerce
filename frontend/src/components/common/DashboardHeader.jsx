@@ -76,15 +76,6 @@ const DashboardHeader = () => {
               <Logo destination={roleConfig.basePath} />
             </div>
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="lg:hidden p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-              aria-label="Toggle sidebar"
-            >
-              <Menu size={20} />
-            </button>
-
             {/* Desktop Sidebar Toggle */}
             <Button
               onClickHandler={() => setSidebarCollapsed(!sidebarCollapsed)}
