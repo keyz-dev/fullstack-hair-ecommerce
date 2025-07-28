@@ -7,12 +7,18 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     host: '0.0.0.0',
-    port: 5173,
-    allowedHosts: [
-      "38e4a0c6ed70.ngrok-free.app",
-      'braidster.locally.me',
-      'localhost',
-      '.locally.me'
-    ]
+    port: 5173
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+        },
+      },
+    },
   },
 });
