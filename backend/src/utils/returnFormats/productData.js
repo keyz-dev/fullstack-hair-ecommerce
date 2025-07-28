@@ -11,6 +11,7 @@ const formatProductData = (prod) => {
     name: prod.name,
     description: prod.description,
     price: prod.price,
+    currency: prod.currency || 'XAF',
     category: prod.category,
     stock: prod.stock,
     service: prod.service,

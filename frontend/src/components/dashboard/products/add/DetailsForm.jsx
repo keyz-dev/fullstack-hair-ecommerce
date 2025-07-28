@@ -1,9 +1,12 @@
 import React, { useState } from "react";
-import { FormHeader, Input, Button, TextArea, Select } from "../../../ui";
+import { FormHeader, Input, Button, TextArea, Select, PriceInput } from "../../../ui";
 import { useCategory } from "../../../../hooks"
 
 const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
-  const [formData, setFormData] = useState(data);
+  const [formData, setFormData] = useState({
+    ...data,
+    currency: data?.currency || 'XAF'
+  });
   const [errors, setErrors] = useState({});
   const { categories } = useCategory()
 
@@ -76,15 +79,13 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
           placeholder="Enter product description"
         />
 
-        <Input
-          label="Price"
-          name="price"
-          type="number"
-          value={formData.price}
-          onChangeHandler={handleChange}
+        <PriceInput
+          price={formData.price}
+          currency={formData.currency}
+          onPriceChange={(value) => setFormData(prev => ({ ...prev, price: value }))}
+          onCurrencyChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
           error={errors.price}
           required
-          additionalClasses="border-line_clr"
           placeholder="Enter product price"
         />
 

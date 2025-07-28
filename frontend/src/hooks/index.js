@@ -5,3 +5,6 @@ export { useIsMobile } from "./useIsMobile";
 export { useImagePreloader } from "./useImagePreloader";
 export { useBaseDashboard } from "./useBaseDashboard"
 export { useProducts } from "./useProducts"
+export { useCurrency } from "./useCurrency";
+export { useSettings } from "./useSettings";
+export { usePaymentMethods } from "./usePaymentMethods";

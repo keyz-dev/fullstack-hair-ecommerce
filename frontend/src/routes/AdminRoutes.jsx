@@ -2,6 +2,7 @@ import React from 'react'
 import { Route } from "react-router-dom";
 import { DashboardLayout } from "../components/layout";
 import ProtectedRoute from "../components/routing/ProtectedRoute";
+import AdminContextWrapper from "../contexts/AdminContextWrapper";
 
 import {
   Dashboard,
@@ -15,6 +16,7 @@ import {
   Bookings,
   Blogs,
   Posts,
+  Settings,
 } from "../pages/admin";
 
 
@@ -24,7 +26,10 @@ export const adminRoutes = [
     path="/admin"
     element={<ProtectedRoute allowedRoles={["admin"]} />}
   >
-    <Route element={<DashboardLayout />}>
+
+    <Route element={<AdminContextWrapper>
+      <DashboardLayout />
+    </AdminContextWrapper>}>
       <Route index element={<Dashboard />} />
       <Route path="categories" element={<Categories />} />
       <Route path="orders" element={<Orders />} />
@@ -36,6 +41,7 @@ export const adminRoutes = [
       <Route path="services" element={<Services />} />
       <Route path="bookings" element={<Bookings />} />
       <Route path="products" element={<Products />} />
+      <Route path="settings" element={<Settings />} />
     </Route>
   </Route>,
 ];

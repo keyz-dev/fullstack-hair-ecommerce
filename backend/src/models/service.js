@@ -13,6 +13,12 @@ const serviceSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  currency: {
+    type: String,
+    required: true,
+    default: 'XAF',
+    uppercase: true,
+  },
   duration: {
     type: Number, // in minutes
     required: true,

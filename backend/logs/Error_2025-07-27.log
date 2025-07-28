@@ -1,0 +1,6 @@
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Product\"","timestamp":"2025-07-27T22:39:10.655Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Product\"","timestamp":"2025-07-27T22:39:10.677Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Product\"","timestamp":"2025-07-27T22:56:41.341Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Product\"","timestamp":"2025-07-27T22:56:41.361Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Product\"","timestamp":"2025-07-27T22:57:14.221Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Product\"","timestamp":"2025-07-27T22:57:14.245Z"}

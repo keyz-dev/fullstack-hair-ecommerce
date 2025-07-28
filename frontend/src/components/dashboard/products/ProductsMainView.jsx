@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import { ProductStatSection, ProductTable, UpdateProductModal, DeleteProductModal } from ".";
-import { Button } from "../../ui";
+import { ProductStatSection, ProductTable, UpdateProductModal } from ".";
+import { Button, DeleteModal } from "../../ui";
+import { toast } from "react-toastify";
+import { useProducts } from "../../../hooks/useProducts";
 
 const ProductsMainView = ({ setView }) => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const { deleteProduct, loading } = useProducts();
 
   const handleEdit = (product) => {
     setSelectedProduct(product);
@@ -15,6 +18,15 @@ const ProductsMainView = ({ setView }) => {
   const handleDelete = (product) => {
     setSelectedProduct(product);
     setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    const result = await deleteProduct(selectedProduct._id);
+    if (result) {
+      toast.success("Product deleted successfully");
+      setDeleteModalOpen(false);
+      setSelectedProduct(null);
+    }
   };
 
   return (
@@ -32,11 +44,13 @@ const ProductsMainView = ({ setView }) => {
         onClose={() => { setEditModalOpen(false); setSelectedProduct(null); }}
         initialData={selectedProduct}
       />
-      <DeleteProductModal
+      <DeleteModal
         isOpen={deleteModalOpen}
         onClose={() => { setDeleteModalOpen(false); setSelectedProduct(null); }}
-        productName={selectedProduct?.name}
-        productId={selectedProduct?._id}
+        onConfirm={handleDeleteConfirm}
+        loading={loading}
+        itemName={selectedProduct?.name}
+        title="Delete Product"
       />
     </section>
   );

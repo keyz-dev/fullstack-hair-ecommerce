@@ -47,7 +47,7 @@ const ProductTable = ({ onEdit, onDelete }) => {
     { Header: "Stock", accessor: "stock" },
     {
       Header: "Status",
-      accessor: "stock",
+      accessor: "stock_status",
       Cell: ({ row }) => {
         const status = row.stock > 10 ? "in_stock" : row.stock === 0 ? "out_of_stock" : "limited_stock";
         return <StatusPill status={status} />;

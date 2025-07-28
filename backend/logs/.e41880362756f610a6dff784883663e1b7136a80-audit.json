@@ -29,6 +29,16 @@
             "date": 1753508360853,
             "name": "D:\\Projects\\braid_commerce\\backend\\logs\\Error_2025-07-26.log",
             "hash": "097eb71f07f43cbcf060571afa403893b9ff32818a462188a8fd626d4c571f68"
+        },
+        {
+            "date": 1753653605121,
+            "name": "D:\\Projects\\braid_commerce\\backend\\logs\\Error_2025-07-27.log",
+            "hash": "f61184082d926a54d05dad3255900e523e497a90bf85c3da7d5d8774e89fccc9"
+        },
+        {
+            "date": 1753657310327,
+            "name": "D:\\Projects\\braid_commerce\\backend\\logs\\Error_2025-07-28.log",
+            "hash": "1b6bce14b2b617b3d873e139fac7831d7d0a95b9151023e0661b483c1a6b0770"
         }
     ],
     "hashType": "sha256"

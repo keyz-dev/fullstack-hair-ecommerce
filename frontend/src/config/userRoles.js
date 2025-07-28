@@ -20,6 +20,7 @@ export const ROLE_CONFIGS = {
       { path: "users", label: "Users", icon: "Users" },
       { path: "notifications", label: "Notifications", icon: "Bell" },
       { path: "profile", label: "My Profile", icon: "User" },
+      { path: "settings", label: "Settings", icon: "Settings" },
     ],
   },
   [USER_ROLES.STAFF]: {

@@ -79,8 +79,14 @@ const DashboardSidebar = () => {
       {/* Sidebar */}
       <div
         ref={sidebarRef}
+        style={{
+          scrollbarWidth: "none",        // Firefox
+          msOverflowStyle: "none",       // IE and Edge
+        }}
+        // Hide scrollbar for Webkit browsers
+        // This will be complemented by a CSS class below if needed
         className={`
-          bg-white shadow-lg transition-all duration-300 ease-in-out z-40
+          bg-white shadow-lg transition-all overflow-auto duration-300 ease-in-out z-40
           
           /* Mobile: Fixed overlay sidebar */
           lg:relative lg:translate-x-0
@@ -94,7 +100,10 @@ const DashboardSidebar = () => {
           
           /* Mobile positioning */
           top-0 left-0 lg:top-auto lg:left-auto
+
+          [&::-webkit-scrollbar]:hidden
         `}
+        
       >
         {/* Mobile Header - Only show on mobile when sidebar is open */}
         <div className="lg:hidden p-4 border-b border-gray-200 bg-gray-50">

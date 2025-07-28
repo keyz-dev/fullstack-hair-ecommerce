@@ -82,6 +82,10 @@ html {
   .flexbox {
     @apply flex items-center justify-center
   }
+
+  .form_container {
+    @apply min-w-sm lg:min-w-lg mx-auto flex flex-col;
+  }
 }
 
 .nav_active, .nav_item:hover {

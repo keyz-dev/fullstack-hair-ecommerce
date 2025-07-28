@@ -13,6 +13,12 @@ const productSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  currency: {
+    type: String,
+    required: true,
+    default: 'XAF',
+    uppercase: true,
+  },
   images: [String],
   category: {
     type: mongoose.Schema.Types.ObjectId,

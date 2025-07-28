@@ -27,9 +27,9 @@ const Table = ({ columns, data, emptyStateMessage }) => {
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            {columns.map((col) => (
+            {columns.map((col, index) => (
               <th
-                key={col.accessor}
+                key={index}
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
@@ -41,9 +41,9 @@ const Table = ({ columns, data, emptyStateMessage }) => {
         <tbody className="bg-white divide-y divide-gray-200">
           {data.map((row, rowIndex) => (
             <tr key={rowIndex} className="hover:bg-gray-50">
-              {columns.map((col) => (
+              {columns.map((col, index) => (
                 <TableCell
-                  key={col.accessor}
+                  key={index}
                   className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
                 >
                   {col.Cell ? col.Cell({ row }) : row[col.accessor]}

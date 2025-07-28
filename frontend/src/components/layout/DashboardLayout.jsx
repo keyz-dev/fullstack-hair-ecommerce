@@ -17,33 +17,33 @@ const DashboardLayout = () => {
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <DashboardHeader />
-      <div className="flex-1 flex overflow-hidden relative">
-        <DashboardSidebar />
-        
-        {/* Mobile Overlay */}
-        {!sidebarCollapsed && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
-            onClick={() => {
-              setSidebarCollapsed(true);
-            }}
-          />
-        )}
-        
-        {/* Main Content */}
-        <main className={`
-          flex-1 overflow-y-auto transition-all duration-300 ease-in-out
-          ${sidebarCollapsed ? 'md:ml-0' : 'md:ml-0'}
-          p-3 sm:p-4 lg:p-6
-        `}>
-          <div className="max-w-full mx-auto">
-            <Outlet />
-          </div>
-        </main>
+      <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+        <DashboardHeader />
+        <div className="flex-1 flex overflow-hidden relative">
+          <DashboardSidebar />
+          
+          {/* Mobile Overlay */}
+          {!sidebarCollapsed && (
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+              onClick={() => {
+                setSidebarCollapsed(true);
+              }}
+            />
+          )}
+          
+          {/* Main Content */}
+          <main className={`
+            flex-1 overflow-y-auto transition-all duration-300 ease-in-out
+            ${sidebarCollapsed ? 'md:ml-0' : 'md:ml-0'}
+            p-3 sm:p-4 lg:p-6 overflow-auto h-full w-full [&::-webkit-scrollbar]:hidden
+          `}>
+            <div className="max-w-full mx-auto">
+              <Outlet />
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
   );
 };
 

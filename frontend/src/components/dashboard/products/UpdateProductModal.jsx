@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useProducts } from "../../../hooks/useProducts";
-import { ModalWrapper, FormHeader, Input, FileUploader, Button, TextArea } from "../../ui";
+import { useProducts, useCategory } from "../../../hooks";
+import { ModalWrapper, FormHeader, Input, FileUploader, Button, TextArea, Select } from "../../ui";
 import { X } from "lucide-react";
 import { toast } from "react-toastify";
 
 const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
   const { updateProduct, loading } = useProducts();
+  const { categories } = useCategory();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -15,6 +16,11 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
     images: [],
   });
   const [errors, setErrors] = useState({});
+
+  const categoryOptions = categories.map((category) => ({
+    label: category.name,
+    value: category._id,
+  }));
 
   useEffect(() => {
     if (initialData) {
@@ -80,7 +86,7 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
           <TextArea label="Description" name="description" value={formData.description} onChangeHandler={handleChange} />
           <Input label="Price" name="price" type="number" value={formData.price} onChangeHandler={handleChange} error={errors.price} required />
           <Input label="Stock" name="stock" type="number" value={formData.stock} onChangeHandler={handleChange} error={errors.stock} required />
-          <Input label="Category" name="category" value={formData.category} onChangeHandler={handleChange} error={errors.category} required />
+          <Select label="Category" name="category" value={formData.category} onChange={handleChange} error={errors.category} required options={categoryOptions} />
           <FileUploader multiple onChange={handleFileChange} />
           <div className="flex justify-end">
             <Button type="submit" additionalClasses="primaryBtn bg-accent text-white" isLoading={loading}>

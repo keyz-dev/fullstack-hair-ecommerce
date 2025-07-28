@@ -1,7 +1,12 @@
 require("dotenv").config();
 const app = require("./src/app");
 const db = require("./src/db");
-db();
+const { seedAll } = require("./src/utils/seedData");
+
+db().then(async () => {
+  // Seed default data
+  await seedAll();
+});
 
 const port = process.env.PORT || 5000;
 

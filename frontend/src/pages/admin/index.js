@@ -9,3 +9,4 @@ export { default as Services } from "./Services";
 export { default as Bookings } from "./Bookings";
 export { default as Products } from "./Products";
 export { default as Blogs } from "./Blogs";
+export { default as Settings } from "./Settings";

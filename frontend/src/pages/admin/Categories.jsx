@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useCategory } from "../../hooks";
-import { CategoriesListView, AddCategoryModal, UpdateCategoryModal, DeleteCategoryModal } from "../../components/dashboard/categories"
-import { Button, SearchBar, FilterDropdown } from "../../components/ui";
+import { CategoriesListView, AddCategoryModal, UpdateCategoryModal } from "../../components/dashboard/categories"
+import { Button, SearchBar, FilterDropdown, DeleteModal } from "../../components/ui";
 
 const CategoriesMainView = () => {
   const { fetchCategories, categories, loading, deleteCategory } = useCategory();
@@ -102,11 +102,12 @@ const CategoriesMainView = () => {
         onClose={() => { setEditModalOpen(false); setSelectedCategory(null); fetchCategories(); }}
         initialData={selectedCategory}
       />
-      <DeleteCategoryModal
+      <DeleteModal
         isOpen={deleteModalOpen}
         onClose={() => { setDeleteModalOpen(false); setSelectedCategory(null); }}
         onConfirm={handleDeleteConfirm}
-        categoryName={selectedCategory?.name}
+        itemName={selectedCategory?.name}
+        title="Delete Category"
         loading={deleteLoading}
       />
     </section>
