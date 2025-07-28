@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ModalWrapper, FormHeader, Input, Button, TextArea, FileUploader } from "../../../ui";
 import { X } from "lucide-react";
+import { toast } from "react-toastify";
 
 const AddPaymentMethodModal = ({ isOpen, onClose, onSubmit, loading }) => {
   const [form, setForm] = useState({
@@ -45,6 +46,8 @@ const AddPaymentMethodModal = ({ isOpen, onClose, onSubmit, loading }) => {
         maxAmount: "",
         sortOrder: "",
       });
+      onClose();
+      toast.success("Payment method created successfully");
     }
   };
 

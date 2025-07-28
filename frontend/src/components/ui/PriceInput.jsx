@@ -1,5 +1,6 @@
 import React from 'react';
 import CurrencySelector from './CurrencySelector';
+import { Input } from '.';
 
 const PriceInput = ({
   price,
@@ -30,26 +31,24 @@ const PriceInput = ({
             onChange={onCurrencyChange}
             showLabel={false}
             disabled={disabled}
-            className="w-24"
+            className="w-25"
           />
         </div>
         
         {/* Price Input */}
         <div className="flex-1 ml-0">
-          <input
+          <Input
+            name="price"
             type="number"
             value={price}
-            onChange={(e) => onPriceChange(e.target.value)}
+            onChangeHandler={onPriceChange}
+            error={error}
             disabled={disabled}
+            required
+            additionalClasses="border-line_clr"
             placeholder={placeholder}
             step="0.01"
             min="0"
-            className={`
-              w-full px-3 py-2 border-l-0 rounded-r-md shadow-sm
-              focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent
-              ${disabled ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'}
-              ${error ? 'border-red-300' : 'border-gray-300'}
-            `}
           />
         </div>
       </div>

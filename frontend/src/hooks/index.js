@@ -8,3 +8,4 @@ export { useProducts } from "./useProducts"
 export { useCurrency } from "./useCurrency";
 export { useSettings } from "./useSettings";
 export { usePaymentMethods } from "./usePaymentMethods";
+export { default as useImageManager } from './useImageManager';

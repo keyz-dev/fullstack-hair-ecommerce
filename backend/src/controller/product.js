@@ -14,8 +14,6 @@ const createProduct = async (req, res, next) => {
     if (error) return next(new BadRequestError(error.details[0].message));
     let images = req.files ? req.files.map((file) => file.path) : [];
 
-    console.log("received data: ", {...req.body, images})
-
     const product = await Product.create({ ...req.body, images });
   
     res.status(201).json({ success: true, product });
@@ -57,10 +55,13 @@ const getAllProducts = async (req, res, next) => {
       .limit(limit)
       .populate("category", "_id name");
 
+    // Format products with currency information
+    const formattedProducts = await Promise.all(products.map(formatProductData));
+
     res.status(200).json({
       success: true,
       data: {
-        products: products.map(formatProductData),
+        products: formattedProducts,
         pagination: {
           page,
           limit,
@@ -102,19 +103,39 @@ const getSingleProduct = async (req, res, next) => {
 
 // Update product
 const updateProduct = async (req, res, next) => {
-  const { error } = productUpdateSchema.validate(req.body);
-  if (error) return next(new BadRequestError(error.details[0].message));
-  let product = await Product.findById(req.params.id);
-  if (!product) return next(new NotFoundError("Product not found"));
-  Object.assign(product, req.body);
-  if (req.files && req.files.length > 0) {
-    const newImages = req.files.map((file) => file.path);
-    product.images = [...(product.images || []), ...newImages];
+  try {
+    const { error } = productUpdateSchema.validate(req.body);
+    if (error) return next(new BadRequestError(error.details[0].message));
+    
+    let product = await Product.findById(req.params.id);
+    if (!product) return next(new NotFoundError("Product not found"));
+    
+    // Handle existing images
+    if (req.body.existingImages) {
+      try {
+        const existingImages = JSON.parse(req.body.existingImages);
+        product.images = existingImages;
+      } catch (err) {
+        return next(new BadRequestError("Invalid existing images data"));
+      }
+    }
+    
+    // Handle new images
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map((file) => file.path);
+      product.images = [...(product.images || []), ...newImages];
+    }
+    
+    // Update other fields
+    Object.assign(product, req.body);
+    
+    await product.save();
+    res
+      .status(200)
+      .json({ success: true, message: "Product updated successfully", product });
+  } catch (err) {
+    next(err);
   }
-  await product.save();
-  res
-    .status(200)
-    .json({ success: true, message: "Product updated successfully", product });
 };
 
 // Delete product

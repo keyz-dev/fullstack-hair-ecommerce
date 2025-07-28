@@ -20,6 +20,7 @@ const productUpdateSchema = Joi.object({
   price: Joi.number().positive().optional(),
   currency: Joi.string().uppercase().optional(),
   productImages: imageArraySchema,
+  existingImages: Joi.string().optional(), // JSON string of existing images
   category: Joi.string().optional(),
   stock: Joi.number().integer().min(0).optional(),
   service: Joi.string().optional(),

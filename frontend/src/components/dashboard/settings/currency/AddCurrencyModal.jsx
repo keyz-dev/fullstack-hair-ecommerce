@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ModalWrapper, FormHeader, Input, Button, Select } from '../../../ui';
 import { X } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const AddCurrencyModal = ({ isOpen, onClose, onSubmit, loading }) => {
   const [formData, setFormData] = useState({
@@ -54,6 +55,8 @@ const AddCurrencyModal = ({ isOpen, onClose, onSubmit, loading }) => {
         isActive: true,
       });
       setErrors({});
+      onClose();
+      toast.success("Currency created successfully");
     }
   };
 

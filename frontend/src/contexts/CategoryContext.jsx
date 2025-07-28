@@ -55,8 +55,8 @@ export const CategoryProvider = ({ children }) => {
     });
 
     try {
-      const newCategory = await categoryApi.createCategory(formData);
-      setCategories((prev) => [...prev, newCategory]);
+      await categoryApi.createCategory(formData);
+      await fetchCategories()
       return {success: true };
     } catch (err) {
       setError(err);

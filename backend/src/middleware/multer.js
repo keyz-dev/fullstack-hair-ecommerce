@@ -63,11 +63,6 @@ const storage = inProduction
 
 // --- File Filter ---
 const fileFilter = (req, file, cb) => {
-  console.log("\n------------------")
-  console.log("The multer middle ware has been accessed:", req.body)
-  console.log(req.files)
-  console.log("\n------------------")
-
   if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|avif)$/)) {
     return cb(new BadRequestError('Only image files are allowed!'), false);
   }
@@ -84,6 +79,7 @@ const upload = multer({
 // --- Middleware: Cloudinary Upload (production) ---
 const handleCloudinaryUpload = async (req, res, next) => {
   if (!inProduction) return next();
+
   try {
     if (!req.file && !req.files) return next();
     if (req.file) {
@@ -103,7 +99,9 @@ const handleCloudinaryUpload = async (req, res, next) => {
           resource_type: 'auto',
         });
       });
+
       const results = await Promise.all(uploadPromises);
+
       req.files = results.map((result, index) => ({
         ...result,
         path: result.secure_url,
@@ -123,7 +121,7 @@ const formatFilePaths = (req, res, next) => {
       req.file.path = `/uploads/${req.file.folderName}/${path.basename(req.file.path)}`;
     }
   }
-  if (req.files && Object.keys(req.files).length > 0) {
+  if (req.files && Object.keys(req.files).length > 0 && !inProduction) {
     Object.keys(req.files).forEach((key) => {
       if (Array.isArray(req.files[key])) {
         req.files[key] = req.files[key].map((file) => {

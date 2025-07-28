@@ -82,8 +82,8 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
         <PriceInput
           price={formData.price}
           currency={formData.currency}
-          onPriceChange={(value) => setFormData(prev => ({ ...prev, price: value }))}
-          onCurrencyChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
+          onPriceChange={handleChange}
+          onCurrencyChange={(value) => setFormData((prev) => ({ ...prev, currency: value }))}
           error={errors.price}
           required
           placeholder="Enter product price"
@@ -100,6 +100,7 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
           additionalClasses="border-line_clr"
           placeholder="Enter product stock"
         />
+
 
         {/* Category Selection */}
         <div>

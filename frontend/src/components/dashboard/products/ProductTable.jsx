@@ -43,7 +43,19 @@ const ProductTable = ({ onEdit, onDelete }) => {
       Cell: ({ row }) =>
         <span className="">{row.category.name || 'Cat name'}</span>
     },
-    { Header: "Price", accessor: "price", Cell: ({ row }) => `$${row.price}` },
+    { 
+      Header: "Price", 
+      accessor: "price", 
+      Cell: ({ row }) => {
+        const currency = row.currency;
+        if (currency && currency.symbol) {
+          return currency.position === 'after' 
+            ? `${row.price} ${currency.symbol}`
+            : `${currency.symbol} ${row.price}`;
+        }
+        return `${row.price}`;
+      }
+    },
     { Header: "Stock", accessor: "stock" },
     {
       Header: "Status",

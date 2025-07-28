@@ -68,3 +68,9 @@
 {"level":"error","message":"User not found.","timestamp":"2025-07-28T14:32:46.902Z"}
 {"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Product\"","timestamp":"2025-07-28T14:33:51.749Z"}
 {"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Product\"","timestamp":"2025-07-28T14:33:51.802Z"}
+{"level":"error","message":"\"images\" is not allowed","timestamp":"2025-07-28T16:24:28.497Z"}
+{"level":"error","message":"\"images\" is not allowed","timestamp":"2025-07-28T16:32:09.502Z"}
+{"level":"error","message":"\"existingImages\" is not allowed","timestamp":"2025-07-28T17:17:53.476Z"}
+{"level":"error","message":"\"existingImages\" is not allowed","timestamp":"2025-07-28T17:18:55.270Z"}
+{"level":"error","message":"\"existingImages\" is not allowed","timestamp":"2025-07-28T17:19:41.106Z"}
+{"level":"error","message":"\"existingImages\" is not allowed","timestamp":"2025-07-28T17:23:22.132Z"}

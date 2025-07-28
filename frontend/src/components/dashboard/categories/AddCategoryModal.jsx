@@ -44,6 +44,13 @@ const AddCategoryModal = ({ isOpen, onClose }) => {
     if (result.success) {
       onClose();
       toast.success("Category created successfully");
+      // reset form
+      setFormData({
+        name: "",
+        description: "",
+      });
+      setImage(null);
+      setImagePreview(null);
     } else {
       toast.error(result.error || "Something went wrong");
     }
