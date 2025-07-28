@@ -30,13 +30,12 @@ const AddPaymentMethodModal = ({ isOpen, onClose, onSubmit, loading }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await onSubmit(form);
+    const success = await onSubmit({...form, icon});
     if (success) {
       setForm({
         name: "",
         code: "",
         description: "",
-        icon: "",
         isActive: true,
         isOnline: false,
         requiresSetup: false,
@@ -72,13 +71,13 @@ const AddPaymentMethodModal = ({ isOpen, onClose, onSubmit, loading }) => {
             onChangeHandler={handleChange}
             required
           />
-          {/* <Input
+          <Input
             label="Code"
             name="code"
             value={form.code}
             onChangeHandler={handleChange}
             required
-          /> */}
+          />
           <TextArea
             label="Description"
             name="description"

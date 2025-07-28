@@ -22,6 +22,8 @@ export const PaymentMethodSettings = () => {
     return success;
   };
 
+  console.log("payment methods: ", paymentMethods)
+
   return (
     <section className="p-6">
       <div className="flex justify-end items-center mb-4">

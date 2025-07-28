@@ -20,6 +20,7 @@ const paymentMethodSchema = new mongoose.Schema({
   icon: {
     type: String, // URL or icon name
     trim: true,
+    default: null,
   },
   isActive: {
     type: Boolean,

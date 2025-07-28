@@ -2,7 +2,7 @@
 import axios from "axios";
 
 export const API_BASE_URL = "http://192.168.5.1:5000/v2/api";
-// const API_BASE_URL = "https://omnibuzz.onrender.com/api";
+// const API_BASE_URL = "https://c75055dd8664.ngrok-free.app/v2/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
