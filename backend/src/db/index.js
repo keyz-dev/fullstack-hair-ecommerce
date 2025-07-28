@@ -1,12 +1,10 @@
 const mongoose = require('mongoose');
-const DB_URI = process.env.MONGODB_URI;
-console.log(DB_URI);
+const isProductionMode = process.env.NODE_ENV === 'production'
+
+const DB_URI = isProductionMode ? process.env.DB_PROD_URL : process.env.DB_DEV_URL;
 const db = async () => {
   try {
-    const { connection } = await mongoose.connect(DB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const { connection } = await mongoose.connect(DB_URI);
 
     console.log(`server connected to database ${connection.host}`);
   } catch (error) {

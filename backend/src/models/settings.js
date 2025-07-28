@@ -27,7 +27,6 @@ const settingsSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Index for efficient lookups
-settingsSchema.index({ key: 1 });
 settingsSchema.index({ category: 1 });
 
 module.exports = mongoose.model('Settings', settingsSchema); 
