@@ -10,7 +10,7 @@ const CurrencyListView = ({ currencies, loading, onEdit, onDelete, onSetBase }) 
       Cell: ({ row }) => (
         <div>
           <div className="flex items-center">
-            <span className="text-sm font-medium text-gray-900">{row.code}</span>
+            <span className="text-sm font-medium text-primary">{row.code}</span>
             {row.isBase && (
               <Star size={16} className="ml-2 text-yellow-500 fill-current" />
             )}
@@ -22,18 +22,18 @@ const CurrencyListView = ({ currencies, loading, onEdit, onDelete, onSetBase }) 
     {
       Header: "Symbol",
       accessor: "symbol",
-      Cell: ({ row }) => <span className="text-sm text-gray-900">{row.symbol}</span>,
+      Cell: ({ row }) => <span className="text-sm text-primary">{row.symbol}</span>,
     },
     {
       Header: "Exchange Rate",
       accessor: "exchangeRate",
-      Cell: ({ row }) => <span className="text-sm text-gray-900">{row.exchangeRate}</span>,
+      Cell: ({ row }) => <span className="text-sm text-primary">{row.exchangeRate}</span>,
     },
     {
       Header: "Position",
       accessor: "position",
       Cell: ({ row }) => (
-        <span className="text-sm text-gray-900 capitalize">{row.position}</span>
+        <span className="text-sm text-primary capitalize">{row.position}</span>
       ),
     },
     {

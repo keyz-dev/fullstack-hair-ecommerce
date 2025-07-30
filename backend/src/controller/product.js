@@ -4,6 +4,7 @@ const Wishlist = require('../models/wishlist');
 const { formatProductData } = require('../utils/returnFormats/productData');
 const { NotFoundError, BadRequestError } = require('../utils/errors');
 const { productSchema, productUpdateSchema } = require('../schema/productSchema');
+const { cleanUpFileImages } = require('../utils/imageCleanup')
 
 // Create product
 const createProduct = async (req, res, next) => {
@@ -19,14 +20,57 @@ const createProduct = async (req, res, next) => {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
 
+    // Parse JSON fields from form data
+    let variants = [];
+    let features = [];
+    let specifications = {};
+    let tags = [];
+
+    try {
+      if (formData.variants) {
+        variants = typeof formData.variants === 'string' 
+          ? JSON.parse(formData.variants) 
+          : formData.variants;
+      }
+    } catch (err) {
+      return next(new BadRequestError("Invalid variants data"));
+    }
+
+    try {
+      if (formData.features) {
+        features = typeof formData.features === 'string' 
+          ? JSON.parse(formData.features) 
+          : formData.features;
+      }
+    } catch (err) {
+      return next(new BadRequestError("Invalid features data"));
+    }
+
+    try {
+      if (formData.specifications) {
+        specifications = typeof formData.specifications === 'string' 
+          ? JSON.parse(formData.specifications) 
+          : formData.specifications;
+      }
+    } catch (err) {
+      return next(new BadRequestError("Invalid specifications data"));
+    }
+
+    // Handle tags - can be array or comma-separated string
+    if (formData.tags) {
+      tags = Array.isArray(formData.tags) 
+        ? formData.tags 
+        : formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+    }
+
     const product = new Product({
       ...formData,
       images: productImages,
       slug,
-      variants: formData.variants ? JSON.parse(formData.variants) : [],
-      features: formData.features ? JSON.parse(formData.features) : [],
-      specifications: formData.specifications ? JSON.parse(formData.specifications) : {},
-      tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
+      variants,
+      features,
+      specifications,
+      tags,
     });
 
     await product.save();
@@ -38,6 +82,7 @@ const createProduct = async (req, res, next) => {
       product: formattedProduct,
     });
   } catch (err) {
+    if(req.files) cleanUpFileImages(req)
     next(err);
   }
 };
@@ -189,33 +234,42 @@ const updateProduct = async (req, res, next) => {
       formData.slug = slug;
     }
     
-    // Parse JSON fields
-    if (formData.variants) {
-      try {
-        formData.variants = JSON.parse(formData.variants);
-      } catch (err) {
-        return next(new BadRequestError("Invalid variants data"));
+    // Parse JSON fields from form data
+    try {
+      if (formData.variants) {
+        formData.variants = typeof formData.variants === 'string' 
+          ? JSON.parse(formData.variants) 
+          : formData.variants;
       }
+    } catch (err) {
+      return next(new BadRequestError("Invalid variants data"));
     }
     
-    if (formData.features) {
-      try {
-        formData.features = JSON.parse(formData.features);
-      } catch (err) {
-        return next(new BadRequestError("Invalid features data"));
+    try {
+      if (formData.features) {
+        formData.features = typeof formData.features === 'string' 
+          ? JSON.parse(formData.features) 
+          : formData.features;
       }
+    } catch (err) {
+      return next(new BadRequestError("Invalid features data"));
     }
     
-    if (formData.specifications) {
-      try {
-        formData.specifications = JSON.parse(formData.specifications);
-      } catch (err) {
-        return next(new BadRequestError("Invalid specifications data"));
+    try {
+      if (formData.specifications) {
+        formData.specifications = typeof formData.specifications === 'string' 
+          ? JSON.parse(formData.specifications) 
+          : formData.specifications;
       }
+    } catch (err) {
+      return next(new BadRequestError("Invalid specifications data"));
     }
     
+    // Handle tags - can be array or comma-separated string
     if (formData.tags) {
-      formData.tags = formData.tags.split(',').map(tag => tag.trim());
+      formData.tags = Array.isArray(formData.tags) 
+        ? formData.tags 
+        : formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
     }
     
     // Update product

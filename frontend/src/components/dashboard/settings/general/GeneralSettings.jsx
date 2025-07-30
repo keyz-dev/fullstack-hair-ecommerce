@@ -50,7 +50,7 @@ const GeneralSettings = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">General Settings</h2>
+        <h2 className="text-xl font-semibold text-primary">General Settings</h2>
         <p className="mt-1 text-sm text-gray-500">
           Configure basic application settings and preferences.
         </p>
@@ -64,7 +64,7 @@ const GeneralSettings = () => {
         ) : (
           <form className="space-y-6">
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Defaults</h3>
+              <h3 className="text-lg font-medium text-primary mb-4">Defaults</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Select
                   label="Default Currency"
@@ -95,7 +95,7 @@ const GeneralSettings = () => {
             </div>
 
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Order & Notifications</h3>
+              <h3 className="text-lg font-medium text-primary mb-4">Order & Notifications</h3>
               <div className="space-y-4">
                 <label className="flex items-center">
                   <input
@@ -105,7 +105,7 @@ const GeneralSettings = () => {
                     onChange={handleChange}
                     className="h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
                   />
-                  <span className="ml-2 text-sm text-gray-900">Auto-approve orders</span>
+                  <span className="ml-2 text-sm text-primary">Auto-approve orders</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -115,7 +115,7 @@ const GeneralSettings = () => {
                     onChange={handleChange}
                     className="h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
                   />
-                  <span className="ml-2 text-sm text-gray-900">Send email notifications for new orders</span>
+                  <span className="ml-2 text-sm text-primary">Send email notifications for new orders</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -125,7 +125,7 @@ const GeneralSettings = () => {
                     onChange={handleChange}
                     className="h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
                   />
-                  <span className="ml-2 text-sm text-gray-900">Enable automatic stock management</span>
+                  <span className="ml-2 text-sm text-primary">Enable automatic stock management</span>
                 </label>
               </div>
             </div>

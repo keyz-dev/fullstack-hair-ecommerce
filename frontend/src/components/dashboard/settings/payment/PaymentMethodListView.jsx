@@ -9,7 +9,7 @@ const PaymentMethodListView = ({ paymentMethods, loading, onEdit, onDelete, onTo
       accessor: "name",
       Cell: ({ row }) => (
         <div>
-          <div className="text-sm font-medium text-gray-900">{row.name}</div>
+          <div className="text-sm font-medium text-primary">{row.name}</div>
           <div className="text-sm text-gray-500">{row.description}</div>
         </div>
       ),
@@ -36,7 +36,7 @@ const PaymentMethodListView = ({ paymentMethods, loading, onEdit, onDelete, onTo
       Header: "Fees",
       accessor: "fees",
       Cell: ({ row }) => (
-        <span className="text-sm text-gray-900">
+        <span className="text-sm text-primary">
           {row.fees > 0 ? `${row.fees}%` : 'No fees'}
         </span>
       ),

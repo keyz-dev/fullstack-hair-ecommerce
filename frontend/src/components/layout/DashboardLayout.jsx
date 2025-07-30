@@ -36,7 +36,7 @@ const DashboardLayout = () => {
           <main className={`
             flex-1 overflow-y-auto transition-all duration-300 ease-in-out
             ${sidebarCollapsed ? 'md:ml-0' : 'md:ml-0'}
-            p-3 sm:p-4 lg:p-6 overflow-auto h-full w-full [&::-webkit-scrollbar]:hidden
+            p-3 overflow-auto h-full w-full [&::-webkit-scrollbar]:hidden
           `}>
             <div className="max-w-full mx-auto">
               <Outlet />

@@ -11,7 +11,7 @@ const MobileMenu = ({ open, onClose, user }) => {
       aria-hidden={!open}
     >
       <nav
-        className={`absolute left-0 top-0 w-64 h-full bg-white dark:bg-gray-900 shadow-lg p-6 flex flex-col gap-6 transition-transform duration-500 ${
+        className={`absolute left-0 top-0 w-64 h-full bg-white dark:bg-primary shadow-lg p-6 flex flex-col gap-6 transition-transform duration-500 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
         onClick={(e) => e.stopPropagation()}

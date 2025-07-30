@@ -29,3 +29,4 @@ export { default as PriceInput } from "./PriceInput"
 export { default as TabGroup } from "./TabGroup"
 export { default as DeleteModal } from "./DeleteModal"
 export { default as ImageGrid } from './ImageGrid';
+export { default as ProgressSteps } from './ProgressSteps';

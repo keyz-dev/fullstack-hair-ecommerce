@@ -5,10 +5,8 @@ const ProductCard = ({
   product, 
   onAddToCart, 
   onViewDetails, 
-  onAddToWishlist,
   onQuickView,
   className = "",
-  variant = "default" // default, compact, featured
 }) => {
   const { 
     name, 
@@ -19,7 +17,6 @@ const ProductCard = ({
     originalPrice,
     isNew,
     isHot,
-    _id 
   } = product;
 
   // Calculations
@@ -57,13 +54,11 @@ const ProductCard = ({
   return (
     <article 
       className={`
-        group relative
-        bg-white rounded-md
-        border border-gray-100 hover:border-gray-200
-        shadow-sm hover:shadow-xl
+        group
+        bg-white rounded-sm
+        hover:shadow-sm
         transition-all duration-300 ease-out
-        cursor-pointer overflow-hidden
-        transform hover:-translate-y-1
+        overflow-hidden
         ${className}
       `}
       onClick={handleCardClick}
@@ -78,19 +73,20 @@ const ProductCard = ({
       aria-label={`View details for ${name}`}
     >
       {/* Product Image Section */}
-      <ProductImage
-        images={images}
-        name={name}
-        badges={badges}
-        onQuickView={handleQuickView}
-      />
-      {/* Add to Cart Overlay */}
-      <AddToCartOverlay
-        product={product}
-        onAddToCart={onAddToCart}
-        onAddToWishlist={onAddToWishlist}
-        isInStock={isInStock}
-      />
+      <div className='relative overflow-hidden cursor-pointer'>
+        <ProductImage
+          images={images}
+          name={name}
+          badges={badges}
+          onQuickView={handleQuickView}
+        />
+        {/* Add to Cart Overlay */}
+        <AddToCartOverlay
+          product={product}
+          onAddToCart={onAddToCart}
+          isInStock={isInStock}
+        />
+      </div>
 
       {/* Product Information */}
       <ProductInfo
@@ -101,8 +97,7 @@ const ProductCard = ({
         isOnSale={isOnSale}
         stock={stock}
       />
-
-
+      
       {/* Focus ring for accessibility */}
       <div className="
         absolute inset-0 rounded-xl

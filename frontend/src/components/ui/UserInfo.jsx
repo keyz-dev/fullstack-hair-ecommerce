@@ -11,7 +11,7 @@ const UserInfo = ({ user, placeholder }) => {
                 alt={user?.name || 'User'}
             />
             <div className="ml-3">
-                <div className="text-sm font-medium text-gray-900">{user?.name || 'N/A'}</div>
+                <div className="text-sm font-medium text-primary">{user?.name || 'N/A'}</div>
                 <div className="text-sm text-gray-500">{user?.email || ''}</div>
             </div>
         </div>

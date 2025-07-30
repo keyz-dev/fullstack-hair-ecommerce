@@ -3,7 +3,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import { DetailsForm, ImageUploadStep } from "./add";
 import { ProductVariantsForm, ProductSpecsForm, ProductFeaturesForm } from "./add/index";
 import { useProducts } from "../../../hooks";
-import { Button } from "../../ui";
+import { Button, ProgressSteps } from "../../ui";
 import { toast } from "react-toastify";
 
 const AddProductsPage = ({ setView }) => {
@@ -13,16 +13,49 @@ const AddProductsPage = ({ setView }) => {
     name: "",
     description: "",
     price: "",
+    discount: 0,
     stock: "",
     category: "",
     currency: "XAF",
     variants: [],
-    specifications: {},
+    specifications: {
+      length: '',
+      texture: '',
+      material: '',
+      weight: '',
+      density: '',
+      capSize: '',
+      hairType: '',
+      origin: '',
+      careInstructions: '',
+      warranty: ''
+    },
     features: [],
+    tags: [],
+    metaTitle: "",
+    metaDescription: "",
+    isActive: true,
+    isFeatured: false,
+    isOnSale: false,
   });
   const [productImages, setProductImages] = useState([]);
 
-  // Step 1: General Info
+  const steps = [
+    {
+      label: "Basic Info",
+      description: "Product details & pricing"
+    },
+    {
+      label: "Images",
+      description: "Upload product images"
+    },
+    {
+      label: "Specifications",
+      description: "Product specs & features"
+    }
+  ];
+
+  // Step 1: Basic Info
   const handleDetailsFormSubmit = async (formData) => {
     setProductData((prev) => ({ ...prev, ...formData }));
     setStep(2);
@@ -33,11 +66,16 @@ const AddProductsPage = ({ setView }) => {
     setStep(3);
   };
 
-  // Step 3: Hair Product Details
-  const handleHairDetailsSubmit = async (e) => {
+  const handleImageUploadBack = () => {
+    setStep(1);
+  };
+
+  // Step 3: Specifications
+  const handleSpecsSubmit = async (e) => {
     e.preventDefault();
     // Extract the file from each uploaded image
     const imageFiles = productImages.map(({ file }) => file);
+
     const result = await createProduct({
       ...productData,
       productImages: imageFiles,
@@ -48,15 +86,27 @@ const AddProductsPage = ({ setView }) => {
     }
   };
 
+  const handleSpecsBack = () => {
+    setStep(2);
+  };
+
   // Handlers for modular subcomponents
   const setVariants = (variants) => setProductData((prev) => ({ ...prev, variants }));
   const setSpecs = (specifications) => setProductData((prev) => ({ ...prev, specifications }));
   const setFeatures = (features) => setProductData((prev) => ({ ...prev, features }));
 
+  const handleStepClick = (stepIndex) => {
+    // Only allow going back to completed steps
+    if (stepIndex < step) {
+      setStep(stepIndex + 1);
+    }
+  };
+
   return (
-    <div>
+    <div className="w-full max-w-6xl mx-auto">
+      {/* Header */}
       <div
-        className="flex justify-start items-center mb-4 gap-2 group"
+        className="flex justify-start items-center mb-6 gap-2 group"
         onClick={() => setView("main")}
       >
         <ArrowLeftIcon className="w-4 h-4 group-hover:translate-x-1 transition-all duration-200 group-hover:text-accent" />
@@ -64,6 +114,15 @@ const AddProductsPage = ({ setView }) => {
           Go back to Main
         </span>
       </div>
+
+      {/* Progress Steps */}
+      <ProgressSteps 
+        steps={steps} 
+        currentStep={step - 1} 
+        onStepClick={handleStepClick}
+      />
+
+      {/* Step Content */}
       <div className="flex flex-col gap-4 items-center justify-center">
         {step === 1 && (
           <DetailsForm
@@ -72,38 +131,45 @@ const AddProductsPage = ({ setView }) => {
             data={productData}
           />
         )}
+        
         {step === 2 && (
           <ImageUploadStep
             isOpen={step === 2}
             images={productImages}
             onSave={handleImageUploadNext}
             loading={loading}
-            onBack={() => setStep(1)}
+            onBack={handleImageUploadBack}
             onImagesChange={setProductImages}
           />
         )}
+        
         {step === 3 && (
-          <form onSubmit={handleHairDetailsSubmit} className="w-full max-w-2xl p-4 flex flex-col gap-4">
-            <ProductVariantsForm variants={productData.variants} setVariants={setVariants} />
-            <ProductSpecsForm specs={productData.specifications} setSpecs={setSpecs} />
-            <ProductFeaturesForm features={productData.features} setFeatures={setFeatures} />
-            <div className="flex justify-between mt-4">
-              <Button
-                type="button"
-                additionalClasses="border border-line_clr text-secondary"
-                onClickHandler={() => setStep(2)}
-              >
-                Back
-              </Button>
-              <Button
-                type="submit"
-                additionalClasses="bg-accent text-white"
-                isLoading={loading}
-              >
-                Create Product
-              </Button>
-            </div>
-          </form>
+          <div className="w-full max-w-4xl">
+            <h2 className="text-2xl font-bold text-primary mb-6 text-center">Product Specifications</h2>
+            
+            <form onSubmit={handleSpecsSubmit} className="space-y-6">
+              <ProductVariantsForm variants={productData.variants} setVariants={setVariants} />
+              <ProductSpecsForm specs={productData.specifications} setSpecs={setSpecs} />
+              <ProductFeaturesForm features={productData.features} setFeatures={setFeatures} />
+              
+              <div className="flex justify-between pt-6 border-t border-gray-200">
+                <Button
+                  type="button"
+                  additionalClasses="border border-line_clr text-secondary hover:bg-gray-50"
+                  onClickHandler={handleSpecsBack}
+                >
+                  Back
+                </Button>
+                <Button
+                  type="submit"
+                  additionalClasses="bg-accent text-white hover:bg-accent/90"
+                  isLoading={loading}
+                >
+                  Create Product
+                </Button>
+              </div>
+            </form>
+          </div>
         )}
       </div>
     </div>

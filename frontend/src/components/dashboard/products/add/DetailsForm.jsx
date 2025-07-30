@@ -6,9 +6,10 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
   const [formData, setFormData] = useState({
     ...data,
     currency: data?.currency || 'XAF',
-    variants: data?.variants || [],
-    specifications: data?.specifications || {},
-    features: data?.features || [],
+    discount: data?.discount || 0,
+    isActive: data?.isActive !== undefined ? data.isActive : true,
+    isFeatured: data?.isFeatured || false,
+    isOnSale: data?.isOnSale || false,
   });
   const [errors, setErrors] = useState({});
   const { categories } = useCategory()
@@ -19,8 +20,11 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
   }));
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({ 
+      ...prev, 
+      [name]: type === 'checkbox' ? checked : value 
+    }));
   };
 
   const validateForm = () => {
@@ -31,6 +35,12 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
     if (!formData.category) newErrors.category = "Category is required.";
     if (!formData.description)
       newErrors.description = "Description is required.";
+    
+    // Validate discount
+    if (formData.discount && (parseFloat(formData.discount) < 0 || parseFloat(formData.discount) > 100)) {
+      newErrors.discount = "Discount must be between 0 and 100.";
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -53,7 +63,7 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
 
   return (
     <div className="p-2 lg:px-6 w-full max-w-2xl">
-      <FormHeader title="Add a product" description="Enter product details" />
+      <FormHeader title="Basic Information"/>
       <form
         onSubmit={handleSave}
         className="max-w-lg sm:p-4 mx-auto flex flex-col gap-4"
@@ -69,16 +79,18 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
           additionalClasses="border-line_clr"
           placeholder="Enter product name"
         />
+        
         <TextArea
-          label="Description"
+          label="Full Description"
           name="description"
           value={formData.description}
           onChangeHandler={handleChange}
           error={errors.description}
           required
           additionalClasses="border-line_clr"
-          placeholder="Enter product description"
+          placeholder="Enter detailed product description"
         />
+        
         <PriceInput
           price={formData.price}
           currency={formData.currency}
@@ -88,17 +100,35 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
           required
           placeholder="Enter product price"
         />
-        <Input
-          label="Stock"
-          name="stock"
-          type="number"
-          value={formData.stock}
-          onChangeHandler={handleChange}
-          error={errors.stock}
-          required
-          additionalClasses="border-line_clr"
-          placeholder="Enter product stock"
-        />
+
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Input
+            label="Discount (%)"
+            name="discount"
+            type="number"
+            min="0"
+            max="100"
+            step="1"
+            value={formData.discount}
+            onChangeHandler={handleChange}
+            error={errors.discount}
+            additionalClasses="border-line_clr"
+            placeholder="Discount percentage (0-100)"
+          />
+          
+          <Input
+            label="Stock"
+            name="stock"
+            type="number"
+            value={formData.stock}
+            onChangeHandler={handleChange}
+            error={errors.stock}
+            required
+            additionalClasses="border-line_clr"
+            placeholder="Enter product stock"
+          />
+        </div>        
+        
         {/* Category Selection */}
         <div>
           <label className="block text-sm font-medium text-secondary mb-2">
@@ -113,6 +143,52 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
             placeholder="Select a category"
           />
         </div>
+        
+        {/* Product Status */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="isActive"
+              name="isActive"
+              checked={formData.isActive}
+              onChange={handleChange}
+              className="mr-2"
+            />
+            <label htmlFor="isActive" className="text-sm text-gray-700">
+              Active
+            </label>
+          </div>
+          
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="isFeatured"
+              name="isFeatured"
+              checked={formData.isFeatured}
+              onChange={handleChange}
+              className="mr-2"
+            />
+            <label htmlFor="isFeatured" className="text-sm text-gray-700">
+              Featured
+            </label>
+          </div>
+          
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="isOnSale"
+              name="isOnSale"
+              checked={formData.isOnSale}
+              onChange={handleChange}
+              className="mr-2"
+            />
+            <label htmlFor="isOnSale" className="text-sm text-gray-700">
+              On Sale
+            </label>
+          </div>
+        </div>
+        
         <div className="flex justify-end">
           <Button
             type="submit"

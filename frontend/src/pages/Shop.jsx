@@ -73,7 +73,7 @@ const Shop = () => {
   const EmptyState = () => (
     <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
       <Package className="w-16 h-16 text-gray-300 mb-4" />
-      <h3 className="text-lg font-medium text-gray-900 mb-2">No Products Available</h3>
+      <h3 className="text-lg font-medium text-primary mb-2">No Products Available</h3>
       <p className="text-gray-500 mb-4">Check back soon for our latest products!</p>
     </div>
   );

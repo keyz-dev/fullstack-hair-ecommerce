@@ -1,7 +1,7 @@
 import React from "react";
 
 export const HeroLoader = () => (
-    <div className="absolute inset-0 bg-gray-900 flex items-center justify-center z-30 w-full h-full">
+    <div className="absolute inset-0 bg-primary flex items-center justify-center z-30 w-full h-full">
       <div className="flex flex-col items-center gap-4">
         {/* Spinning circle loader */}
         <div className="relative">

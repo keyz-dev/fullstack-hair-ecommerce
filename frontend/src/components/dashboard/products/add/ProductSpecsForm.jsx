@@ -1,38 +1,42 @@
 import React from 'react';
+import { Input } from '../../../ui';
 
 const specFields = [
-  { name: 'length', label: 'Length (e.g., Short, Medium, Long)' },
-  { name: 'texture', label: 'Texture (e.g., Straight, Wavy, Curly)' },
-  { name: 'material', label: 'Material (e.g., Human Hair, Synthetic)' },
-  { name: 'weight', label: 'Weight (e.g., 100g, 150g)' },
-  { name: 'density', label: 'Density (e.g., Light, Medium, Heavy)' },
-  { name: 'capSize', label: 'Cap Size (e.g., Small, Medium, Large)' },
-  { name: 'hairType', label: 'Hair Type (e.g., Virgin, Remy)' },
-  { name: 'origin', label: 'Origin (e.g., Brazilian, Peruvian)' },
-  { name: 'careInstructions', label: 'Care Instructions' },
-  { name: 'warranty', label: 'Warranty' },
+  { label: 'length', placeholder: 'e.g., Short, Medium, Long' },
+  { label: 'texture', placeholder: 'e.g., Straight, Wavy, Curly' },
+  { label: 'material', placeholder: 'e.g., Human Hair, Synthetic' },
+  { label: 'weight', placeholder: 'e.g., 100g, 150g' },
+  { label: 'density', placeholder: 'e.g., Light, Medium, Heavy' },
+  { label: 'capSize', placeholder: 'e.g., Small, Medium, Large' },
+  { label: 'hairType', placeholder: 'e.g., Virgin, Remy' },
+  { label: 'origin', placeholder: 'e.g., Brazilian, Peruvian' },
+  { label: 'careInstructions', placeholder: 'e.g., Wash, Dry, Style' },
+  { label: 'warranty', placeholder: 'e.g., 1 Year, 2 Years' },
 ];
 
 const ProductSpecsForm = ({ specs, setSpecs }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setSpecs(prev => ({ ...prev, [name]: value }));
+    const updatedSpecs = { ...specs, [name]: value };
+    setSpecs(updatedSpecs);
   };
 
   return (
     <div className="mb-4">
-      <h4 className="font-semibold text-gray-900 mb-2">Specifications</h4>
+      <h4 className="font-semibold text-primary mb-2">Specifications</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {specFields.map(field => (
-          <div key={field.name}>
-            <label className="block text-xs font-medium text-gray-700 mb-1">{field.label}</label>
-            <input
+          <div key={field.label}>
+            <Input
               type="text"
-              name={field.name}
-              value={specs[field.name] || ''}
-              onChange={handleChange}
-              className="border rounded px-2 py-1 w-full"
-              placeholder={field.label}
+              label={field.label.charAt(0).toUpperCase() + field.label.slice(1)}
+              name={field.label}
+              value={specs[field.label]}
+              onChangeHandler={handleChange}
+              placeholder={field.placeholder}
+              additionalClasses='border-line_clr'
+              labelClasses='text-sm text-secondary'
+              required={false}
             />
           </div>
         ))}

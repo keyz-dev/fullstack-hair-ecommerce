@@ -11,7 +11,7 @@ const TabGroup = ({ tabs, activeTab, onTabChange, className = '' }) => {
             flex-1 px-4 py-2 text-sm font-medium rounded-xs transition-colors whitespace-nowrap
             ${activeTab === tab.key
               ? 'bg-accent text-white shadow-sm'
-              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              : 'text-gray-600 hover:text-primary hover:bg-gray-50'
             }
           `}
         >

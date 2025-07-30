@@ -19,7 +19,7 @@ const ForgotPassword = () => {
     <div className="min-h-fit flex items-center justify-center">
       <form className="p-2 md:p-8 max-w-lg w-full mx-auto flex flex-col gap-3 items-center">
         <div className="flex flex-col items-center">
-          <h1 className="text-2xl font-bold text-gray-900 mt-2 mb-4">
+          <h1 className="text-2xl font-bold text-primary mt-2 mb-4">
             Forgot Password
           </h1>
         </div>

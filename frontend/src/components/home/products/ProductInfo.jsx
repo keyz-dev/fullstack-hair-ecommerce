@@ -4,10 +4,10 @@ const ProductInfo = ({ name, price, originalPrice, currency, isOnSale, stock }) 
     return (
       <div className="p-4 space-y-1">
         <h3 className="
-          font-medium text-gray-900 text-sm leading-tight
+          font-medium text-primary text-sm leading-tight
           line-clamp-2 group-hover:text-gray-700
           transition-colors duration-200
-        ">
+        ">  
           {name}
         </h3>
         

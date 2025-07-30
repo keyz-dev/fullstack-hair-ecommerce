@@ -27,7 +27,7 @@ const Cart = () => {
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
           <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h1>
+          <h1 className="text-2xl font-bold text-primary mb-2">Your cart is empty</h1>
           <p className="text-gray-500 mb-8">Looks like you haven't added any items to your cart yet.</p>
           <Link
             to="/shop"
@@ -46,7 +46,7 @@ const Cart = () => {
         {/* Cart Items */}
         <div className="flex-1">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Shopping Cart ({cartItemCount} items)</h1>
+            <h1 className="text-2xl font-bold text-primary">Shopping Cart ({cartItemCount} items)</h1>
             <button
               onClick={clearCart}
               className="text-red-500 hover:text-red-700 text-sm font-medium"
@@ -72,7 +72,7 @@ const Cart = () => {
 
                 {/* Product Info */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900 truncate">{item.name}</h3>
+                  <h3 className="font-medium text-primary truncate">{item.name}</h3>
                   <p className="text-lg font-bold text-accent mt-1">
                     {formatPrice(item.price, item.currency)}
                   </p>
@@ -110,7 +110,7 @@ const Cart = () => {
         {/* Order Summary */}
         <div className="lg:w-80">
           <div className="bg-white rounded-sm border border-gray-200 p-6 sticky top-4">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Order Summary</h2>
+            <h2 className="text-lg font-bold text-primary mb-4">Order Summary</h2>
             
             <div className="space-y-2 mb-4">
               <div className="flex justify-between">

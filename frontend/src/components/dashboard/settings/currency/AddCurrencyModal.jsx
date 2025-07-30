@@ -147,7 +147,7 @@ const AddCurrencyModal = ({ isOpen, onClose, onSubmit, loading }) => {
               onChange={handleChange}
               className="h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
             />
-            <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
+            <label htmlFor="isActive" className="ml-2 block text-sm text-primary">
               Active
             </label>
           </div>

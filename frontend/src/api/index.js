@@ -1,7 +1,11 @@
 // api.js
 import axios from "axios";
 
-export const API_BASE_URL = "https://fullstack-hair-ecommerce.onrender.com/v2/api";
+// Production URL
+// export const API_BASE_URL = "https://fullstack-hair-ecommerce.onrender.com/v2/api";
+
+// Development URL
+export const API_BASE_URL = "http://localhost:5000/v2/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,

@@ -1,8 +1,21 @@
 import React from 'react';
-import { ShoppingCart, Heart } from 'lucide-react';
+import { ShoppingCart, Heart, Star, Tag } from 'lucide-react';
 
 const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist }) => {
-  const { name, price, currency, images, stock, originalPrice } = product;
+  const { 
+    name, 
+    price, 
+    currency, 
+    images, 
+    stock, 
+    discount = 0, 
+    rating = 0, 
+    reviewCount = 0,
+    isOnSale: productIsOnSale,
+    isFeatured,
+    tags = [],
+    specifications = {}
+  } = product;
   
   // Format price with currency
   const formatPrice = (priceValue) => {
@@ -22,8 +35,13 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist }) =
   const isLowStock = stock > 0 && stock <= 5;
   
   // Check if product is on sale
-  const isOnSale = originalPrice && originalPrice > price;
-  const discountPercentage = isOnSale ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  const isOnSale = discount > 0;
+  const discountPercentage = discount;
+
+  // Format rating display
+  const formatRating = (ratingValue) => {
+    return ratingValue.toFixed(1);
+  };
 
   const handleCardClick = (e) => {
     // Don't trigger if clicking on action buttons
@@ -62,7 +80,13 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist }) =
         {/* Badges */}
         {isOnSale && (
           <div className="absolute top-3 left-3 bg-green-500 text-white text-xs px-2 py-1 rounded font-medium z-10">
-            {discountPercentage}%
+            {discountPercentage}% OFF
+          </div>
+        )}
+
+        {isFeatured && !isOnSale && (
+          <div className="absolute top-3 left-3 bg-blue-500 text-white text-xs px-2 py-1 rounded font-medium z-10">
+            Featured
           </div>
         )}
 
@@ -72,7 +96,7 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist }) =
           </div>
         )}
         
-        {isLowStock && isInStock && !isOnSale && (
+        {isLowStock && isInStock && !isOnSale && !isFeatured && (
           <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs px-2 py-1 rounded font-medium z-10">
             Low Stock
           </div>
@@ -118,19 +142,79 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist }) =
       {/* Product Info */}
       <div className="p-4">
         {/* Product Name */}
-        <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 hover:text-accent transition-colors">
+        <h3 className="font-medium text-primary mb-2 line-clamp-2 hover:text-accent transition-colors">
           {name}
         </h3>
 
+        {/* Rating */}
+        {rating > 0 && (
+          <div className="flex items-center gap-1 mb-2">
+            <div className="flex items-center">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  size={12}
+                  className={`${
+                    i < Math.floor(rating)
+                      ? 'text-yellow-400 fill-current'
+                      : 'text-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-xs text-gray-600">
+              {formatRating(rating)} ({reviewCount})
+            </span>
+          </div>
+        )}
+
+
+
+        {/* Key Specifications */}
+        {specifications && Object.keys(specifications).length > 0 && (
+          <div className="mb-2">
+            {specifications.material && (
+              <span className="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded mr-1 mb-1">
+                {specifications.material}
+              </span>
+            )}
+            {specifications.length && (
+              <span className="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded mr-1 mb-1">
+                {specifications.length}
+              </span>
+            )}
+            {specifications.texture && (
+              <span className="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded mr-1 mb-1">
+                {specifications.texture}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Tags */}
+        {tags && tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {tags.slice(0, 3).map((tag, index) => (
+              <span key={index} className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded">
+                <Tag size={10} />
+                {tag}
+              </span>
+            ))}
+            {tags.length > 3 && (
+              <span className="text-xs text-gray-500">+{tags.length - 3} more</span>
+            )}
+          </div>
+        )}
+
         {/* Price */}
         <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-gray-900">
+          <span className="text-lg font-bold text-primary">
             {formatPrice(price)}
           </span>
           
           {isOnSale && (
-            <span className="text-sm text-gray-500 line-through">
-              {formatPrice(originalPrice)}
+            <span className="text-sm text-green-600 font-medium">
+              {discountPercentage}% OFF
             </span>
           )}
         </div>

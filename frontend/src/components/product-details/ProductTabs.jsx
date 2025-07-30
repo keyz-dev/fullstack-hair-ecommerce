@@ -6,8 +6,9 @@ const ProductTabs = ({ product }) => {
 
   const tabs = [
     { id: 'description', label: 'Description' },
-    { id: 'specifications', label: 'Additional Information' },
-    { id: 'reviews', label: 'Reviews (2)' },
+    { id: 'specifications', label: 'Specifications' },
+    { id: 'features', label: 'Features' },
+    { id: 'reviews', label: `Reviews (${product?.reviewCount || 0})` },
   ];
 
   const renderTabContent = () => {
@@ -16,65 +17,49 @@ const ProductTabs = ({ product }) => {
         return (
           <div className="prose max-w-none">
             <p className="text-gray-700 leading-relaxed">
-              {product.description}
+              {product?.description || 'No description available.'}
             </p>
-            <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-3">Key Features:</h4>
-              <ul className="space-y-2 text-gray-700">
-                <li className="flex items-start gap-2">
-                  <span className="text-accent mt-1">•</span>
-                  <span>Premium quality materials</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-accent mt-1">•</span>
-                  <span>Durable and long-lasting</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-accent mt-1">•</span>
-                  <span>Easy to maintain and clean</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-accent mt-1">•</span>
-                  <span>Versatile design for multiple uses</span>
-                </li>
-              </ul>
-            </div>
           </div>
         );
 
       case 'specifications':
         return (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="flex justify-between py-2 border-b border-gray-200">
-                  <span className="text-gray-600">Weight:</span>
-                  <span className="font-medium">1.6 Kg</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-gray-200">
-                  <span className="text-gray-600">Material:</span>
-                  <span className="font-medium">Premium Fabric</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-gray-200">
-                  <span className="text-gray-600">Dimensions:</span>
-                  <span className="font-medium">45 x 35 x 25 cm</span>
-                </div>
+            {product?.specifications && Object.keys(product.specifications).length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(product.specifications).map(([key, value]) => {
+                  if (!value) return null;
+                  return (
+                    <div key={key} className="flex justify-between py-2 border-b border-gray-200">
+                      <span className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                      <span className="font-medium">{value}</span>
+                    </div>
+                  );
+                })}
               </div>
+            ) : (
+              <p className="text-gray-500">No specifications available.</p>
+            )}
+          </div>
+        );
+
+      case 'features':
+        return (
+          <div className="space-y-4">
+            {product?.features && product.features.length > 0 ? (
               <div className="space-y-3">
-                <div className="flex justify-between py-2 border-b border-gray-200">
-                  <span className="text-gray-600">Color:</span>
-                  <span className="font-medium">{product.category?.name || 'Standard'}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-gray-200">
-                  <span className="text-gray-600">Warranty:</span>
-                  <span className="font-medium">1 Year</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-gray-200">
-                  <span className="text-gray-600">Care Instructions:</span>
-                  <span className="font-medium">Hand wash only</span>
-                </div>
+                {product.features.map((feature, index) => (
+                  <div key={index} className="border border-gray-200 rounded-sm p-4">
+                    <h4 className="font-semibold text-primary mb-2">{feature.title}</h4>
+                    {feature.description && (
+                      <p className="text-gray-700 text-sm">{feature.description}</p>
+                    )}
+                  </div>
+                ))}
               </div>
-            </div>
+            ) : (
+              <p className="text-gray-500">No features available.</p>
+            )}
           </div>
         );
 
@@ -82,86 +67,35 @@ const ProductTabs = ({ product }) => {
         return (
           <div className="space-y-6">
             {/* Review Summary */}
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-gray-900">4.0</div>
-                <div className="flex justify-center mt-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={16}
-                      className={`${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                    />
-                  ))}
-                </div>
-                <div className="text-sm text-gray-600 mt-1">2 reviews</div>
-              </div>
-              <div className="flex-1">
-                <div className="space-y-2">
-                  {[5, 4, 3, 2, 1].map((stars) => (
-                    <div key={stars} className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600 w-8">{stars}★</span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-yellow-400 h-2 rounded-full"
-                          style={{ width: `${stars === 5 ? 50 : stars === 4 ? 50 : 0}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm text-gray-600 w-8">
-                        {stars === 5 ? 1 : stars === 4 ? 1 : 0}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Individual Reviews */}
-            <div className="space-y-4">
-              <div className="border border-gray-200 rounded-sm p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-                    <span className="font-medium">John D.</span>
-                  </div>
-                  <div className="flex">
+            {product?.rating > 0 ? (
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary">{product.rating.toFixed(1)}</div>
+                  <div className="flex justify-center mt-1">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        size={14}
-                        className={`${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                        size={16}
+                        className={`${i < Math.floor(product.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
                       />
                     ))}
                   </div>
+                  <div className="text-sm text-gray-600 mt-1">{product.reviewCount} reviews</div>
                 </div>
-                <p className="text-gray-700 text-sm">
-                  Great product! Exactly what I was looking for. The quality is excellent and it arrived on time.
-                </p>
-                <div className="text-xs text-gray-500 mt-2">2 days ago</div>
               </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No reviews yet.</p>
+                <p className="text-sm text-gray-400 mt-2">Be the first to review this product!</p>
+              </div>
+            )}
 
-              <div className="border border-gray-200 rounded-sm p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-                    <span className="font-medium">Sarah M.</span>
-                  </div>
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        size={14}
-                        className={`${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-gray-700 text-sm">
-                  Very satisfied with this purchase. The product meets all my expectations and the customer service was helpful.
-                </p>
-                <div className="text-xs text-gray-500 mt-2">1 week ago</div>
+            {/* Individual Reviews - Placeholder for now */}
+            {product?.reviewCount > 0 && (
+              <div className="text-center py-4">
+                <p className="text-gray-500">Reviews will be displayed here when available.</p>
               </div>
-            </div>
+            )}
           </div>
         );
 

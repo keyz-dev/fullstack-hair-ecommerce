@@ -65,7 +65,7 @@ const RelatedProducts = ({ currentProduct, onProductClick }) => {
     return (
       <div className="mt-16">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Related Products</h2>
+          <h2 className="text-2xl font-bold text-primary">Related Products</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {Array.from({ length: 4 }).map((_, index) => (
@@ -90,7 +90,7 @@ const RelatedProducts = ({ currentProduct, onProductClick }) => {
   return (
     <div className="mt-16">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Related Products</h2>
+        <h2 className="text-2xl font-bold text-primary">Related Products</h2>
         <div className="flex items-center gap-2">
           <button className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors">
             <ChevronLeft size={16} className="text-gray-600" />

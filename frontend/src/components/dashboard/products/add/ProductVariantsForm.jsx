@@ -1,4 +1,6 @@
 import React from 'react';
+import { Input } from '../../../ui';
+import { X, Plus, Minus, Trash2 } from 'lucide-react';
 
 const defaultVariant = { name: '', options: [''], required: false };
 
@@ -32,19 +34,22 @@ const ProductVariantsForm = ({ variants, setVariants }) => {
   return (
     <div className="mb-4">
       <div className="flex items-center justify-between mb-2">
-        <h4 className="font-semibold text-gray-900">Variants</h4>
-        <button type="button" className="text-accent font-medium" onClick={addVariant}>+ Add Variant</button>
+        <h4 className="font-semibold text-primary">Variants</h4>
+        <button type="button" className="text-accent font-medium flex items-center justify-center gap-1" onClick={addVariant}><Plus size={16} /> Add Variant</button>
       </div>
       {variants.length === 0 && <div className="text-gray-500 text-sm mb-2">No variants added yet.</div>}
       {variants.map((variant, vIdx) => (
-        <div key={vIdx} className="border rounded-lg p-3 mb-3 bg-gray-50">
+        <div key={vIdx} className="mb-2">
           <div className="flex gap-2 mb-2">
-            <input
+            <Input
               type="text"
-              className="border rounded px-2 py-1 flex-1"
+              name="name"
+              label="Variant name"
               placeholder="Variant name (e.g., Length, Color)"
               value={variant.name}
-              onChange={e => handleVariantChange(vIdx, 'name', e.target.value)}
+              onChangeHandler={e => handleVariantChange(vIdx, 'name', e.target.value)}
+              additionalClasses='border-line_clr'
+              labelClasses='text-sm text-secondary'
             />
             <label className="flex items-center gap-1 text-xs">
               <input
@@ -61,20 +66,21 @@ const ProductVariantsForm = ({ variants, setVariants }) => {
           <div className="flex flex-wrap gap-2">
             {variant.options.map((option, oIdx) => (
               <div key={oIdx} className="flex items-center gap-1 mb-1">
-                <input
+                <Input
                   type="text"
-                  className="border rounded px-2 py-1"
+                  name={`option-${vIdx}-${oIdx}`}
                   placeholder="Option (e.g., 10, Blonde)"
                   value={option}
-                  onChange={e => handleOptionChange(vIdx, oIdx, e.target.value)}
+                  onChangeHandler={e => handleOptionChange(vIdx, oIdx, e.target.value)}
+                  additionalClasses='border-line_clr'
                 />
-                <button type="button" className="text-red-400" onClick={() => removeOption(vIdx, oIdx)}>
-                  ×
+                <button type="button" className="text-error  hover:opacity-80" title='Remove Option' onClick={() => removeOption(vIdx, oIdx)}>
+                  <Trash2 size={16} />
                 </button>
               </div>
             ))}
-            <button type="button" className="text-accent text-xs" onClick={() => addOption(vIdx)}>
-              + Add Option
+            <button type="button" className="text-accent text-xs" title='Add Option' onClick={() => addOption(vIdx)}>
+              <Plus size={16} />
             </button>
           </div>
         </div>

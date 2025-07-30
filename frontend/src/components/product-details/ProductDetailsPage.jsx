@@ -10,7 +10,7 @@ const ProductDetailsPage = ({ product, onProductClick }) => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
+          <h1 className="text-2xl font-bold text-primary mb-4">Product Not Found</h1>
           <p className="text-gray-600 mb-6">The product you're looking for doesn't exist.</p>
           <button
             onClick={() => navigate('/shop')}
@@ -31,12 +31,12 @@ const ProductDetailsPage = ({ product, onProductClick }) => {
           <div className="flex items-center justify-between h-16">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors"
             >
               <ArrowLeft size={20} />
               <span>Back</span>
             </button>
-            <h1 className="text-lg font-semibold text-gray-900 truncate">
+            <h1 className="text-lg font-semibold text-primary truncate">
               {product.name}
             </h1>
             <div className="w-20"></div> {/* Spacer for centering */}

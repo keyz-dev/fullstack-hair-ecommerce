@@ -1,4 +1,6 @@
 import React from 'react';
+import { Input, TextArea } from '../../../ui';
+import { Trash2 } from 'lucide-react';
 
 const defaultFeature = { title: '', description: '', icon: '' };
 
@@ -15,37 +17,40 @@ const ProductFeaturesForm = ({ features, setFeatures }) => {
   return (
     <div className="mb-4">
       <div className="flex items-center justify-between mb-2">
-        <h4 className="font-semibold text-gray-900">Key Features</h4>
+        <h4 className="font-semibold text-primary">Key Features</h4>
         <button type="button" className="text-accent font-medium" onClick={addFeature}>+ Add Feature</button>
       </div>
       {features.length === 0 && <div className="text-gray-500 text-sm mb-2">No features added yet.</div>}
       {features.map((feature, idx) => (
-        <div key={idx} className="border rounded-lg p-3 mb-3 bg-gray-50">
+        <div key={idx} className="mb-2">
           <div className="flex gap-2 mb-2">
-            <input
+            <Input
               type="text"
-              className="border rounded px-2 py-1 flex-1"
+              name="title"
               placeholder="Feature title (e.g., Tangle-Free)"
               value={feature.title}
-              onChange={e => handleFeatureChange(idx, 'title', e.target.value)}
+              onChangeHandler={e => handleFeatureChange(idx, 'title', e.target.value)}
+              additionalClasses='border-line_clr'
             />
-            <input
+            <Input
               type="text"
-              className="border rounded px-2 py-1 flex-1"
+              name="icon"
               placeholder="Icon (optional, e.g., fa-star)"
               value={feature.icon}
-              onChange={e => handleFeatureChange(idx, 'icon', e.target.value)}
+              onChangeHandler={e => handleFeatureChange(idx, 'icon', e.target.value)}
+              additionalClasses='border-line_clr'
+              required={false}
             />
-            <button type="button" className="text-red-500 ml-2" onClick={() => removeFeature(idx)}>
-              Remove
+            <button type="button" className="text-error hover:opacity-80" title='Remove Feature' onClick={() => removeFeature(idx)}>
+              <Trash2 size={16} />
             </button>
           </div>
-          <textarea
-            className="border rounded px-2 py-1 w-full"
+          <TextArea
+            name="description"
             placeholder="Feature description (optional)"
             value={feature.description}
-            onChange={e => handleFeatureChange(idx, 'description', e.target.value)}
-            rows={2}
+            onChangeHandler={e => handleFeatureChange(idx, 'description', e.target.value)}
+            additionalClasses='border-line_clr'
           />
         </div>
       ))}

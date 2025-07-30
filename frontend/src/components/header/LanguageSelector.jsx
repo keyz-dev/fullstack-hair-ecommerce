@@ -31,7 +31,7 @@ const LanguageSelector = () => {
         {isMobile && <span className="capitalize">{lang}</span>}
       </button>
       {open && (
-        <ul className="absolute right-0 mt-1 w-24 bg-white dark:bg-gray-900 border border-line_clr rounded shadow-sm z-20">
+        <ul className="absolute right-0 mt-1 w-24 bg-white dark:bg-primary border border-line_clr rounded shadow-sm z-20">
           <li>
             <button
               className="w-full text-left px-3 py-2 hover:bg-yellow-100 dark:hover:bg-gray-800 dark:text-white"

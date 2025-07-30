@@ -9,16 +9,15 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  shortDescription: {
-    type: String,
-    maxLength: 200,
-  },
   price: {
     type: Number,
     required: true,
   },
-  originalPrice: {
+  discount: {
     type: Number,
+    min: 0,
+    max: 100,
+    default: 0,
   },
   currency: {
     type: String,

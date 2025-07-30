@@ -86,7 +86,7 @@ const Login = () => {
             />
             <label
               htmlFor="remember"
-              className="ml-2 block text-sm text-gray-900"
+              className="ml-2 block text-sm text-primary"
             >
               Remember me
             </label>

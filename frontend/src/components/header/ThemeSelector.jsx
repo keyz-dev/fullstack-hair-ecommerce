@@ -37,7 +37,7 @@ const ThemeSelector = () => {
         {isMobile && <span className="capitalize">{theme}</span>}
       </button>
       {open && (
-        <ul className="absolute right-0 mt-1 w-28 bg-white dark:bg-gray-900 border border-line_clr rounded shadow-sm z-20">
+        <ul className="absolute right-0 mt-1 w-28 bg-white dark:bg-primary border border-line_clr rounded shadow-sm z-20">
           {themes.map((t) => (
             <li key={t.key}>
               <button
