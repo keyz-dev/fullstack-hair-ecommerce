@@ -5,7 +5,7 @@ export { default as TextArea } from "./TextArea";
 export { Logo } from "./Logo";
 export { default as Loader } from "./Loader";
 export { default as ModalWrapper } from "./ModalWrapper";
-export { default as ProductCard } from "./ProductCard";
+export { default as ProductCard } from "../home/products/ProductCard";
 export { default as DropdownMenu } from "./DropdownMenu";
 export { default as SearchBar } from "./SearchBar";
 export { default as ContactCard } from "./ContactCard";

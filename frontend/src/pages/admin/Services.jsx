@@ -1,9 +1,13 @@
-import React from 'react'
+import React from 'react';
+import { ServiceProvider } from '../../contexts/ServiceContext';
+import { ServicesMainView } from '../../components/dashboard/services';
 
 const Services = () => {
   return (
-    <div>Services</div>
-  )
-}
+    <ServiceProvider>
+      <ServicesMainView />
+    </ServiceProvider>
+  );
+};
 
-export default Services
+export default Services;

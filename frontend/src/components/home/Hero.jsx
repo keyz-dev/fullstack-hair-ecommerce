@@ -165,7 +165,7 @@ const Hero = () => {
       </div>
 
       {/* Image Indicators - Only visible when images are loaded */}
-      <div className={`absolute bottom-6 left-6 flex space-x-2 z-20 transition-opacity duration-500 ${
+      <div className={`absolute bottom-6 left-6 flex space-x-2 z-9 transition-opacity duration-500 ${
         imagesLoaded ? 'opacity-100' : 'opacity-0'
       }`}>
         {heroSlides.map((_, index) => (

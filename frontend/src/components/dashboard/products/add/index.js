@@ -1,3 +1,6 @@
 export { default as DetailsForm } from './DetailsForm'
 export { default as ImageUploadStep } from './ImageUploadStep'
 export { default as ImageUploadModal } from './ImageUploadModal'
+export { default as ProductFeaturesForm } from './ProductFeaturesForm'
+export { default as ProductSpecsForm } from './ProductSpecsForm'
+export { default as ProductVariantsForm } from './ProductVariantsForm'

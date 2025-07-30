@@ -27,12 +27,12 @@ const Header = () => {
           <div className="flex items-center gap-2">
             <LanguageSelector />
             <ThemeSelector />
-            <CartButton count={3} />
+            <CartButton />
             <ProfileInfo user={user} />
           </div>
         </div>
         <div className="lg:hidden flex items-center gap-2">
-          <CartButton count={3} />
+          <CartButton />
         </div>
       </nav>
 

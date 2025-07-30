@@ -131,7 +131,7 @@ const ImageUploadStep = ({ images = [], onImagesChange, onSave, loading, onBack 
             isLoading={loading}
             isDisabled={images.length < 2 || loading}
           >
-            Save
+            Add Features
           </Button>
         </div>
       </section>

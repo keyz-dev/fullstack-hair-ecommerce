@@ -56,7 +56,7 @@ const GeneralSettings = () => {
         </p>
       </div>
 
-      <div className="bg-white shadow rounded-lg p-6 max-w-2xl">
+      <div className="bg-white shadow rounded-sm p-6 max-w-2xl">
         {loading ? (
           <div className="text-center py-8">Loading settings...</div>
         ) : error ? (

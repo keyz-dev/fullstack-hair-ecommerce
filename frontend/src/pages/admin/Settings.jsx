@@ -42,7 +42,7 @@ const Settings = () => {
         className="mb-6"
       />
 
-      <div className="bg-white rounded-lg">
+      <div className="bg-white rounded-sm">
         {renderTabContent()}
       </div>
     </div>

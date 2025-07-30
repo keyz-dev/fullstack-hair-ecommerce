@@ -49,7 +49,7 @@ const ImageGrid = ({
             <img
               src={image}
               alt={`Image ${index + 1}`}
-              className={`w-full ${imageHeight} object-cover rounded-lg border border-gray-200`}
+              className={`w-full ${imageHeight} object-cover rounded-sm border border-gray-200`}
             />
             <button
               type="button"
@@ -67,7 +67,7 @@ const ImageGrid = ({
             <img
               src={image.url}
               alt={image.name}
-              className={`w-full ${imageHeight} object-cover rounded-lg border border-gray-200`}
+              className={`w-full ${imageHeight} object-cover rounded-sm border border-gray-200`}
             />
             <button
               type="button"
@@ -83,7 +83,7 @@ const ImageGrid = ({
         <button
           type="button"
           onClick={handleAddImages}
-          className={`w-full ${imageHeight} border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors duration-200`}
+          className={`w-full ${imageHeight} border-2 border-dashed border-gray-300 rounded-sm flex flex-col items-center justify-center text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors duration-200`}
         >
           <Plus size={24} />
           <span className="text-xs mt-1">Add Image</span>

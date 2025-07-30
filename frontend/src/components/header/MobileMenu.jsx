@@ -21,7 +21,7 @@ const MobileMenu = ({ open, onClose, user }) => {
         <div className="flex flex-col gap-6 mt-0">
           <LanguageSelector />
           <ThemeSelector />
-          <CartButton count={3} />
+          <CartButton />
           <ProfileInfo user={user} mobile />
         </div>
       </nav>

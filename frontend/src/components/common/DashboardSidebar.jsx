@@ -139,7 +139,7 @@ const DashboardSidebar = () => {
                     ? 'justify-center p-3 lg:p-4' 
                     : 'gap-3 p-3 lg:p-4'
                   }
-                  rounded-lg
+                  rounded-sm
                   ${active
                     ? 'bg-accent-light text-accent border-r-4 border-accent'
                     : 'text-secondary hover:bg-accent-light hover:text-primary'

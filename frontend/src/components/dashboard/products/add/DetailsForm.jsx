@@ -5,7 +5,10 @@ import { useCategory } from "../../../../hooks"
 const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
   const [formData, setFormData] = useState({
     ...data,
-    currency: data?.currency || 'XAF'
+    currency: data?.currency || 'XAF',
+    variants: data?.variants || [],
+    specifications: data?.specifications || {},
+    features: data?.features || [],
   });
   const [errors, setErrors] = useState({});
   const { categories } = useCategory()
@@ -35,7 +38,6 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
     onFormSubmit(formData);
   };
 
@@ -67,7 +69,6 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
           additionalClasses="border-line_clr"
           placeholder="Enter product name"
         />
-        
         <TextArea
           label="Description"
           name="description"
@@ -78,7 +79,6 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
           additionalClasses="border-line_clr"
           placeholder="Enter product description"
         />
-
         <PriceInput
           price={formData.price}
           currency={formData.currency}
@@ -88,7 +88,6 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
           required
           placeholder="Enter product price"
         />
-
         <Input
           label="Stock"
           name="stock"
@@ -100,8 +99,6 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
           additionalClasses="border-line_clr"
           placeholder="Enter product stock"
         />
-
-
         {/* Category Selection */}
         <div>
           <label className="block text-sm font-medium text-secondary mb-2">
@@ -116,7 +113,6 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
             placeholder="Select a category"
           />
         </div>
-
         <div className="flex justify-end">
           <Button
             type="submit"
