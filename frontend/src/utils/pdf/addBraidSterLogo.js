@@ -1,6 +1,7 @@
 import { processImageSafely } from './processImageSafely';
 import { imageToBase64 } from './imageToBase64';
 import { convertToJPEG } from './convertToJPEG';
+import logo from '../../assets/logo/logo.png';
 
   // Helper function to add BraidSter logo
   export const addBraidSterLogo = async (doc, x, y, width = 40, height = 20, logoPath = null) => {
@@ -10,8 +11,7 @@ import { convertToJPEG } from './convertToJPEG';
       // Try different logo path strategies
       const logoPaths = [
         logoPath,
-        '/assets/logo/logo.png',
-        '/src/assets/logo/logo.png',
+        logo,
       ].filter(Boolean);
       
       // Try each path until one works
