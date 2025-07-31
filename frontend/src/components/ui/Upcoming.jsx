@@ -89,14 +89,14 @@ const Upcoming = ({
         {/* Call to Action */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <button 
-            className={`${theme.iconBg} ${theme.iconColor} px-6 py-3 rounded-lg font-medium hover:opacity-80 transition-opacity flex items-center gap-2`}
+            className={`${theme.iconBg} ${theme.iconColor} px-6 py-3 rounded-sm font-medium hover:opacity-80 transition-opacity flex items-center gap-2`}
             onClick={() => window.history.back()}
           >
             <ArrowRight className="w-4 h-4 rotate-180" />
             Go Back
           </button>
           <button 
-            className={`${theme.background} border ${theme.border} text-primary px-6 py-3 rounded-lg font-medium hover:${theme.iconBg} transition-colors flex items-center gap-2`}
+            className={`${theme.background} border ${theme.border} text-primary px-6 py-3 rounded-sm font-medium hover:${theme.iconBg} transition-colors flex items-center gap-2`}
             onClick={() => window.location.href = '/'}
           >
             <ArrowRight className="w-4 h-4" />

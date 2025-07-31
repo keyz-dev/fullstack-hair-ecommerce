@@ -34,7 +34,7 @@ const Hero = () => {
   const current = heroSlides[currentSlide];
 
   return (
-    <section className="min-h-[80vh]  md:max-w-[90vw] w-full relative overflow-hidden flex justify-center items-center">
+    <section className="min-h-[80vh] md:max-w-[90vw] w-full relative overflow-hidden flex justify-center items-center">
       {/* Loading Screen */}
       {!imagesLoaded && <HeroLoader />}
       
@@ -152,7 +152,7 @@ const Hero = () => {
                   transitionDelay: isTransitioning ? '0ms' : '600ms' 
                 }}
               >
-                <a href="#">
+                <a href="/shop">
                   <Button
                     text={current.cta}
                     additionalClasses="primarybtn"

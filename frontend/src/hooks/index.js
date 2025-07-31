@@ -13,3 +13,5 @@ export { useCart } from './useCart';
 export { default as useImageManager } from './useImageManager';
 export { default as useCheckout } from './useCheckout';
 export { default as useCoupon } from './useCoupon';
+export { useShop } from './useShop';
+export { useProductDetails } from './useProductDetails';

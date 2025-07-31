@@ -1,7 +1,7 @@
 import React from 'react';
-import { ShoppingCart, Heart, Star, Tag } from 'lucide-react';
+import { ShoppingCart, Heart, Star, Tag, Check } from 'lucide-react';
 
-const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist }) => {
+const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist, viewMode = 'grid', isInCart = false }) => {
   const { 
     name, 
     price, 
@@ -63,11 +63,15 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist }) =
 
   return (
     <div 
-      className="group bg-white rounded-sm shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer"
+      className={`group bg-white rounded-sm shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer ${
+        viewMode === 'list' ? 'flex' : ''
+      }`}
       onClick={handleCardClick}
     >
       {/* Product Image */}
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
+      <div className={`relative overflow-hidden bg-gray-50 ${
+        viewMode === 'list' ? 'w-32 h-32 flex-shrink-0' : 'aspect-square'
+      }`}>
         <img 
           src={productImage} 
           alt={name}
@@ -127,20 +131,31 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist }) =
               onClick={handleAddToCart}
               disabled={!isInStock}
               className={`w-full py-2 px-4 rounded font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-                isInStock
+                isInCart
+                  ? 'bg-green-500 text-white hover:bg-green-600'
+                  : isInStock
                   ? 'bg-white text-black hover:bg-gray-100'
                   : 'bg-gray-400 text-gray-200 cursor-not-allowed'
               }`}
             >
-              <ShoppingCart size={16} />
-              {isInStock ? 'ADD TO CART' : 'OUT OF STOCK'}
+              {isInCart ? (
+                <>
+                  <Check size={16} />
+                  ADDED
+                </>
+              ) : (
+                <>
+                  <ShoppingCart size={16} />
+                  {isInStock ? 'ADD TO CART' : 'OUT OF STOCK'}
+                </>
+              )}
             </button>
           </div>
         </div>
       </div>
 
       {/* Product Info */}
-      <div className="p-4">
+      <div className={`${viewMode === 'list' ? 'flex-1 p-4' : 'p-4'}`}>
         {/* Product Name */}
         <h3 className="font-medium text-primary mb-2 line-clamp-2 hover:text-accent transition-colors">
           {name}
