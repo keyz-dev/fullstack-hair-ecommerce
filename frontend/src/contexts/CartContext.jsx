@@ -75,9 +75,8 @@ const CartProvider = ({ children }) => {
     return total + (item.price * item.quantity);
   }, 0);
 
-  const cartItemCount = cartItems.reduce((count, item) => {
-    return count + item.quantity;
-  }, 0);
+  // Count unique items (not total quantity)
+  const cartItemCount = cartItems.length;
 
   // Check if item is in cart
   const isInCart = useCallback((productId) => {

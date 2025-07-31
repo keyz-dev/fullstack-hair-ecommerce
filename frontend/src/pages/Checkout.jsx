@@ -12,7 +12,7 @@ import {
 
 const Checkout = () => {
   const { cartItems, cartTotal, clearCart } = useCart();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   
   const {
     // State
@@ -22,7 +22,6 @@ const Checkout = () => {
     shippingAddress,
     paymentInfo,
     selectedPaymentMethod,
-    orderSummary,
     
     // Handlers
     handleCustomerInfoChange,
@@ -64,7 +63,7 @@ const Checkout = () => {
               customerInfo={customerInfo}
               onCustomerInfoChange={handleCustomerInfoChange}
               onNext={handleNextStep}
-              isAuthenticated={isAuthenticated}
+              isAuthenticated={!!user}
               onSignIn={handleSignIn}
             />
           )}

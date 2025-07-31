@@ -6,6 +6,7 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
   const navigate = useNavigate();
   const [checkoutStep, setCheckoutStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isOrderCompleted, setIsOrderCompleted] = useState(false);
 
   // Form states
   const [customerInfo, setCustomerInfo] = useState({
@@ -23,13 +24,8 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
     country: 'Cameroon',
   });
 
-  const [paymentInfo, setPaymentInfo] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardholderName: '',
-  });
-
+  // Dynamic payment info based on selected payment method
+  const [paymentInfo, setPaymentInfo] = useState({});
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
   // Calculate order totals
@@ -47,12 +43,12 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
     shippingInfo
   };
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty (but not when processing an order or after order completion)
   useEffect(() => {
-    if (cartItems.length === 0) {
+    if (cartItems.length === 0 && !isProcessing && !isOrderCompleted) {
       navigate('/cart');
     }
-  }, [cartItems.length, navigate]);
+  }, [cartItems.length, navigate, isProcessing, isOrderCompleted]);
 
   // Update customer info when user changes
   useEffect(() => {
@@ -65,6 +61,20 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
       });
     }
   }, [user]);
+
+  // Initialize payment info when payment method changes
+  useEffect(() => {
+    if (selectedPaymentMethod) {
+      const initialPaymentInfo = {};
+      
+      // Initialize fields based on payment method's customerFields
+      selectedPaymentMethod.customerFields?.forEach(field => {
+        initialPaymentInfo[field.name] = paymentInfo[field.name] || '';
+      });
+      
+      setPaymentInfo(initialPaymentInfo);
+    }
+  }, [selectedPaymentMethod]);
 
   const handleCustomerInfoChange = (e) => {
     const { name, value } = e.target;
@@ -83,6 +93,8 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
 
   const handlePaymentMethodSelect = (method) => {
     setSelectedPaymentMethod(method);
+    // Clear previous payment info when changing payment method
+    setPaymentInfo({});
   };
 
   const validateStep1 = () => {
@@ -102,13 +114,18 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
   const validateStep3 = () => {
     if (!selectedPaymentMethod) return false;
     
-    if (selectedPaymentMethod.isOnline) {
-      return paymentInfo.cardNumber && 
-             paymentInfo.expiryDate && 
-             paymentInfo.cvv && 
-             paymentInfo.cardholderName;
+    // Validate based on payment method's customer fields
+    if (selectedPaymentMethod.customerFields?.length > 0) {
+      return selectedPaymentMethod.customerFields.every(field => {
+        if (field.required) {
+          const value = paymentInfo[field.name];
+          return value && value.trim() !== '';
+        }
+        return true;
+      });
     }
     
+    // For payment methods without customer fields (like Cash on Delivery)
     return true;
   };
 
@@ -135,19 +152,27 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
       // Simulate order processing
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Clear cart after successful order
-      clearCart();
+      // Store cart items before clearing
+      const orderCartItems = [...cartItems];
       
-      // Redirect to order confirmation
+      // Set order completed flag to prevent cart redirect
+      setIsOrderCompleted(true);
+      
+      // Redirect to order confirmation first
       navigate('/order-confirmation', { 
         state: { 
           orderNumber: `ORD-${Date.now()}`,
           customerInfo,
           shippingAddress,
           orderSummary,
-          selectedPaymentMethod
+          selectedPaymentMethod,
+          paymentInfo,
+          cartItems: orderCartItems
         }
       });
+      
+      // Clear cart after navigation
+      clearCart();
     } catch (error) {
       console.error('Order processing failed:', error);
     } finally {

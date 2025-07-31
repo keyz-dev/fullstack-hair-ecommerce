@@ -19,7 +19,6 @@ const ProductListItem = ({
     rating = 0, 
     reviewCount = 0,
     isFeatured,
-    tags = [],
     category,
     description,
     specifications = {}

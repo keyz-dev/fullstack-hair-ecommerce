@@ -1,5 +1,7 @@
 import React from 'react';
+import { Check } from 'lucide-react';
 import { ProductBadge, ProductImage, ProductInfo, AddToCartOverlay } from './index';
+import { useCart } from '../../../hooks';
 
 const ProductCard = ({ 
   product, 
@@ -8,6 +10,7 @@ const ProductCard = ({
   onQuickView,
   className = "",
 }) => {
+  const { isInCart } = useCart();
   const { 
     name, 
     price, 
@@ -39,6 +42,9 @@ const ProductCard = ({
     e.preventDefault();
     onQuickView?.(product);
   };
+
+  // Check if product is in cart
+  const productInCart = isInCart(product._id);
 
   // Badge Configuration
   const badges = (
@@ -79,12 +85,14 @@ const ProductCard = ({
           name={name}
           badges={badges}
           onQuickView={handleQuickView}
+          isInCart={productInCart}
         />
         {/* Add to Cart Overlay */}
         <AddToCartOverlay
           product={product}
           onAddToCart={onAddToCart}
           isInStock={isInStock}
+          isInCart={productInCart}
         />
       </div>
 

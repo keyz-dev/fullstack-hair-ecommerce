@@ -106,6 +106,13 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist, vie
           </div>
         )}
 
+        {/* In Cart Badge */}
+        {isInCart && (
+          <div className="absolute top-3 left-3 z-20 bg-green-500 text-white rounded-full p-1 shadow-lg">
+            <Check size={16} />
+          </div>
+        )}
+
         {/* Quick action buttons */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
           <button

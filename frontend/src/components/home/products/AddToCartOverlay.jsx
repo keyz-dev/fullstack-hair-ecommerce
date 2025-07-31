@@ -1,6 +1,6 @@
-import { ShoppingCart, Heart } from "lucide-react";
+import { ShoppingCart, Heart, Check } from "lucide-react";
 
-const AddToCartOverlay = ({ product, onAddToCart, isInStock }) => {
+const AddToCartOverlay = ({ product, onAddToCart, isInStock, isInCart = false }) => {
     const handleAddToCart = (e) => {
       e.stopPropagation();
       e.preventDefault();
@@ -28,14 +28,28 @@ const AddToCartOverlay = ({ product, onAddToCart, isInStock }) => {
               transition-all duration-200 ease-out
               flex items-center justify-center gap-2
               focus:outline-none focus:ring-2 focus:ring-offset-2
-              ${isInStock
+              ${isInCart
+                ? 'bg-green-500 text-white hover:bg-green-600 active:scale-[0.98] cursor-pointer'
+                : isInStock
                 ? 'bg-primary text-white dark:bg-white dark:text-primary hover:bg-opacity-90 active:scale-[0.98] cursor-pointer'
                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
               }
             `}
-            aria-label={isInStock ? `Add ${product.name} to cart` : 'Product out of stock'}
+            aria-label={isInCart ? `${product.name} already in cart` : isInStock ? `Add ${product.name} to cart` : 'Product out of stock'}
           >
-            {isInStock ? 'ADD TO CART' : 'OUT OF STOCK'}
+            {isInCart ? (
+              <>
+                <Check size={16} />
+                ADDED TO CART
+              </>
+            ) : isInStock ? (
+              <>
+                <ShoppingCart size={16} />
+                ADD TO CART
+              </>
+            ) : (
+              'OUT OF STOCK'
+            )}
           </button>
         </div>
       </div>

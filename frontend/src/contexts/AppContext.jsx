@@ -4,6 +4,7 @@ import { AuthProvider } from "./AuthContext";
 import { CategoryProvider } from "./CategoryContext";
 import { ProductProvider } from "./ProductContext";
 import { CartProvider } from "./CartContext";
+import { PublicPaymentMethodProvider } from "./PublicPaymentMethodContext";
 
 export const AppContext = ({ children }) => (
   <ThemeProvider>
@@ -11,7 +12,9 @@ export const AppContext = ({ children }) => (
       <CategoryProvider>
         <ProductProvider>
           <CartProvider>
-            {children}
+            <PublicPaymentMethodProvider>
+              {children}
+            </PublicPaymentMethodProvider>
           </CartProvider>
         </ProductProvider>
       </CategoryProvider>

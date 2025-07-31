@@ -180,6 +180,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     token,
     authError,
+    
     setLoading,
     login,
     register,

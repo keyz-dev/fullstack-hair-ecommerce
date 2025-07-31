@@ -9,6 +9,7 @@ export { useService } from "./useService";
 export { useCurrency } from "./useCurrency";
 export { useSettings } from "./useSettings";
 export { usePaymentMethods } from "./usePaymentMethods";
+export { usePublicPaymentMethods } from "./usePublicPaymentMethods";
 export { useCart } from './useCart';
 export { default as useImageManager } from './useImageManager';
 export { default as useCheckout } from './useCheckout';

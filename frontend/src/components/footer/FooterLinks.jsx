@@ -2,11 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom"; // or use <a> if not using react-router
 
 const links = [
-  { label: "Home", to: "#" },
-  { label: "About", to: "#" },
-  { label: "Services", to: "#" },
+  { label: "Home", to: "/" },
+  { label: "About", to: "/about" },
+  { label: "Services", to: "/services" },
+  { label: "Track Order", to: "/track-order" },
   { label: "Contact", to: "#" },
-  { label: "Know More", to: "#" },
 ];
 
 const FooterLinks = () => (

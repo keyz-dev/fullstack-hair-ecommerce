@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Eye } from "lucide-react";
+import { Eye, Check } from "lucide-react";
 
-const ProductImage = ({ images, name, badges, onQuickView }) => {
+const ProductImage = ({ images, name, badges, onQuickView, isInCart = false }) => {
     const [imageError, setImageError] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
     
@@ -54,9 +54,16 @@ const ProductImage = ({ images, name, badges, onQuickView }) => {
           />
         )}
   
-        {/* Product Badges */}
+                {/* Product Badges */}
         {badges}
-  
+
+        {/* In Cart Badge */}
+        {isInCart && (
+          <div className="absolute top-3 left-3 z-20 bg-green-500 text-white rounded-full p-1 shadow-lg">
+            <Check size={16} />
+          </div>
+        )}
+
         {/* Quick View Button */}
         <button
           onClick={onQuickView}
