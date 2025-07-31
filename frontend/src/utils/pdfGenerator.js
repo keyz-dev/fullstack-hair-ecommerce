@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { addBraidSterLogo, addProductImage } from './pdf';
 
 export const generateBraidSterInvoice = async (orderData, customLogoPath = null) => {
   const {
@@ -7,7 +8,6 @@ export const generateBraidSterInvoice = async (orderData, customLogoPath = null)
     shippingAddress,
     orderSummary,
     selectedPaymentMethod,
-    paymentInfo,
     cartItems
   } = orderData;
 
@@ -25,279 +25,6 @@ export const generateBraidSterInvoice = async (orderData, customLogoPath = null)
     keywords: 'invoice, order, braidster'
   });
 
-  // Helper function to convert PNG to JPEG (fixes jsPDF PNG issues)
-  const convertToJPEG = async (base64Image) => {
-    return new Promise((resolve) => {
-      try {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          
-          // Fill white background (JPEG doesn't support transparency)
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          
-          // Draw image
-          ctx.drawImage(img, 0, 0);
-          
-          // Convert to JPEG
-          const jpegBase64 = canvas.toDataURL('image/jpeg', 0.95);
-          resolve(jpegBase64);
-        };
-        
-        img.onerror = () => resolve(null);
-        img.src = base64Image;
-      } catch (error) {
-        console.error('JPEG conversion error:', error);
-        resolve(null);
-      }
-    });
-  };
-
-  // Helper function to convert image URL to base64 with validation
-  const imageToBase64 = async (url) => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
-      
-      const blob = await response.blob();
-      
-      // Validate image type
-      if (!blob.type.startsWith('image/')) {
-        throw new Error(`Invalid image type: ${blob.type}`);
-      }
-      
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const base64 = reader.result;
-          // Additional validation - check if base64 is complete
-          if (!base64 || base64.length < 100) {
-            reject(new Error('Generated base64 is too short or empty'));
-            return;
-          }
-          resolve(base64);
-        };
-        reader.onerror = () => reject(new Error('Failed to read image file'));
-        reader.readAsDataURL(blob);
-      });
-    } catch (error) {
-      console.error('Error converting image to base64:', error);
-      return null;
-    }
-  };
-
-  // Helper function to convert image to canvas and then to base64 (fixes corruption issues)
-  const processImageSafely = async (imageUrl) => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous'; // Handle CORS
-      
-      img.onload = () => {
-        try {
-          // Create canvas to redraw image (fixes corruption)
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          
-          // Draw image to canvas
-          ctx.drawImage(img, 0, 0);
-          
-          // Convert canvas to base64 (this often fixes corrupt PNGs)
-          const base64 = canvas.toDataURL('image/png', 1.0);
-          resolve(base64);
-        } catch (error) {
-          console.error('Canvas processing failed:', error);
-          resolve(null);
-        }
-      };
-      
-      img.onerror = () => {
-        console.error('Image failed to load');
-        resolve(null);
-      };
-      
-      img.src = imageUrl;
-    });
-  };
-
-  // Helper function to add BraidSter logo
-  const addBraidSterLogo = async (x, y, width = 40, height = 20, logoPath = null) => {
-    try {
-      let logoBase64 = null;
-      
-      // Try different logo path strategies
-      const logoPaths = [
-        logoPath,
-        '/src/assets/logo/logo.png',
-      ].filter(Boolean);
-      
-      // Try each path until one works
-      for (const path of logoPaths) {
-        try {
-          // First try safe canvas processing (fixes corrupt PNGs)
-          logoBase64 = await processImageSafely(path);
-          
-          // If canvas method fails, try direct base64 conversion
-          if (!logoBase64) {
-            logoBase64 = await imageToBase64(path);
-          }
-          
-          if (logoBase64) {
-            break;
-          }
-        } catch (error) {
-          console.error(`Failed to load logo from ${path}:`, error.message);
-          continue;
-        }
-      }
-      
-      if (logoBase64) {
-        try {
-          // Try adding the image with error handling
-          doc.addImage(logoBase64, 'PNG', x, y, width, height);
-        } catch (pdfError) {
-          console.error('jsPDF error adding image:', pdfError);
-          
-          // Try converting to JPEG format as fallback
-          try {
-            const jpegBase64 = await convertToJPEG(logoBase64);
-            if (jpegBase64) {
-              doc.addImage(jpegBase64, 'JPEG', x, y, width, height);
-              console.log('Successfully added logo as JPEG fallback');
-            } else {
-              throw new Error('JPEG conversion failed');
-            }
-          } catch (jpegError) {
-            console.error('JPEG fallback failed:', jpegError);
-            throw new Error('All image formats failed');
-          }
-        }
-      } else {
-        console.warn('All logo paths failed, using fallback text logo');
-        // Fallback to styled text logo if all paths fail
-        const brandOrange = [242, 153, 74]; // #F2994A
-        const brandGold = [231, 166, 8]; // #E7A608
-        
-        // Logo background circle
-        doc.setFillColor(...brandOrange);
-        doc.circle(x + 10, y + 10, 8, 'F');
-        
-        // Logo text
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(16);
-        doc.setTextColor(...brandGold);
-        doc.text('BRAIDSTER', x + 25, y + 8);
-        
-        // Tagline
-        doc.setFontSize(8);
-        doc.setTextColor(100, 100, 100);
-        doc.text('Hair & Beauty Commerce', x + 25, y + 15);
-      }
-    } catch (error) {
-      console.error('Error adding logo:', error);
-      // Fallback to text logo
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
-      doc.setTextColor(231, 166, 8);
-      doc.text('BRAIDSTER', x, y + 12);
-    }
-  };
-
-  // Helper function to load and add product images
-  const addProductImage = async (imageUrl, x, y, width = 25, height = 25) => {
-    if (!imageUrl) {
-      // Create placeholder if no image URL
-      doc.setFillColor(240, 240, 240);
-      doc.rect(x, y, width, height, 'F');
-      doc.setDrawColor(200, 200, 200);
-      doc.rect(x, y, width, height);
-      
-      doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      doc.text('NO IMG', x + width/2 - 6, y + height/2 + 2);
-      return false;
-    }
-
-    try {
-      // Convert image URL to base64 with safe processing
-      let imageBase64 = await processImageSafely(imageUrl);
-      
-      // Fallback to direct conversion if canvas method fails
-      if (!imageBase64) {
-        imageBase64 = await imageToBase64(imageUrl);
-      }
-      
-      if (imageBase64) {
-        // Determine image format from URL or base64 string
-        let format = 'JPEG';
-        if (imageUrl.toLowerCase().includes('.png') || imageBase64.includes('data:image/png')) {
-          format = 'PNG';
-        } else if (imageUrl.toLowerCase().includes('.gif') || imageBase64.includes('data:image/gif')) {
-          format = 'GIF';
-        }
-        
-        try {
-          // Add the actual product image
-          doc.addImage(imageBase64, format, x, y, width, height);
-          
-          // Add subtle border around image
-          doc.setDrawColor(220, 220, 220);
-          doc.setLineWidth(0.2);
-          doc.rect(x, y, width, height);
-          
-          return true;
-        } catch (pdfError) {
-          console.warn(`jsPDF error with ${format} format:`, pdfError);
-          
-          // Try converting to JPEG as fallback
-          if (format !== 'JPEG') {
-            try {
-              const jpegBase64 = await convertToJPEG(imageBase64);
-              if (jpegBase64) {
-                doc.addImage(jpegBase64, 'JPEG', x, y, width, height);
-                
-                // Add subtle border around image
-                doc.setDrawColor(220, 220, 220);
-                doc.setLineWidth(0.2);
-                doc.rect(x, y, width, height);
-                
-                return true;
-              }
-            } catch (jpegError) {
-              console.error('JPEG conversion failed:', jpegError);
-            }
-          }
-          
-          throw pdfError;
-        }
-      } else {
-        throw new Error('Failed to convert image to base64');
-      }
-    } catch (error) {
-      console.error('Error loading product image:', error);
-      
-      // Create error placeholder
-      doc.setFillColor(250, 240, 240);
-      doc.rect(x, y, width, height, 'F');
-      doc.setDrawColor(220, 180, 180);
-      doc.rect(x, y, width, height);
-      
-      doc.setFontSize(7);
-      doc.setTextColor(180, 120, 120);
-      doc.text('IMG', x + width/2 - 5, y + height/2 - 1);
-      doc.text('ERROR', x + width/2 - 7, y + height/2 + 4);
-      
-      return false;
-    }
-  };
-
   // Header Section
   const headerHeight = 40;
   
@@ -306,7 +33,7 @@ export const generateBraidSterInvoice = async (orderData, customLogoPath = null)
   doc.rect(0, 0, pageWidth, headerHeight, 'F');
   
   // Add logo
-  await addBraidSterLogo(15, 10, 40, 20, customLogoPath);
+  await addBraidSterLogo(doc, 15, 10, 40, 20, customLogoPath);
   
   // Invoice title and number
   doc.setFont('helvetica', 'bold');
@@ -420,7 +147,7 @@ export const generateBraidSterInvoice = async (orderData, customLogoPath = null)
     
     // Add product image from the images array
     const productImageUrl = item.images && item.images.length > 0 ? item.images[0] : null;
-    await addProductImage(productImageUrl, 20, currentY + 5, 25, 25);
+    await addProductImage(doc, productImageUrl, 20, currentY + 5, 25, 25);
     
     // Product details
     doc.setFont('helvetica', 'bold');
