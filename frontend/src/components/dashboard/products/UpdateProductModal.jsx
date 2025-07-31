@@ -309,7 +309,7 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
             handleSpecificationChange={handleSpecificationChange}
             newTag={newTag}
             setNewTag={setNewTag}
-            addTag={addTag}
+            addTag={addTag} 
             removeTag={removeTag}
             newFeature={newFeature}
             setNewFeature={setNewFeature}

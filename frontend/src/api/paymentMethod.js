@@ -13,6 +13,12 @@ export const paymentMethodApi = {
     return response.data;
   },
 
+  // Get payment method types
+  getPaymentMethodTypes: async () => {
+    const response = await api.get('/paymentMethod/types');
+    return response.data;
+  },
+
   // Get payment method by ID
   getPaymentMethodById: async (id) => {
     const response = await api.get(`/paymentMethod/${id}`);
@@ -28,6 +34,18 @@ export const paymentMethodApi = {
   // Update payment method
   updatePaymentMethod: async (id, paymentMethodData) => {
     const response = await api.put(`/paymentMethod/${id}`, paymentMethodData);
+    return response.data;
+  },
+
+  // Update payment method configuration
+  updatePaymentMethodConfig: async (id, configData) => {
+    const response = await api.put(`/paymentMethod/${id}/config`, configData);
+    return response.data;
+  },
+
+  // Verify payment method configuration
+  verifyPaymentMethodConfig: async (id) => {
+    const response = await api.get(`/paymentMethod/${id}/verify`);
     return response.data;
   },
 

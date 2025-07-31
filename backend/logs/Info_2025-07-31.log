@@ -5,3 +5,21 @@
 {"level":"error","message":"Invalid variants data","timestamp":"2025-07-31T00:01:23.850Z"}
 {"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Service\"","timestamp":"2025-07-31T00:21:25.115Z"}
 {"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Service\"","timestamp":"2025-07-31T00:21:25.131Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Service\"","timestamp":"2025-07-31T12:08:53.210Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Service\"","timestamp":"2025-07-31T12:08:53.235Z"}
+{"level":"error","message":"\"config\" must be of type object. \"customerFields[0]._id\" is not allowed. \"customerFields[1]._id\" is not allowed. \"_id\" is not allowed. \"isConfigured\" is not allowed. \"createdAt\" is not allowed. \"updatedAt\" is not allowed","timestamp":"2025-07-31T12:24:23.948Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"[object Object]\" (type string) at path \"_id\" for model \"PaymentMethod\"","timestamp":"2025-07-31T12:32:35.483Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"[object Object]\" (type string) at path \"_id\" for model \"PaymentMethod\"","timestamp":"2025-07-31T12:32:42.175Z"}
+{"level":"error","message":"\"config\" must be of type object. \"customerFields[0]._id\" is not allowed. \"customerFields[1]._id\" is not allowed. \"customerFields[2]._id\" is not allowed. \"customerFields[3]._id\" is not allowed. \"_id\" is not allowed. \"isConfigured\" is not allowed. \"createdAt\" is not allowed. \"updatedAt\" is not allowed","timestamp":"2025-07-31T12:56:56.102Z"}
+{"level":"error","message":"\"customerFields[0].placeholder\" is not allowed to be empty. \"customerFields[1].placeholder\" is not allowed to be empty","timestamp":"2025-07-31T13:10:56.997Z"}
+{"level":"error","message":"\"customerFields[0].placeholder\" is not allowed to be empty. \"customerFields[1].placeholder\" is not allowed to be empty","timestamp":"2025-07-31T13:12:54.289Z"}
+{"level":"error","message":"connect ECONNREFUSED 159.41.95.14:27017","timestamp":"2025-07-31T16:45:42.730Z"}
+{"level":"error","message":"Invalid or expired token.","timestamp":"2025-07-31T16:45:42.735Z"}
+{"level":"error","message":"connect ECONNREFUSED 159.41.95.14:27017","timestamp":"2025-07-31T16:46:02.723Z"}
+{"level":"error","message":"Invalid or expired token.","timestamp":"2025-07-31T16:46:02.728Z"}
+{"level":"error","message":"connect ECONNREFUSED 159.41.95.14:27017","timestamp":"2025-07-31T16:46:15.946Z"}
+{"level":"error","message":"connect ECONNREFUSED 159.41.95.14:27017","timestamp":"2025-07-31T16:46:35.971Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Service\"","timestamp":"2025-07-31T17:06:14.192Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Service\"","timestamp":"2025-07-31T17:06:14.211Z"}
+{"level":"info","message":"Email sent successfully","messageId":"<780684f8-cb21-5cc7-565c-4e3fc4c96297@localhost>","timestamp":"2025-07-31T18:24:42.235Z"}
+{"level":"error","message":"\"config.mobileMoney.phoneNumber\" is required. \"config.mobileMoney.accountName\" is required","timestamp":"2025-07-31T18:35:37.191Z"}

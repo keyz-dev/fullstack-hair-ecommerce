@@ -3,10 +3,7 @@ const app = require("./src/app");
 const db = require("./src/db");
 const { seedAll } = require("./src/utils/seedData");
 
-db().then(async () => {
-  // Seed default data
-  await seedAll();
-});
+db()
 
 const port = process.env.PORT || 5000;
 

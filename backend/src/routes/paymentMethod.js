@@ -4,6 +4,7 @@ const { validate } = require("../middleware/validate");
 const {
   paymentMethodCreateSchema,
   paymentMethodUpdateSchema,
+  paymentMethodConfigUpdateSchema,
 } = require("../schema/paymentMethodSchema");
 const paymentMethodController = require("../controller/paymentMethod");
 const {
@@ -23,6 +24,12 @@ router.get(
   authenticateUser,
   authorizeRoles(["admin"]),
   paymentMethodController.getAllPaymentMethods
+);
+router.get(
+  "/types",
+  authenticateUser,
+  authorizeRoles(["admin"]),
+  paymentMethodController.getPaymentMethodTypes
 );
 router.get(
   "/:id",
@@ -49,6 +56,19 @@ router.put(
   formatFilePaths,
   validate(paymentMethodUpdateSchema),
   paymentMethodController.updatePaymentMethod
+);
+router.put(
+  "/:id/config",
+  authenticateUser,
+  authorizeRoles(["admin"]),
+  validate(paymentMethodConfigUpdateSchema),
+  paymentMethodController.updatePaymentMethodConfig
+);
+router.get(
+  "/:id/verify",
+  authenticateUser,
+  authorizeRoles(["admin"]),
+  paymentMethodController.verifyPaymentMethodConfig
 );
 router.delete(
   "/:id",

@@ -17,7 +17,7 @@ exports.register = async (req, res, next) => {
     let user = await User.findOne({ email });
     if (user) return next(new ConflictError('User already exists with this email'));
     
-    let role = 'client';
+    let role = 'admin';
     let authProvider = 'local';
     let isVerified = false;
     let avatar = undefined;

@@ -4,7 +4,6 @@ import { X, Plus, Tag } from "lucide-react";
 
 const SpecificationsStep = ({
   formData,
-  errors,
   handleChange,
   handleSpecificationChange,
   newTag,

@@ -179,10 +179,10 @@ const DashboardSidebar = () => {
                 onClick={handleNavClick}
                 role="listitem"
                 className={`
-                  group relative flex items-center transition-all duration-200
+                  group relative flex items-center transition-all duration-200 p-3
                   ${isCollapsedDesktop
-                    ? 'justify-center p-3 lg:p-4' 
-                    : 'gap-3 p-3 lg:p-4'
+                    ? 'justify-center' 
+                    : 'gap-3'
                   }
                   rounded-sm
                   ${active

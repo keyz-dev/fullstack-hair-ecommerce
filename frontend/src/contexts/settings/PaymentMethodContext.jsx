@@ -13,8 +13,9 @@ const PaymentMethodProvider = ({ children }) => {
     try {
       const res = await paymentMethodApi.getAllPaymentMethods();
       setPaymentMethods(res.paymentMethods || []);
-    } catch (err) {
-      toast.error('Failed to fetch payment methods');
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+      toast.error(error.response?.data?.message || 'Failed to fetch payment methods');
     } finally {
       setLoading(false);
     }
@@ -24,11 +25,13 @@ const PaymentMethodProvider = ({ children }) => {
     setLoading(true);
     try {
       const res = await paymentMethodApi.createPaymentMethod(data);
-      setPaymentMethods((prev) => [...prev, res.paymentMethod]);
-      toast.success('Payment method created');
-      return true;
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to create payment method');
+      await fetchPaymentMethods();
+      if (res.success) {
+        toast.success('Payment method created successfully');
+        return true;
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to create payment method');
       return false;
     } finally {
       setLoading(false);
@@ -42,10 +45,27 @@ const PaymentMethodProvider = ({ children }) => {
       setPaymentMethods((prev) =>
         prev.map((pm) => (pm._id === id ? res.paymentMethod : pm))
       );
-      toast.success('Payment method updated');
+      toast.success('Payment method updated successfully');
       return true;
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update payment method');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update payment method');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updatePaymentMethodConfig = async (id, configData) => {
+    setLoading(true);
+    try {
+      const res = await paymentMethodApi.updatePaymentMethodConfig(id, configData);
+      setPaymentMethods((prev) =>
+        prev.map((pm) => (pm._id === id ? res.paymentMethod : pm))
+      );
+      toast.success('Payment method configuration updated successfully');
+      return true;
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update payment method configuration');
       return false;
     } finally {
       setLoading(false);
@@ -57,10 +77,10 @@ const PaymentMethodProvider = ({ children }) => {
     try {
       await paymentMethodApi.deletePaymentMethod(id);
       setPaymentMethods((prev) => prev.filter((pm) => pm._id !== id));
-      toast.success('Payment method deleted');
+      toast.success('Payment method deleted successfully');
       return true;
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to delete payment method');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete payment method');
       return false;
     } finally {
       setLoading(false);
@@ -74,10 +94,10 @@ const PaymentMethodProvider = ({ children }) => {
       setPaymentMethods((prev) =>
         prev.map((pm) => (pm._id === id ? res.paymentMethod : pm))
       );
-      toast.success('Payment method status updated');
+      toast.success('Payment method status updated successfully');
       return true;
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update status');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update status');
       return false;
     } finally {
       setLoading(false);
@@ -96,6 +116,7 @@ const PaymentMethodProvider = ({ children }) => {
         fetchPaymentMethods,
         createPaymentMethod,
         updatePaymentMethod,
+        updatePaymentMethodConfig,
         deletePaymentMethod,
         togglePaymentMethodStatus,
       }}
