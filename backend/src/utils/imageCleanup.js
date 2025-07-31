@@ -10,6 +10,10 @@ const { isLocalImageUrl, isCloudinaryUrl } = require("./imageUtils");
  */
 const deleteImage = async (imagePath) => {
   try {
+    if (!imagePath) {
+      return;
+    }
+
     if (isLocalImageUrl(imagePath)) {
       const filePath = path.join(
         process.cwd(),
@@ -19,12 +23,27 @@ const deleteImage = async (imagePath) => {
       await fs.unlink(filePath);
     } else if (isCloudinaryUrl(imagePath)) {
       // Extract public_id from Cloudinary URL
-      const publicId = imagePath.split("/").slice(-1)[0].split(".")[0];
-      await cloudinary.uploader.destroy(publicId);
+      // Cloudinary URL format: https://res.cloudinary.com/cloud_name/image/upload/v1234567890/folder/filename.jpg
+      const urlParts = imagePath.split('/');
+      const uploadIndex = urlParts.findIndex(part => part === 'upload');
+      
+      if (uploadIndex !== -1 && uploadIndex + 2 < urlParts.length) {
+        // Get everything after 'upload' and before the file extension
+        const pathAfterUpload = urlParts.slice(uploadIndex + 2).join('/');
+        const publicId = pathAfterUpload.split('.')[0]; // Remove file extension
+        
+        if (publicId) {
+          // Check if cloudinary is properly configured
+          if (!cloudinary || !cloudinary.uploader) {
+            return;
+          }
+          
+          await cloudinary.uploader.destroy(publicId);
+        }
+      }
     }
   } catch (error) {
-    console.error(`Error deleting image ${imagePath}:`, error);
-    // Don't throw the error, just log it
+    // Don't throw the error, just silently handle it
   }
 };
 
@@ -34,9 +53,21 @@ const deleteImage = async (imagePath) => {
  * @returns {Promise<void>}
  */
 const deleteImages = async (imagePaths) => {
-  if (!Array.isArray(imagePaths)) return;
+  if (!Array.isArray(imagePaths)) {
+    return;
+  }
+  
+  if (imagePaths.length === 0) {
+    return;
+  }
+
   const deletePromises = imagePaths.map((path) => deleteImage(path));
-  await Promise.all(deletePromises);
+  
+  try {
+    await Promise.all(deletePromises);
+  } catch (error) {
+    // Don't throw the error, just silently handle it
+  }
 };
 
 /**
@@ -78,7 +109,6 @@ const cleanUpFileImages = async (req) => {
 
   if (req.file) {
     imagePaths.push(req.file.path);
-    await deleteImages(imagePaths);
   }
 
   if (req.files && Object.keys(req.files).length > 0) {
@@ -89,9 +119,12 @@ const cleanUpFileImages = async (req) => {
         imagePaths.push(req.files[key].path);
       }
     });
-    await deleteImages(imagePaths);
   }
 
+  // Delete all collected image paths (both local and Cloudinary)
+  if (imagePaths.length > 0) {
+    await deleteImages(imagePaths);
+  }
 };
 
 /**

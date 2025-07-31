@@ -47,15 +47,15 @@ const productCreateSchema = Joi.object({
   variants: Joi.alternatives().try(
     Joi.array().items(variantSchema),
     Joi.string() // For JSON string from form data
-  ).optional(),
+  ).optional().allow('', null),
   specifications: Joi.alternatives().try(
     specificationsSchema,
     Joi.string() // For JSON string from form data
-  ).optional(),
+  ).optional().allow('', null),
   features: Joi.alternatives().try(
     Joi.array().items(featureSchema),
     Joi.string() // For JSON string from form data
-  ).optional(),
+  ).optional().allow('', null),
   tags: Joi.alternatives().try(
     Joi.array().items(Joi.string()),
     Joi.string().allow('', null) // For comma-separated string from form data
@@ -83,15 +83,15 @@ const productUpdateSchema = Joi.object({
   variants: Joi.alternatives().try(
     Joi.array().items(variantSchema),
     Joi.string() // For JSON string from form data
-  ).optional(),
+  ).optional().allow('', null),
   specifications: Joi.alternatives().try(
     specificationsSchema,
     Joi.string() // For JSON string from form data
-  ).optional(),
+  ).optional().allow('', null),
   features: Joi.alternatives().try(
     Joi.array().items(featureSchema),
     Joi.string() // For JSON string from form data
-  ).optional(),
+  ).optional().allow('', null),
   tags: Joi.alternatives().try(
     Joi.array().items(Joi.string()),
     Joi.string().allow('', null) // For comma-separated string from form data

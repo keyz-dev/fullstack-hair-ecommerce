@@ -1,0 +1,7 @@
+{"level":"error","message":"\"features\" is not allowed to be empty","timestamp":"2025-07-30T23:41:32.865Z"}
+{"level":"error","message":"Cannot read properties of undefined (reading 'validate')","timestamp":"2025-07-30T23:42:48.936Z"}
+{"level":"error","message":"Cannot read properties of undefined (reading 'validate')","timestamp":"2025-07-30T23:49:15.033Z"}
+{"level":"error","message":"Cannot read properties of undefined (reading 'validate')","timestamp":"2025-07-30T23:51:33.112Z"}
+{"level":"error","message":"Invalid variants data","timestamp":"2025-07-31T00:01:23.850Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Service\"","timestamp":"2025-07-31T00:21:25.115Z"}
+{"level":"error","message":"Cast to ObjectId failed for value \"stats\" (type string) at path \"_id\" for model \"Service\"","timestamp":"2025-07-31T00:21:25.131Z"}

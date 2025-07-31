@@ -3,13 +3,13 @@ const Review = require('../models/review');
 const Wishlist = require('../models/wishlist');
 const { formatProductData } = require('../utils/returnFormats/productData');
 const { NotFoundError, BadRequestError } = require('../utils/errors');
-const { productSchema, productUpdateSchema } = require('../schema/productSchema');
+const { productCreateSchema, productUpdateSchema } = require('../schema/productSchema');
 const { cleanUpFileImages } = require('../utils/imageCleanup')
 
 // Create product
 const createProduct = async (req, res, next) => {
   try {
-    const { error } = productSchema.validate(req.body);
+    const { error } = productCreateSchema.validate(req.body);
     if (error) return next(new BadRequestError(error.details[0].message));
 
     const formData = req.body;

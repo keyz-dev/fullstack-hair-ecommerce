@@ -28,4 +28,39 @@ api.interceptors.request.use(
   }
 );
 
+// Add a response interceptor for error handling
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    // Handle different types of errors
+    if (error.response) {
+      // Server responded with error status
+      const { status, data } = error.response;
+      
+      // Handle specific error cases
+      if (status === 401) {
+        // Unauthorized - redirect to login
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      } else if (status === 403) {
+        // Forbidden
+        console.error("Access forbidden:", data.message);
+      } else if (status >= 500) {
+        // Server error
+        console.error("Server error:", data.message);
+      }
+    } else if (error.request) {
+      // Network error
+      console.error("Network error:", error.message);
+    } else {
+      // Other error
+      console.error("Error:", error.message);
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 export default api;

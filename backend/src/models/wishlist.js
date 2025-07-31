@@ -40,8 +40,6 @@ wishlistSchema.virtual('productCount').get(function() {
   return this.products.length;
 });
 
-// Index for better performance
-wishlistSchema.index({ user: 1 });
 wishlistSchema.index({ 'products.product': 1 });
 
 // Ensure one wishlist per user

@@ -2,6 +2,15 @@ const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const { BadRequestError } = require("./errors");
 
+// Validate Cloudinary configuration
+const requiredEnvVars = ['CLOUDINARY_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingVars.length > 0) {
+  console.warn(`Missing Cloudinary environment variables: ${missingVars.join(', ')}`);
+  console.warn('Cloudinary operations will fail. Please set the required environment variables.');
+}
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -70,5 +79,6 @@ const uploadToCloudinary = async (file, options = {}) => {
 };
 
 module.exports = {
+  cloudinary,
   uploadToCloudinary,
 };

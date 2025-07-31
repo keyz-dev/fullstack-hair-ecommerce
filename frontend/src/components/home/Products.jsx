@@ -94,13 +94,6 @@ const Products = () => {
           <p className="text-lg text-secondary/70 max-w-2xl mx-auto mb-8">
             Discover our carefully curated collection of premium products, designed to enhance your lifestyle and meet your needs.
           </p>
-          <button
-            onClick={handleViewAll}
-            className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-sm font-medium hover:bg-accent/90 transition-colors"
-          >
-            View All Products
-            <ArrowRight size={16} />
-          </button>
         </div>
 
         {/* Products Grid */}
@@ -147,7 +140,7 @@ const Products = () => {
           <div className="text-center mt-8 lg:hidden">
             <button
               onClick={handleViewAll}
-              className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-sm font-medium hover:bg-accent/90 transition-colors"
+              className="inline-flex items-center gap-2 border border-accent text-accent px-6 py-3 rounded-xs font-medium hover:opacity-80 transition-colors"
             >
               View All Products
               <ArrowRight size={16} />

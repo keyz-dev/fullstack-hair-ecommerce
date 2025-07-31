@@ -3,23 +3,18 @@ import { useProducts, useCategory, useImageManager } from "../../../hooks";
 import {
   ModalWrapper,
   FormHeader,
-  Input,
-  Button,
-  TextArea,
-  Select,
-  PriceInput,
-  ImageGrid,
   ProgressSteps
 } from "../../ui";
-import { X, Plus, Tag } from "lucide-react";
+import { X } from "lucide-react";
 import { toast } from "react-toastify";
+import { BasicInfoStep, ImagesStep, SpecificationsStep } from "./update";
 
 const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
   const { updateProduct, loading } = useProducts();
   const { categories } = useCategory();
   const [step, setStep] = useState(1);
-  
-  const [formData, setFormData] = useState({
+
+  const initialFormData = {
     name: "",
     description: "",
     price: "",
@@ -47,7 +42,10 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
     tags: [],
     metaTitle: '',
     metaDescription: ''
-  });
+  }
+  
+  const [formData, setFormData] = useState(initialFormData);
+
   const [errors, setErrors] = useState({});
   const [newTag, setNewTag] = useState('');
   const [newVariant, setNewVariant] = useState({ name: '', options: [], required: false });
@@ -97,18 +95,7 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
         isFeatured: initialData.isFeatured || false,
         isOnSale: initialData.isOnSale || false,
         variants: initialData.variants || [],
-        specifications: initialData.specifications || {
-          length: '',
-          texture: '',
-          material: '',
-          weight: '',
-          density: '',
-          capSize: '',
-          hairType: '',
-          origin: '',
-          careInstructions: '',
-          warranty: ''
-        },
+        specifications: initialData.specifications || initialFormData.specifications,
         features: initialData.features || [],
         tags: initialData.tags || [],
         metaTitle: initialData.metaTitle || '',
@@ -253,6 +240,12 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
     const result = await updateProduct(initialData._id, data);
     if (result) {
       toast.success("Product updated successfully");
+      // reset the form
+      setFormData(initialFormData);
+      setNewTag('');
+      setNewVariant({ name: '', options: [], required: false });
+      setNewFeature({ title: '', description: '', icon: '' });
+      setErrors({});
       onClose();
     }
   };
@@ -268,7 +261,7 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
 
   return (
     <ModalWrapper>
-      <div className="p-2 lg:p-6 w-full max-w-6xl relative max-h-[90vh] overflow-y-auto">
+      <div className="p-2 lg:p-6 w-full max-w-6xl relative max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 z-10"
@@ -287,360 +280,45 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
 
         {/* Step Content */}
         {step === 1 && (
-          <div className="p-6">
-            <h2 className="text-xl font-semibold text-primary mb-6">Basic Information</h2>
-            <form className="space-y-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Input
-            label="Name"
-            name="name"
-            value={formData.name}
-            onChangeHandler={handleChange}
-            error={errors.name}
-            required
+          <BasicInfoStep
+            formData={formData}
+            errors={errors}
+            handleChange={handleChange}
+            categoryOptions={categoryOptions}
+            onNext={() => setStep(2)}
           />
-
-          <PriceInput
-            price={formData.price}
-            currency={formData.currency}
-            onPriceChange={handleChange}
-            onCurrencyChange={(value) => setFormData((prev) => ({ ...prev, currency: value }))}
-            error={errors.price}
-            required
-            placeholder="Enter product price"
-                />
-              </div>
-
-              <Input
-                label="Discount (%)"
-                name="discount"
-                type="number"
-                min="0"
-                max="100"
-                step="1"
-                value={formData.discount}
-                onChangeHandler={handleChange}
-                placeholder="Discount percentage (0-100)"
-              />
-
-              <TextArea
-                label="Description"
-                name="description"
-                value={formData.description}
-                onChangeHandler={handleChange}
-                error={errors.description}
-                required
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Stock"
-              name="stock"
-              type="number"
-              value={formData.stock}
-              onChangeHandler={handleChange}
-              error={errors.stock}
-              required
-            />
-
-              <Select
-                label="Category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                error={errors.category}
-                required
-                options={categoryOptions}
-              />
-            </div>
-
-              {/* Product Status */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    name="isActive"
-                    checked={formData.isActive}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="isActive" className="text-sm text-gray-700">
-                    Active
-                  </label>
-                </div>
-                
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="isFeatured"
-                    name="isFeatured"
-                    checked={formData.isFeatured}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="isFeatured" className="text-sm text-gray-700">
-                    Featured
-                  </label>
-                </div>
-                
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="isOnSale"
-                    name="isOnSale"
-                    checked={formData.isOnSale}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="isOnSale" className="text-sm text-gray-700">
-                    On Sale
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <Button
-                  type="button"
-                  additionalClasses="bg-accent text-white hover:bg-accent/90"
-                  onClickHandler={() => setStep(2)}
-                >
-                  Next: Images
-                </Button>
-              </div>
-            </form>
-          </div>
         )}
 
         {step === 2 && (
-          <div className="p-6">
-            <h2 className="text-xl font-semibold text-primary mb-6">Product Images</h2>
-          <ImageGrid
+          <ImagesStep
             existingImages={existingImages}
             newImages={newImages}
             onRemoveExisting={removeExistingImage}
             onRemoveNew={removeNewImage}
             onAddImages={addImages}
-            label="Product Images"
+            onBack={() => setStep(1)}
+            onNext={() => setStep(3)}
           />
-          
-            <div className="flex justify-between pt-6 border-t border-gray-200">
-              <Button
-                type="button"
-                additionalClasses="border border-line_clr text-secondary hover:bg-gray-50"
-                onClickHandler={() => setStep(1)}
-              >
-                Back
-              </Button>
-              <Button
-                type="button"
-                additionalClasses="bg-accent text-white hover:bg-accent/90"
-                onClickHandler={() => setStep(3)}
-              >
-                Next: Specifications
-              </Button>
-            </div>
-          </div>
         )}
 
         {step === 3 && (
-          <div className="p-6">
-            <h2 className="text-xl font-semibold text-primary mb-6">Product Specifications</h2>
-            
-            <form onSubmit={handleUpdate} className="space-y-6">
-              {/* Specifications */}
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="text-lg font-medium text-primary mb-4">Product Specifications</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <Input
-                    label="Length"
-                    value={formData.specifications.length}
-                    onChangeHandler={(e) => handleSpecificationChange('length', e.target.value)}
-                    placeholder="e.g., Short, Medium, Long"
-                  />
-                  <Input
-                    label="Texture"
-                    value={formData.specifications.texture}
-                    onChangeHandler={(e) => handleSpecificationChange('texture', e.target.value)}
-                    placeholder="e.g., Straight, Wavy, Curly"
-                  />
-                  <Input
-                    label="Material"
-                    value={formData.specifications.material}
-                    onChangeHandler={(e) => handleSpecificationChange('material', e.target.value)}
-                    placeholder="e.g., Human Hair, Synthetic"
-                  />
-                  <Input
-                    label="Weight"
-                    value={formData.specifications.weight}
-                    onChangeHandler={(e) => handleSpecificationChange('weight', e.target.value)}
-                    placeholder="e.g., 100g, 150g"
-                  />
-                  <Input
-                    label="Density"
-                    value={formData.specifications.density}
-                    onChangeHandler={(e) => handleSpecificationChange('density', e.target.value)}
-                    placeholder="e.g., Light, Medium, Heavy"
-                  />
-                  <Input
-                    label="Cap Size"
-                    value={formData.specifications.capSize}
-                    onChangeHandler={(e) => handleSpecificationChange('capSize', e.target.value)}
-                    placeholder="e.g., Small, Medium, Large"
-                  />
-                  <Input
-                    label="Hair Type"
-                    value={formData.specifications.hairType}
-                    onChangeHandler={(e) => handleSpecificationChange('hairType', e.target.value)}
-                    placeholder="e.g., Virgin, Remy, Non-Remy"
-                  />
-                  <Input
-                    label="Origin"
-                    value={formData.specifications.origin}
-                    onChangeHandler={(e) => handleSpecificationChange('origin', e.target.value)}
-                    placeholder="e.g., Brazilian, Peruvian, Indian"
-                  />
-                </div>
-                <TextArea
-                  label="Care Instructions"
-                  value={formData.specifications.careInstructions}
-                  onChangeHandler={(e) => handleSpecificationChange('careInstructions', e.target.value)}
-                  placeholder="Care and maintenance instructions"
-                />
-                <Input
-                  label="Warranty"
-                  value={formData.specifications.warranty}
-                  onChangeHandler={(e) => handleSpecificationChange('warranty', e.target.value)}
-                  placeholder="e.g., 1 year warranty"
-                />
-              </div>
-
-              {/* Features */}
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="text-lg font-medium text-primary mb-4">Product Features</h3>
-                <div className="space-y-4">
-                  {formData.features.map((feature, index) => (
-                    <div key={index} className="border border-gray-200 rounded p-3">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">{feature.title}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeFeature(index)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                      {feature.description && <p className="text-sm text-gray-600">{feature.description}</p>}
-                      {feature.icon && <p className="text-xs text-gray-500">Icon: {feature.icon}</p>}
-                    </div>
-                  ))}
-                  
-                  <div className="border border-dashed border-gray-300 rounded p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Input
-                        label="Feature Title"
-                        value={newFeature.title}
-                        onChangeHandler={(e) => setNewFeature(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="e.g., Natural Look"
-                      />
-                      <Input
-                        label="Icon Class (optional)"
-                        value={newFeature.icon}
-                        onChangeHandler={(e) => setNewFeature(prev => ({ ...prev, icon: e.target.value }))}
-                        placeholder="e.g., fas fa-star"
-                      />
-                    </div>
-                    <TextArea
-                      label="Feature Description"
-                      value={newFeature.description}
-                      onChangeHandler={(e) => setNewFeature(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Describe this feature"
-                    />
-                    <Button
-                      type="button"
-                      onClick={addFeature}
-                      additionalClasses="bg-green-500 text-white mt-2"
-                      isDisabled={!newFeature.title}
-                    >
-                      <Plus size={16} /> Add Feature
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tags */}
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="text-lg font-medium text-primary mb-4">Product Tags</h3>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {formData.tags.map((tag, index) => (
-                    <span key={index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2">
-                      <Tag size={12} />
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => removeTag(tag)}
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        <X size={12} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a tag"
-                    value={newTag}
-                    onChangeHandler={(e) => setNewTag(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                  />
-                  <Button
-                    type="button"
-                    onClick={addTag}
-                    additionalClasses="bg-success min-h-fit text-white"
-                    isDisabled={!newTag.trim()}
-                  >
-                    <Plus size={16} />
-                  </Button>
-                </div>
-              </div>
-
-              {/* SEO Fields */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Input
-                  label="Meta Title"
-                  name="metaTitle"
-                  value={formData.metaTitle}
-                  onChangeHandler={handleChange}
-                  placeholder="SEO title for search engines"
-                />
-                <TextArea
-                  label="Meta Description"
-                  name="metaDescription"
-                  value={formData.metaDescription}
-                  onChangeHandler={handleChange}
-                  placeholder="SEO description for search engines"
-                />
-              </div>
-              
-              <div className="flex justify-between pt-6 border-t border-gray-200">
-                <Button
-                  type="button"
-                  additionalClasses="border border-line_clr text-secondary hover:bg-gray-50"
-                  onClickHandler={() => setStep(2)}
-                >
-                  Back
-                </Button>
-            <Button
-              type="submit"
-                  additionalClasses="bg-accent text-white hover:bg-accent/90"
-              isLoading={loading}
-            >
-              Update Product
-            </Button>
-          </div>
-        </form>
-          </div>
+          <SpecificationsStep
+            formData={formData}
+            errors={errors}
+            handleChange={handleChange}
+            handleSpecificationChange={handleSpecificationChange}
+            newTag={newTag}
+            setNewTag={setNewTag}
+            addTag={addTag}
+            removeTag={removeTag}
+            newFeature={newFeature}
+            setNewFeature={setNewFeature}
+            addFeature={addFeature}
+            removeFeature={removeFeature}
+            onBack={() => setStep(2)}
+            onSubmit={handleUpdate}
+            loading={loading}
+          />
         )}
       </div>
     </ModalWrapper>

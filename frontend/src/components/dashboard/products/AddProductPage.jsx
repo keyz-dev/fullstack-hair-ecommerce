@@ -76,13 +76,15 @@ const AddProductsPage = ({ setView }) => {
     // Extract the file from each uploaded image
     const imageFiles = productImages.map(({ file }) => file);
 
-    const result = await createProduct({
-      ...productData,
-      productImages: imageFiles,
-    });
-    if (result) {
+    try {
+      await createProduct({
+        ...productData,
+        productImages: imageFiles,
+      });
       toast.success("Product created successfully");
       setView("main");
+    } catch (error) {
+      toast.error(error.message || "Failed to create product");
     }
   };
 
