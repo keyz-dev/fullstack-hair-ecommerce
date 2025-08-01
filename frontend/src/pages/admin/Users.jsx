@@ -6,7 +6,7 @@ const Users = () => {
     <Upcoming 
       title="User Management Coming Soon"
       description="Our user management system is being developed to provide comprehensive tools for managing customer accounts and permissions."
-      expectedDate="January 2025"
+      expectedDate="August 2025"
       features={[
         "User profiles",
         "Role management",

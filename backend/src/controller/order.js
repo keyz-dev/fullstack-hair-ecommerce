@@ -23,28 +23,21 @@ const newOrder = async (req, res, next) => {
   // For guest users, use provided customerInfo
   let finalCustomerInfo;
   
-  if (req.rootUser) {
-    // Authenticated user
-    finalCustomerInfo = {
-      firstName: req.rootUser.firstName,
-      lastName: req.rootUser.lastName,
-      email: req.rootUser.email,
-      phone: req.rootUser.phone
-    };
-  } else {
-    // Guest user - validate customerInfo is provided
-    if (!customerInfo) {
-      return next(new BadRequestError('Customer information is required for guest users'));
-    }
-    
+  // Allow both authenticated and guest users to provide/override customerInfo
+  if (customerInfo) {
     finalCustomerInfo = {
       ...customerInfo,
       phone: normalizePhoneNumber(customerInfo.phone)
     };
-  }
-
-  if (!finalCustomerInfo || !finalCustomerInfo.firstName || !finalCustomerInfo.email) {
-    return next(new BadRequestError('Customer information is required'));
+  } else if (req.rootUser) {
+    finalCustomerInfo = {
+      firstName: req.rootUser.name?.split(' ')[0] || '',
+      lastName: req.rootUser.name?.split(' ')[1] || '',
+      email: req.rootUser.email,
+      phone: req.rootUser.phone
+    };
+  } else {
+    return next(new BadRequestError('Customer information is required for guest users'));
   }
 
   // Validate payment method
@@ -97,14 +90,13 @@ const newOrder = async (req, res, next) => {
     shipping,
     tax,
     processingFee,
-    notes
+    notes,
+    guestInfo: finalCustomerInfo
   };
 
   // Add user info (authenticated user or guest)
   if (req.rootUser) {
     orderData.user = req.rootUser._id;
-  } else {
-    orderData.guestInfo = finalCustomerInfo;
   }
 
   const order = new Order(orderData);

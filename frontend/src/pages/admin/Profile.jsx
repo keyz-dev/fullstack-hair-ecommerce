@@ -6,7 +6,7 @@ const Profile = () => {
     <Upcoming 
       title="Profile Management Coming Soon"
       description="Our profile management system is being developed to provide comprehensive tools for managing user profiles and preferences."
-      expectedDate="January 2025"
+      expectedDate="August 2025"
       features={[
         "Profile customization",
         "Security settings",

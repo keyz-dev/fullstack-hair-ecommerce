@@ -6,7 +6,7 @@ const Notifications = () => {
     <Upcoming 
       title="Notification System Coming Soon"
       description="Our notification system is being developed to provide comprehensive tools for managing and sending notifications to users."
-      expectedDate="January 2025"
+      expectedDate="August 2025"
       features={[
         "Push notifications",
         "Email notifications",

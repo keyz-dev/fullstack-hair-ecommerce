@@ -13,9 +13,9 @@ export const paymentApi = {
     return response.data;
   },
 
-  // Get payment status by reference - matches GET /payment/status/:reference in backend
-  getPaymentStatus: async (reference) => {
-    const response = await api.get(`/payment/status/${reference}`);
+  // Get payment status by order ID - matches GET /payment/status/:orderId in backend
+  getPaymentStatus: async (orderId) => {
+    const response = await api.get(`/payment/status/${orderId}`);
     return response.data;
   },
 

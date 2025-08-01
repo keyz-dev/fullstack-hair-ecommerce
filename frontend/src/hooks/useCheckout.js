@@ -5,7 +5,7 @@ import { orderApi } from '../api/order';
 import { paymentApi } from '../api/payment';
 import { validateCustomerInfo, validateShippingInfo, validatePaymentInfo } from '../utils/checkoutValidation';
 import { toast } from 'react-toastify';
-import usePaymentSocket from './usePaymentSocket';
+import usePaymentTracker from './usePaymentTracker';
 
 const useCheckout = (cartItems, cartTotal, user, clearCart) => {
   const navigate = useNavigate();
@@ -14,15 +14,14 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
   const [isOrderCompleted, setIsOrderCompleted] = useState(false);
   const [currentPaymentReference, setCurrentPaymentReference] = useState(null);
 
-  // Socket.IO payment tracking
-  const { trackPayment, getPaymentStatus, isTrackingPayment } = usePaymentSocket();
+  // Unified payment tracking
+  const { trackPayment, getPaymentStatus, isTrackingPayment, checkPaymentStatus } = usePaymentTracker();
 
-  // Form states
   const [customerInfo, setCustomerInfo] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
   });
 
   const [shippingAddress, setShippingAddress] = useState({
@@ -63,8 +62,8 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
   useEffect(() => {
     if (user) {
       setCustomerInfo({
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
+        firstName: user?.name?.split(' ')[0] || '',
+        lastName: user?.name?.split(' ')[1] || '',
         email: user.email || '',
         phone: user.phone || '',
       });
@@ -192,10 +191,10 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
             const paymentReference = paymentResponse.paymentReference;
             setCurrentPaymentReference(paymentReference);
             
-            // Start tracking the payment for real-time updates
-            trackPayment(paymentReference, user?._id);
+                         // Start tracking the payment for real-time updates
+             trackPayment(paymentReference, createdOrder._id, user?._id);
             
-            toast.success('Payment initiated successfully. You will receive real-time updates.');
+            toast.success( paymentResponse.message || 'Payment initiated successfully. You will receive real-time updates.');
             console.log('Payment initiated:', paymentResponse);
           }
         } catch (paymentError) {
@@ -238,17 +237,6 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
 
   const handleSignIn = () => {
     navigate('/login', { state: { from: '/checkout' } });
-  };
-
-  // Manual payment status check
-  const checkPaymentStatus = async (orderId) => {
-    try {
-      const response = await paymentApi.checkPaymentStatus(orderId);
-      return response;
-    } catch (error) {
-      console.error('Payment status check failed:', error);
-      throw error;
-    }
   };
 
   return {

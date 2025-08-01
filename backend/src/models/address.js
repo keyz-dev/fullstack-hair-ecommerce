@@ -5,7 +5,7 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: true,
   },  
-  street: String,
+  address: String,
   postalCode: String,
   state: String,
   country: {

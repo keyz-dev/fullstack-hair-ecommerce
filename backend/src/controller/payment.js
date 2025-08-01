@@ -93,7 +93,9 @@ exports.initiatePayment = async (req, res, next) => {
 // Campay webhook with Socket.IO integration
 exports.handleWebhook = async (req, res, next) => {
   try {
-    console.log('🎯 Webhook received and verified');
+    console.log("\n======================")
+    console.log('🎯 Webhook received and verified', req.body);
+    console.log("\n======================")
     
     const {
       status,

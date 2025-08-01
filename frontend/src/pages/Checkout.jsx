@@ -13,7 +13,7 @@ import {
 const Checkout = () => {
   const { cartItems, cartTotal, clearCart } = useCart();
   const { user } = useAuth();
-  
+
   const {
     // State
     checkoutStep,

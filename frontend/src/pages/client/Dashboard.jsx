@@ -6,7 +6,7 @@ const Dashboard = () => {
     <Upcoming 
       title="Customer Dashboard Coming Soon"
       description="Our customer dashboard is being developed to provide you with a comprehensive view of your orders, preferences, and account information."
-      expectedDate="January 2025"
+      expectedDate="August 2025"
       features={[
         "Order history",
         "Account settings",

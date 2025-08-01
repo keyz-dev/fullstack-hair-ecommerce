@@ -35,10 +35,11 @@ export const ROLE_CONFIGS = {
     displayName: "Client",
     navItems: [
       { path: "", label: "Overview", icon: "LayoutDashboard" },
+      { path: "home", label: "Home", icon: "Home" },
       { path: "book-appointment", label: "Book Appointment", icon: "Calendar" },
-      { path: "orders", label: "Orders", icon: "Bus" },
-      { path: "checkout", label: "Checkout", icon: "Route" },
+      { path: "orders", label: "Orders", icon: "Package" },
       { path: "profile", label: "My Profile", icon: "User" },
+      { path: "settings", label: "Settings", icon: "Settings" },
     ],
   },
 };

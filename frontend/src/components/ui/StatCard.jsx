@@ -9,7 +9,7 @@ const StatCard = ({
   trend,
   trendValue,
   colorTheme = "white",
-  className = "",
+  className = "w-[180px] lg:w-[250px]",
   ...props
 }) => {
   const theme = colorThemes[colorTheme] || colorThemes.white;
@@ -19,7 +19,7 @@ const StatCard = ({
 
   return (
     <div
-      className={`${theme.background} rounded-sm p-3 border ${theme.border} hover:shadow-xs transition-shadow duration-200 w-[180px] lg:w-[250px] mb-3 ${className}`}
+      className={`${theme.background} rounded-sm p-3 border ${theme.border} hover:shadow-xs transition-shadow duration-200 mb-3 ${className}`}
       {...props}
     >
       {/* Header with Icon */}

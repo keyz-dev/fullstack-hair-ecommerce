@@ -6,7 +6,7 @@ const Orders = () => {
     <Upcoming 
       title="Order Management Coming Soon"
       description="Our order management system is being developed to provide comprehensive tools for processing and tracking customer orders."
-      expectedDate="January 2025"
+      expectedDate="August 2025"
       features={[
         "Order processing",
         "Status updates",

@@ -13,7 +13,15 @@ const TableCell = React.forwardRef(({ className, ...props }, ref) => (
 ));
 TableCell.displayName = "TableCell";
 
-const Table = ({ columns, data, emptyStateMessage }) => {
+const Table = ({ columns, data, emptyStateMessage, onRowClick, clickableRows = false, isLoading = false }) => {
+  if (isLoading) {
+    return (
+      <div className="p-6 text-center text-gray-500">
+        Loading...
+      </div>
+    );
+  }
+
   if (!data || data.length === 0) {
     return (
       <div className="p-6 text-center text-gray-500">
@@ -40,7 +48,14 @@ const Table = ({ columns, data, emptyStateMessage }) => {
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {data.map((row, rowIndex) => (
-            <tr key={rowIndex} className="hover:bg-gray-50">
+            <tr 
+              key={rowIndex} 
+              className={cn(
+                "hover:bg-gray-50",
+                clickableRows && onRowClick && "cursor-pointer"
+              )}
+              onClick={clickableRows && onRowClick ? () => onRowClick(row) : undefined}
+            >
               {columns.map((col, index) => (
                 <TableCell
                   key={index}

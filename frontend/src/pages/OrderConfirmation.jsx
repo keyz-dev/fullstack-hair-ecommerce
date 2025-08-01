@@ -279,7 +279,7 @@ const OrderConfirmation = () => {
         
         {user ? (
           <Link
-            to="/account/orders"
+            to="/client/orders"
             className="inline-flex items-center justify-center gap-2 border border-gray-300 text-gray-700 px-6 py-3 rounded-xs font-medium hover:bg-gray-50 transition-colors"
           >
             View My Orders

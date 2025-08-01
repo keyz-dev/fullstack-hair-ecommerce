@@ -6,7 +6,7 @@ const Dashboard = () => {
     <Upcoming 
       title="Admin Dashboard Coming Soon"
       description="Our comprehensive admin dashboard is being developed to provide powerful tools for managing your e-commerce platform."
-      expectedDate="January 2025"
+      expectedDate="August 2025"
       features={[
         "Sales analytics",
         "Inventory management",

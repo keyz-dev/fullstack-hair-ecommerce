@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { usePaymentSocket } from '../../hooks';
+import { usePaymentTracker } from '../../hooks';
 import { CheckCircle, Clock, XCircle, AlertCircle, Phone, RefreshCw } from 'lucide-react';
-import { checkPaymentStatus } from '../../api/payment';
 
 const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
-  const { trackPayment, getPaymentStatus, isTrackingPayment } = usePaymentSocket();
+  const { trackPayment, getPaymentStatus, isTrackingPayment, checkPaymentStatus } = usePaymentTracker();
   const [status, setStatus] = useState(null);
   const [isChecking, setIsChecking] = useState(false);
 
   // Start tracking payment when component mounts
   useEffect(() => {
-    if (paymentReference && !isTrackingPayment(paymentReference)) {
-      trackPayment(paymentReference);
+    if (paymentReference && orderId && !isTrackingPayment(paymentReference)) {
+      trackPayment(paymentReference, orderId);
     }
-  }, [paymentReference, trackPayment, isTrackingPayment]);
+  }, [paymentReference, orderId, trackPayment, isTrackingPayment]);
 
-  // Get payment status updates
+  // Get payment status updates from the unified tracker
   useEffect(() => {
     if (paymentReference) {
       const paymentStatus = getPaymentStatus(paymentReference);
@@ -25,42 +24,6 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
     }
   }, [paymentReference, getPaymentStatus]);
 
-  // Frontend polling for payment status updates (fallback)
-  useEffect(() => {
-    if (!paymentReference) return;
-
-    const interval = setInterval(async () => {
-      // Only poll if payment is still pending
-      if (status?.status === 'PENDING' || !status) {
-        try {
-          const response = await checkPaymentStatus(orderId);
-          if (response.success) {
-            setStatus({
-              status: response.order.paymentStatus.toUpperCase(),
-              message: `Payment ${response.order.paymentStatus}`,
-              timestamp: new Date(),
-              shouldStopPolling: response.shouldStopPolling
-            });
-            
-            // Stop polling if payment is completed
-            if (response.shouldStopPolling) {
-              console.log('🛑 Stopping polling - payment completed');
-              clearInterval(interval);
-            }
-          }
-        } catch (error) {
-          console.error('Polling check failed:', error);
-        }
-      } else {
-        // Stop polling if payment is no longer pending
-        console.log('🛑 Stopping polling - payment no longer pending');
-        clearInterval(interval);
-      }
-    }, 10000); // Check every 10 seconds
-
-    return () => clearInterval(interval);
-  }, [paymentReference, orderId, status?.status]);
-
   // Manual check payment status
   const handleManualCheck = async () => {
     if (!orderId || isChecking) return;
@@ -69,17 +32,8 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
     try {
       const response = await checkPaymentStatus(orderId);
       if (response.success) {
-        // Update local status
-        setStatus({
-          status: response.order.paymentStatus.toUpperCase(),
-          message: `Payment ${response.order.paymentStatus}`,
-          timestamp: new Date(),
-          shouldStopPolling: response.shouldStopPolling
-        });
-        
-        if (response.shouldStopPolling) {
-          console.log('🛑 Manual check indicates polling should stop');
-        }
+        // The unified tracker will automatically update the status
+        console.log('Manual check completed:', response);
       }
     } catch (error) {
       console.error('Manual check failed:', error);

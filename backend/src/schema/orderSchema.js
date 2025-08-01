@@ -38,7 +38,7 @@ const orderCreateSchema = Joi.object({
       })
   }).when('user', {
     is: Joi.exist(),
-    then: Joi.optional(),
+    then: Joi.optional().allow(null, ''),
     otherwise: Joi.required()
   }),
   cartItems: Joi.array().items(

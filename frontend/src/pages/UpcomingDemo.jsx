@@ -33,7 +33,7 @@ const UpcomingDemo = () => {
             <Upcoming 
               title="Service Coming Soon"
               description="This is a sample upcoming service with green theme."
-              expectedDate="January 2025"
+              expectedDate="August 2025"
               features={[
                 "Service 1",
                 "Service 2",
@@ -67,7 +67,7 @@ const UpcomingDemo = () => {
             <Upcoming 
               title="Tool Coming Soon"
               description="This is a sample upcoming tool with orange theme."
-              expectedDate="January 2025"
+              expectedDate="August 2025"
               features={[
                 "Tool Feature 1",
                 "Tool Feature 2",
@@ -84,7 +84,7 @@ const UpcomingDemo = () => {
             <Upcoming 
               title="Alert System Coming Soon"
               description="This is a sample upcoming alert system with red theme."
-              expectedDate="January 2025"
+              expectedDate="August 2025"
               features={[
                 "Alert Feature 1",
                 "Alert Feature 2",

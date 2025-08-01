@@ -6,7 +6,7 @@ const AboutUs = () => {
     <Upcoming 
       title="About Us Coming Soon"
       description="We're crafting our story to share with you. Our about page will showcase our mission, values, and the team behind Braid Commerce."
-      expectedDate="January 2025"
+      expectedDate="August 2025"
       features={[
         "Our mission and vision",
         "Team member profiles",

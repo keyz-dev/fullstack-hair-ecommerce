@@ -66,7 +66,7 @@ const CustomerInfoStep = ({
           value={customerInfo.lastName}
           onChangeHandler={handleInputChange}
           error={errors.lastName}
-          required
+          required={false}
         />
         <Input
           label="Email"

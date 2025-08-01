@@ -174,7 +174,7 @@ const DashboardSidebar = () => {
 
             return (
               <Link
-                key={item.path || 'home'}
+                key={item.path || 'dashboard'}
                 to={fullPath}
                 onClick={handleNavClick}
                 role="listitem"

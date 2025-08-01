@@ -6,7 +6,7 @@ const Bookings = () => {
     <Upcoming 
       title="Booking Management Coming Soon"
       description="Our booking management system is being developed to provide comprehensive tools for managing appointments and reservations."
-      expectedDate="January 2025"
+      expectedDate="August 2025"
       features={[
         "Appointment scheduling",
         "Calendar management",
