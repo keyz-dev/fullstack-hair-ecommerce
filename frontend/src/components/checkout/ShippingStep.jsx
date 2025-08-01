@@ -77,7 +77,6 @@ const ShippingStep = ({
             </button>
           </div>
           <Input
-            label="Address"
             name="address"
             type="text"
             value={shippingAddress.address}
@@ -108,6 +107,7 @@ const ShippingStep = ({
             value={shippingAddress.postalCode}
             onChangeHandler={onShippingAddressChange}
             required
+            placeholder="00000 if none"
           />
         </div>
         <Input

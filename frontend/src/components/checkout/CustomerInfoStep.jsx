@@ -1,6 +1,7 @@
-import React from 'react';
-import { Input, Button } from '../ui';
+import React, { useState } from 'react';
+import { Input, Button, PhoneInput } from '../ui';
 import { User } from 'lucide-react';
+import { validateCustomerInfo } from '../../utils/checkoutValidation';
 
 const CustomerInfoStep = ({ 
   customerInfo, 
@@ -9,11 +10,26 @@ const CustomerInfoStep = ({
   isAuthenticated,
   onSignIn 
 }) => {
-  const validateStep = () => {
-    return customerInfo.firstName && 
-           customerInfo.lastName && 
-           customerInfo.email && 
-           customerInfo.phone;
+  const [errors, setErrors] = useState({});
+
+  const handleNext = () => {
+    const validation = validateCustomerInfo(customerInfo);
+    if (validation.isValid) {
+      setErrors({});
+      onNext();
+    } else {
+      setErrors(validation.errors);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    onCustomerInfoChange(e);
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   return (
@@ -40,14 +56,16 @@ const CustomerInfoStep = ({
           label="First Name"
           name="firstName"
           value={customerInfo.firstName}
-          onChangeHandler={onCustomerInfoChange}
+          onChangeHandler={handleInputChange}
+          error={errors.firstName}
           required
         />
         <Input
           label="Last Name"
           name="lastName"
           value={customerInfo.lastName}
-          onChangeHandler={onCustomerInfoChange}
+          onChangeHandler={handleInputChange}
+          error={errors.lastName}
           required
         />
         <Input
@@ -55,23 +73,24 @@ const CustomerInfoStep = ({
           name="email"
           type="email"
           value={customerInfo.email}
-          onChangeHandler={onCustomerInfoChange}
+          onChangeHandler={handleInputChange}
+          error={errors.email}
           required
         />
-        <Input
-          label="Phone"
+        <PhoneInput
+          label="Phone Number"
           name="phone"
           value={customerInfo.phone}
-          onChangeHandler={onCustomerInfoChange}
+          onChangeHandler={handleInputChange}
+          error={errors.phone}
           required
         />
       </div>
 
       <div className="flex justify-end mt-6">
         <Button
-          onClickHandler={onNext}
+          onClickHandler={handleNext}
           additionalClasses="bg-primary text-white hover:bg-primary/90"
-          isDisabled={!validateStep()}
         >
           Continue to Shipping
         </Button>

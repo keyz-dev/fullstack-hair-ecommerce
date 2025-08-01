@@ -1,4 +1,5 @@
 import { removeEmojis } from "./sanitize";
+import { validatePhoneNumber } from "./normalizePhone";
 
 export const isValidCMNumber = (number) => {
   if (!/^(?:\+?\d+|00\d+)$/.test(number)) return false;
@@ -25,12 +26,13 @@ export const validateRegisterForm = (formData, setErrors) => {
     newErrors.password = "Password must be at least 5 characters long";
   if (sanitized.password !== sanitized.confirmPassword)
     newErrors.confirmPassword = "Passwords do not match";
-  const phone = sanitized.phone.replace(/\s+/g, ""); // Remove spaces
-  if (!phone) {
-    newErrors.phone = "Phone Number is required";
-  } else if (!isValidCMNumber(phone)) {
-    newErrors.phone = "Phone number must start with 6, 2376, or +2376";
+  
+  // Validate phone number using international validation
+  const phoneValidation = validatePhoneNumber(sanitized.phone);
+  if (!phoneValidation.isValid) {
+    newErrors.phone = phoneValidation.error;
   }
+  
   // Block emojis (edge case)
   Object.keys(sanitized).forEach((key) => {
     if (sanitized[key] !== formData[key]) {

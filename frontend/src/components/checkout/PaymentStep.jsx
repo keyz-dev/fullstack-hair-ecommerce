@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Input, Button, Select } from '../ui';
+import { Input, Button, Select, PhoneInput } from '../ui';
 import { CreditCard, Check, AlertCircle } from 'lucide-react';
 import { usePublicPaymentMethods } from '../../hooks';
+import { validatePaymentInfo } from '../../utils/checkoutValidation';
 
 const PaymentStep = ({ 
   paymentInfo, 
@@ -29,7 +30,17 @@ const PaymentStep = ({
       return { isValid: false, errors: {} };
     }
     
-    // Validate based on payment method's customer fields
+    // Use the checkout validation utility for payment info
+    const validation = validatePaymentInfo({
+      paymentMethod: selectedPaymentMethod.code || selectedPaymentMethod.type,
+      ...paymentInfo
+    });
+    
+    if (!validation.isValid) {
+      return { isValid: false, errors: validation.errors };
+    }
+    
+    // Additional validation for payment method's customer fields
     if (selectedPaymentMethod.customerFields?.length > 0) {
       const newErrors = {};
       let valid = true;
@@ -76,12 +87,22 @@ const PaymentStep = ({
     setFieldErrors({});
   };
 
+  const handleInputChange = (e) => {
+    const { name } = e.target;
+    onPaymentInfoChange(e);
+    
+    // Clear error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
   const renderPaymentField = (field) => {
     const commonProps = {
       label: field.label,
       name: field.name,
       value: paymentInfo[field.name] || '',
-      onChangeHandler: onPaymentInfoChange,
+      onChangeHandler: handleInputChange,
       placeholder: field.placeholder,
       required: field.required,
       error: fieldErrors[field.name],
@@ -91,7 +112,7 @@ const PaymentStep = ({
       case 'email':
         return <Input {...commonProps} type="email" />;
       case 'phone':
-        return <Input {...commonProps} type="tel" />;
+        return <PhoneInput {...commonProps} />;
       case 'number':
         return <Input {...commonProps} type="number" />;
       case 'select':
@@ -103,7 +124,7 @@ const PaymentStep = ({
             <Select
               name={field.name}
               value={paymentInfo[field.name] || ''}
-              onChange={onPaymentInfoChange}
+              onChange={handleInputChange}
               options={field.options.map(option => ({label: option, value: option}))}
               placeholder={`Select ${field.label}`}
               error={fieldErrors[field.name]}

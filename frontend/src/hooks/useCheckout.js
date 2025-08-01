@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { calculateShipping } from '../services/shippingService';
 import { orderApi } from '../api/order';
 import api from '../api/index';
+import { validateCustomerInfo, validateShippingInfo, validatePaymentInfo } from '../utils/checkoutValidation';
+import { toast } from 'react-toastify';
 
 const useCheckout = (cartItems, cartTotal, user, clearCart) => {
   const navigate = useNavigate();
@@ -99,36 +101,27 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
     setPaymentInfo({});
   };
 
+  // Updated validation functions using the validation utilities
   const validateStep1 = () => {
-    return customerInfo.firstName && 
-           customerInfo.lastName && 
-           customerInfo.email && 
-           customerInfo.phone;
+    const validation = validateCustomerInfo(customerInfo);
+    return validation.isValid;
   };
 
   const validateStep2 = () => {
-    return shippingAddress.address && 
-           shippingAddress.city && 
-           shippingAddress.state && 
-           shippingAddress.postalCode;
+    const validation = validateShippingInfo(shippingAddress);
+    return validation.isValid;
   };
 
   const validateStep3 = () => {
     if (!selectedPaymentMethod) return false;
     
-    // Validate based on payment method's customer fields
-    if (selectedPaymentMethod.customerFields?.length > 0) {
-      return selectedPaymentMethod.customerFields.every(field => {
-        if (field.required) {
-          const value = paymentInfo[field.name];
-          return value && value.trim() !== '';
-        }
-        return true;
-      });
-    }
+    // Use the comprehensive payment validation utility
+    const validation = validatePaymentInfo({
+      paymentMethod: selectedPaymentMethod.code || selectedPaymentMethod.type,
+      ...paymentInfo
+    });
     
-    // For payment methods without customer fields (like Cash on Delivery)
-    return true;
+    return validation.isValid;
   };
 
   const handleNextStep = () => {
@@ -175,25 +168,27 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
       const response = await orderApi.createOrder(orderData);
       const createdOrder = response.data;
 
-      // If it's a mobile money payment, initiate payment
-      if (selectedPaymentMethod.code === 'MOBILE_MONEY' && paymentInfo.phoneNumber) {
+      // Check if it's a mobile money payment and get the phone number
+      const isMobileMoney = selectedPaymentMethod.type === 'MOBILE_MONEY' || 
+                           selectedPaymentMethod.code === 'MOBILE_MONEY' ||
+                           selectedPaymentMethod.code?.toLowerCase().includes('mobile');
+      
+      // Get phone number from payment info (could be named differently)
+      const phoneNumber = paymentInfo.mobileNumber || paymentInfo.phoneNumber || paymentInfo.phone;
+
+      if (isMobileMoney && phoneNumber) {
         try {
           const paymentResponse = await api.post('/payment/initiate', {
             orderId: createdOrder._id,
-            phoneNumber: paymentInfo.phoneNumber,
-            amount: total,
-            description: `Payment for order ${createdOrder.orderNumber}`
+            phoneNumber: phoneNumber
           });
 
-          // Handle payment initiation response
           if (paymentResponse.data.success) {
-            // Payment initiated successfully - user will receive USSD prompt
-            console.log('Payment initiated:', paymentResponse.data);
+            toast.success('Payment initiated successfully');
           }
         } catch (paymentError) {
           console.error('Payment initiation failed:', paymentError);
-          // Continue to order confirmation even if payment initiation fails
-          // The order is already created
+          toast.error('Payment initiation failed');
         }
       }
       

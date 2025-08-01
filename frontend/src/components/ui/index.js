@@ -32,3 +32,4 @@ export { default as ImageGrid } from './ImageGrid';
 export { default as ProgressSteps } from './ProgressSteps';
 export { default as Upcoming } from './Upcoming';
 export { default as HeroSection } from './HeroSection';
+export { default as PhoneInput } from './PhoneInput';

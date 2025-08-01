@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks";
-import { Input, Button, FileUploader } from "../../components/ui";
+import { Input, Button, FileUploader, PhoneInput } from "../../components/ui";
 import { validateRegisterForm } from "../../utils/validateForm";
 import { normalizeNumber } from "../../utils/normalizePhone";
 
@@ -12,7 +12,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "+237 6",
+    phone: "",
     password: "",
     confirmPassword: "",
   });
@@ -57,7 +57,7 @@ const Register = () => {
       >
         <div className="flex flex-col items-center">
           {/* <Logo />
-          <span className="text-primary font-bold text-lg mt-2 mb-1">OmniBuzz</span> */}
+          <span className="text-primary font-bold text-lg mt-2 mb-1">BraidSter</span> */}
           <h1 className="text-2xl font-bold text-primary dark:text-white mt-2 mb-4">
             Create Your Account
           </h1>
@@ -92,11 +92,11 @@ const Register = () => {
             onChangeHandler={handleChange}
             required
           />
-          <Input
+          <PhoneInput
             label="Phone Number"
             name="phone"
             value={formData.phone}
-            placeholder="+2376XXXXXXXXX"
+            placeholder="Enter your phone number"
             error={errors.phone}
             onChangeHandler={handleChange}
             required
