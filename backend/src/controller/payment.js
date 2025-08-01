@@ -1,23 +1,19 @@
 const Order = require('../models/order');
 const { BadRequestError, NotFoundError } = require('../utils/errors');
 const campayService = require('../utils/campay');
+const { validatePhoneNumber, normalizePhoneNumber } = require('../utils/phoneValidation');
+const { initiatePaymentSchema } = require('../schema/paymentSchema');
 
 // Initiate payment for an order
 exports.initiatePayment = async (req, res, next) => {
   try {
-    const { orderId, phoneNumber } = req.body;
-    
-    // Validate input
-    if (!orderId || !phoneNumber) {
-      return next(new BadRequestError('Order ID and phone number are required'));
+    // Validate request body using schema
+    const { error } = initiatePaymentSchema.validate(req.body);
+    if (error) {
+      return next(new BadRequestError(error.details[0].message));
     }
 
-    // Validate phone number format (Cameroon format)
-    const phoneRegex = /^(237)?[6][0-9]{8}$/;
-    const cleanPhone = phoneNumber.replace(/\s+/g, '');
-    if (!phoneRegex.test(cleanPhone)) {
-      return next(new BadRequestError('Invalid phone number format. Use format: 237xxxxxxxxx'));
-    }
+    const { orderId, phoneNumber } = req.body;
 
     const order = await Order.findById(orderId);
     if (!order) {
@@ -28,9 +24,13 @@ exports.initiatePayment = async (req, res, next) => {
       return next(new BadRequestError('Order already paid'));
     }
 
+    // Normalize phone number to E.164 format
+    const normalizedPhone = normalizePhoneNumber(phoneNumber);
+
     const paymentData = {
-      amount: Math.round(order.totalAmount), // Ensure integer amount
-      phoneNumber: cleanPhone.startsWith('237') ? cleanPhone : `237${cleanPhone}`,
+      // amount: Math.round(order.totalAmount), // Ensure integer amount
+      amount: 2, // TODO: Remove this For real account
+      phoneNumber: normalizedPhone,
       description: `Payment for BraidSter order #${orderId.slice(-8)}`,
       orderId: orderId,
       currency: 'XAF'
@@ -40,8 +40,7 @@ exports.initiatePayment = async (req, res, next) => {
 
     const paymentResponse = await campayService.initiatePayment(paymentData);
     
-    // Update order with payment details
-    order.paymentMethod = 'mobile_money';
+    // Update order with payment details (don't override paymentMethod)
     order.paymentStatus = 'pending';
     order.paymentReference = paymentResponse.reference;
     await order.save();

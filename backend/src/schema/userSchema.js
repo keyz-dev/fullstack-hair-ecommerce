@@ -1,10 +1,24 @@
 const Joi = require('joi');
+const { validatePhoneNumber } = require('../utils/phoneValidation');
+
+// Custom phone validation
+const phoneValidation = (value, helpers) => {
+  const validation = validatePhoneNumber(value);
+  if (!validation.isValid) {
+    return helpers.error('any.invalid');
+  }
+  return value;
+};
 
 const userRegisterSchema = Joi.object({
   name: Joi.string().min(3).max(30).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
-  phone: Joi.string().required(),
+  phone: Joi.string().custom(phoneValidation, 'phone validation').required()
+    .messages({
+      'any.invalid': 'Please provide a valid phone number with country code',
+      'string.empty': 'Phone number is required'
+    }),
   avatar: Joi.string().uri().optional(),
 });
 
@@ -21,7 +35,10 @@ const googleLoginSchema = Joi.object({
 const userUpdateSchema = Joi.object({
   name: Joi.string().min(3).max(30).optional(),
   email: Joi.string().email().optional(),
-  phone: Joi.string().optional(),
+  phone: Joi.string().custom(phoneValidation, 'phone validation').optional()
+    .messages({
+      'any.invalid': 'Please provide a valid phone number with country code'
+    }),
   avatar: Joi.string().uri().optional(),
 });
 

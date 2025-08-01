@@ -6,6 +6,7 @@ const axios = require('axios');
 const { cleanUpFileImages } = require('../utils/imageCleanup');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/sendVerificationEmail');
 const formatUserData = require('../utils/returnFormats/userData');
+const { normalizePhoneNumber } = require('../utils/phoneValidation');
 
 // Register user  
 exports.register = async (req, res, next) => {
@@ -13,17 +14,20 @@ exports.register = async (req, res, next) => {
     const { error } = userRegisterSchema.validate(req.body);
     if (error) return next(new BadRequestError(error.details[0].message));
   
-    const { email, ...userData } = req.body;
+    const { email, phone, ...userData } = req.body;
     let user = await User.findOne({ email });
     if (user) return next(new ConflictError('User already exists with this email'));
     
-    let role = 'admin';
+    let role = 'client';
     let authProvider = 'local';
     let isVerified = false;
     let avatar = undefined;
 
+    // Normalize phone number
+    const normalizedPhone = normalizePhoneNumber(phone);
+
     if (req.file) avatar = req.file.path;
-    user = new User({ ...userData, email, avatar, role, authProvider, isVerified });
+    user = new User({ ...userData, email, phone: normalizedPhone, avatar, role, authProvider, isVerified });
     await user.save();
 
     try {

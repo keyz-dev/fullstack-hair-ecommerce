@@ -1,0 +1,4 @@
+{"level":"error","message":"Order validation failed: user: Path `user` is required., paymentMethod: `688b6c7b8f08235a451fc6a3` is not a valid enum value for path `paymentMethod`.","timestamp":"2025-08-01T07:30:48.472Z"}
+{"level":"error","message":"Order validation failed: user: Path `user` is required., paymentMethod: `688b6c7b8f08235a451fc6a3` is not a valid enum value for path `paymentMethod`.","timestamp":"2025-08-01T08:19:57.985Z"}
+{"level":"error","message":"\"amount\" is not allowed","timestamp":"2025-08-01T08:42:27.962Z"}
+{"level":"error","message":"\"amount\" is not allowed","timestamp":"2025-08-01T08:51:55.792Z"}

@@ -51,7 +51,7 @@ class EmailService {
       }
 
       const info = await this.transporter.sendMail({
-        from: process.env.SMTP_FROM_NAME,
+        from: `"BraidSter Team" <${process.env.SMTP_EMAIL}>`,
         to,
         subject,
         text,
@@ -70,9 +70,9 @@ class EmailService {
   async sendWelcomeEmail(user) {
     return this.sendEmail({
       to: user.email,
-      subject: "Welcome to OmniBuzz!",
+      subject: "Welcome to BraidSter!",
       html: `
-        <h1>Welcome to OmniBuzz, ${user.firstName}!</h1>
+        <h1>Welcome to BraidSter, ${user.firstName}!</h1>
         <p>Thank you for registering with us. We're excited to have you on board.</p>
       `,
     });
@@ -81,7 +81,7 @@ class EmailService {
   async sendBookingConfirmation(booking) {
     return this.sendEmail({
       to: booking.passengerDetails.email,
-      subject: "Booking Confirmation - OmniBuzz",
+      subject: "Booking Confirmation - BraidSter",
       html: `
         <h1>Booking Confirmed!</h1>
         <p>Your booking has been confirmed. Booking ID: ${booking.bookingNumber}</p>

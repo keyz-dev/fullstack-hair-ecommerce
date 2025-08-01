@@ -1,7 +1,8 @@
 const Order = require('../models/order');
 const Product = require('../models/product');
+const PaymentMethod = require('../models/paymentMethod');
 const { BadRequestError, NotFoundError, UnauthorizedError } = require('../utils/errors');
-
+const { normalizePhoneNumber } = require('../utils/phoneValidation');
 
 // Place a new order
 const newOrder = async (req, res, next) => {
@@ -20,15 +21,49 @@ const newOrder = async (req, res, next) => {
 
   // For authenticated users, get customer info from user object
   // For guest users, use provided customerInfo
-  const finalCustomerInfo = req.rootUser ? {
-    firstName: req.rootUser.firstName,
-    lastName: req.rootUser.lastName,
-    email: req.rootUser.email,
-    phone: req.rootUser.phone
-  } : customerInfo;
+  let finalCustomerInfo;
+  
+  if (req.rootUser) {
+    // Authenticated user
+    finalCustomerInfo = {
+      firstName: req.rootUser.firstName,
+      lastName: req.rootUser.lastName,
+      email: req.rootUser.email,
+      phone: req.rootUser.phone
+    };
+  } else {
+    // Guest user - validate customerInfo is provided
+    if (!customerInfo) {
+      return next(new BadRequestError('Customer information is required for guest users'));
+    }
+    
+    finalCustomerInfo = {
+      ...customerInfo,
+      phone: normalizePhoneNumber(customerInfo.phone)
+    };
+  }
 
   if (!finalCustomerInfo || !finalCustomerInfo.firstName || !finalCustomerInfo.email) {
     return next(new BadRequestError('Customer information is required'));
+  }
+
+  // Validate payment method
+  const paymentMethodDoc = await PaymentMethod.findById(paymentMethod);
+  if (!paymentMethodDoc) {
+    return next(new NotFoundError('Payment method not found'));
+  }
+  if (!paymentMethodDoc.isActive) {
+    return next(new BadRequestError('Selected payment method is not active'));
+  }
+  
+  // Validate currency if payment method has currency restrictions
+  if (paymentMethodDoc.supportedCurrencies && paymentMethodDoc.supportedCurrencies.length > 0) {
+    // You might want to get the currency from the request or user preferences
+    // For now, we'll assume XAF is the default currency
+    const orderCurrency = req.body.currency || 'XAF';
+    if (!paymentMethodDoc.supportedCurrencies.includes(orderCurrency)) {
+      return next(new BadRequestError(`Payment method does not support ${orderCurrency} currency`));
+    }
   }
 
   // Validate products and stock
@@ -47,6 +82,7 @@ const newOrder = async (req, res, next) => {
       variant: cartItems[i].variant
     });
   }
+  
   // Generate order number
   const orderCount = await Order.countDocuments();
   const orderNumber = `ORD-${Date.now()}-${orderCount + 1}`;
@@ -68,39 +104,48 @@ const newOrder = async (req, res, next) => {
   if (req.rootUser) {
     orderData.user = req.rootUser._id;
   } else {
-    orderData.guestInfo = customerInfo;
+    orderData.guestInfo = finalCustomerInfo;
   }
 
   const order = new Order(orderData);
   await order.save();
+  
   // Reduce stock
   for (let i = 0; i < cartItems.length; i++) {
     const product = await Product.findById(cartItems[i].product);
     product.stock -= cartItems[i].quantity;
     await product.save();
   }
+  
   res.status(201).json({ success: true, message: 'Order placed successfully', data: order });
 };
 
 // Get all orders (admin)
 const getAdminOrders = async (req, res, next) => {
-  const orders = await Order.find({}).populate('user');
+  const orders = await Order.find({}).populate('user').populate('paymentMethod');
   res.status(200).json({ success: true, orders });
 };
 
 // Get my orders
 const getMyOrders = async (req, res, next) => {
-  const orders = await Order.find({ user: req.rootUser._id });
+  const orders = await Order.find({ user: req.rootUser._id }).populate('paymentMethod');
   res.status(200).json({ success: true, orders });
 };
 
 // Get single order
 const getSingleOrder = async (req, res, next) => {
-  const order = await Order.findById(req.params.id).populate('user').populate('orderItems.product');
+  const order = await Order.findById(req.params.id)
+    .populate('user')
+    .populate('paymentMethod')
+    .populate('orderItems.product');
+    
   if (!order) return next(new NotFoundError('Order not found'));
-  if (order.user.toString() !== req.rootUser._id.toString()) {
+  
+  // Check if user is authorized to view this order
+  if (order.user && order.user.toString() !== req.rootUser._id.toString()) {
     return next(new UnauthorizedError('You are not authorized to view this order'));
   }
+  
   res.status(200).json({ success: true, order });
 };
 
