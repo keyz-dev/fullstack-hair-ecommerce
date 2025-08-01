@@ -36,4 +36,33 @@ const authorizeRoles = (roles) => {
   };
 };
 
-module.exports = { authenticateUser, authorizeRoles };
+const optionalAuth = async (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  
+  if (token) {
+    // If token exists, try to authenticate
+    try {
+      const jwt = require('jsonwebtoken');
+      const User = require('../models/user');
+      
+      const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id);
+      
+      if (user) {
+        req.rootUser = user;
+      } else {
+        req.rootUser = null;
+      }
+    } catch (err) {
+      // Invalid token, treat as guest
+      req.rootUser = null;
+    }
+  } else {
+    // No token, treat as guest
+    req.rootUser = null;
+  }
+  
+  next();
+};
+
+module.exports = { authenticateUser, authorizeRoles, optionalAuth };

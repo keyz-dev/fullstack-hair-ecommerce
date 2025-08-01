@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Input, Button } from '../ui';
-import { Truck } from 'lucide-react';
+import { MapPin, Loader2 } from 'lucide-react';
 import { calculateShipping } from '../../services/shippingService';
+import { getCurrentPosition, reverseGeocode, formatCameroonAddress, getLocationErrorMessage } from '../../utils/locationUtils';
 
 const ShippingStep = ({ 
   shippingAddress, 
@@ -10,6 +11,8 @@ const ShippingStep = ({
   onBack,
   subtotal 
 }) => {
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+
   const validateStep = () => {
     return shippingAddress.address && 
            shippingAddress.city && 
@@ -19,18 +22,71 @@ const ShippingStep = ({
 
   const shippingInfo = calculateShipping(shippingAddress.city, subtotal);
 
+  const getCurrentLocation = async () => {
+    setIsGettingLocation(true);
+
+    try {
+      // Get current position
+      const position = await getCurrentPosition();
+      const { latitude, longitude } = position.coords;
+      
+      // Reverse geocode to get address
+      const geocodeData = await reverseGeocode(latitude, longitude);
+      
+      // Format address for Cameroon
+      const locationData = formatCameroonAddress(geocodeData);
+
+      // Update shipping address fields
+      Object.entries(locationData).forEach(([key, value]) => {
+        if (value) {
+          onShippingAddressChange({
+            target: { name: key, value }
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error getting location:', error);
+      alert(getLocationErrorMessage(error));
+    } finally {
+      setIsGettingLocation(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-sm border border-gray-200 p-6">
       <h2 className="text-xl font-semibold text-primary mb-6">Shipping Address</h2>
       
       <div className="space-y-4">
-        <Input
-          label="Address"
-          name="address"
-          value={shippingAddress.address}
-          onChangeHandler={onShippingAddressChange}
-          required
-        />
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium text-gray-700">
+              Address <span className="text-red-500">*</span>
+            </label>
+            <button
+              type="button"
+              onClick={getCurrentLocation}
+              disabled={isGettingLocation}
+              className="flex items-center gap-2 px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isGettingLocation ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <MapPin size={16} />
+              )}
+              {isGettingLocation ? 'Getting location...' : 'Use current location'}
+            </button>
+          </div>
+          <Input
+            label="Address"
+            name="address"
+            type="text"
+            value={shippingAddress.address}
+            onChangeHandler={onShippingAddressChange}
+            required={true}
+            placeholder="Enter your street address"
+          />
+          
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input
             label="City"

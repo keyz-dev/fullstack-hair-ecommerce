@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { calculateShipping } from '../services/shippingService';
+import { orderApi } from '../api/order';
+import api from '../api/index';
 
 const useCheckout = (cartItems, cartTotal, user, clearCart) => {
   const navigate = useNavigate();
@@ -149,8 +151,51 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
     setIsProcessing(true);
     
     try {
-      // Simulate order processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Create order data
+      const orderData = {
+        user: user ? user._id : null,
+        customerInfo,
+        shippingAddress,
+        cartItems: cartItems.map(item => ({
+          product: item._id,
+          variant: item.selectedVariant,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        paymentMethod: selectedPaymentMethod._id,
+        subtotal: cartTotal,
+        shipping: shippingInfo.cost,
+        tax,
+        processingFee,
+        total,
+        notes: paymentInfo.notes || ''
+      };
+
+      // Create the order first
+      const response = await orderApi.createOrder(orderData);
+      const createdOrder = response.data;
+
+      // If it's a mobile money payment, initiate payment
+      if (selectedPaymentMethod.code === 'MOBILE_MONEY' && paymentInfo.phoneNumber) {
+        try {
+          const paymentResponse = await api.post('/payment/initiate', {
+            orderId: createdOrder._id,
+            phoneNumber: paymentInfo.phoneNumber,
+            amount: total,
+            description: `Payment for order ${createdOrder.orderNumber}`
+          });
+
+          // Handle payment initiation response
+          if (paymentResponse.data.success) {
+            // Payment initiated successfully - user will receive USSD prompt
+            console.log('Payment initiated:', paymentResponse.data);
+          }
+        } catch (paymentError) {
+          console.error('Payment initiation failed:', paymentError);
+          // Continue to order confirmation even if payment initiation fails
+          // The order is already created
+        }
+      }
       
       // Store cart items before clearing
       const orderCartItems = [...cartItems];
@@ -158,16 +203,18 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
       // Set order completed flag to prevent cart redirect
       setIsOrderCompleted(true);
       
-      // Redirect to order confirmation first
+      // Redirect to order confirmation
       navigate('/order-confirmation', { 
         state: { 
-          orderNumber: `ORD-${Date.now()}`,
+          orderNumber: createdOrder.orderNumber,
+          orderId: createdOrder._id,
           customerInfo,
           shippingAddress,
           orderSummary,
           selectedPaymentMethod,
           paymentInfo,
-          cartItems: orderCartItems
+          cartItems: orderCartItems,
+          paymentStatus: createdOrder.paymentStatus
         }
       });
       
@@ -175,6 +222,7 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
       clearCart();
     } catch (error) {
       console.error('Order processing failed:', error);
+      // You might want to show an error message to the user here
     } finally {
       setIsProcessing(false);
     }
