@@ -43,8 +43,6 @@ class CampayService {
         cancel_url: `${process.env.SERVER_URL}/api/payment/cancel`
       };
 
-      console.log('Initiating payment with payload:', payload);
-
       const response = await axios.post(
         `${this.baseURL}/collect/`,
         payload,
@@ -56,7 +54,6 @@ class CampayService {
         }
       );
       
-      console.log('Campay response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error initiating Campay payment:', error.response?.data || error.message);

@@ -2,6 +2,7 @@ import { Route } from "react-router-dom";
 import { Home, ProductDetails, Shop, Cart, Services, AboutUs, Blog, Posts, Checkout, OrderConfirmation, OrderTracking } from "../pages";
 import { Login, Register, ForgotPassword, VerifyAccount, ResetPassword } from "../pages/auth";
 import { HomeLayout, AuthLayout } from "../components/layout";
+import PaymentTest from "../pages/PaymentTest";
 
 export const publicRoutes = [
   <Route key="home" path="/" element={<HomeLayout />}>
@@ -16,6 +17,7 @@ export const publicRoutes = [
     <Route path="/about" element={<AboutUs />} />
     <Route path="/blog" element={<Blog />} />
     <Route path="/posts" element={<Posts />} />
+    <Route path="/payment-test" element={<PaymentTest />} />
   </Route>,
   <Route key="auth" element={<AuthLayout />}>
     <Route key="login" path="/login" element={<Login />} />

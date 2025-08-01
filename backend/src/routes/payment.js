@@ -2,18 +2,24 @@
 const express = require('express');
 const { authenticateUser } = require('../middleware/auth');
 const paymentController = require('../controller/payment');
+const { verifyCamPayWebhook } = require('../middleware/verifyWebhook');
 
 const router = express.Router();
 
 // Initiate payment
-router.post('/initiate', paymentController.initiatePayment);
+router.post('/initiate', authenticateUser, paymentController.initiatePayment);
 
 // Campay webhook (no auth needed)
-router.post('/webhook', paymentController.handleWebhook);
+router.post('/webhook', verifyCamPayWebhook, paymentController.handleWebhook);
 
 // Check payment status
-router.get('/status/:orderId', paymentController.checkPaymentStatus);
+router.get('/status/:orderId', authenticateUser, paymentController.checkPaymentStatus);
 
+// Get payment status from active tracking
+router.get('/tracking/:reference', paymentController.getPaymentStatus);
+
+// Debug endpoint - see active connections
+router.get('/debug/connections', paymentController.getDebugInfo);
 
 // Success and cancel URLs (for Campay redirects)
 router.get('/success', (req, res) => {

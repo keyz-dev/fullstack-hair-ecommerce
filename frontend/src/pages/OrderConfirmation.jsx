@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { CheckCircle, Package, Mail, Phone, ArrowLeft, Download } from 'lucide-react';
 import { Button } from '../components/ui';
+import { PaymentTracker } from '../components/payment';
 import { formatPrice } from '../utils/priceUtils';
 import { useAuth } from '../hooks';
 import { downloadBraidSterInvoice } from '../utils/pdfGenerator';
@@ -16,7 +17,9 @@ const OrderConfirmation = () => {
     orderSummary, 
     selectedPaymentMethod,
     paymentInfo,
-    cartItems = []
+    cartItems = [],
+    paymentReference,
+    orderId
   } = location.state || {};
 
   const handleDownloadPDF = () => {
@@ -31,6 +34,11 @@ const OrderConfirmation = () => {
     };
     downloadBraidSterInvoice(orderData);
   };
+
+  // Check if this is a mobile money payment that needs tracking
+  const isMobileMoneyPayment = selectedPaymentMethod?.type === 'MOBILE_MONEY' || 
+                              selectedPaymentMethod?.code === 'MOBILE_MONEY' ||
+                              selectedPaymentMethod?.code?.toLowerCase().includes('mobile');
 
   if (!orderNumber) {
     return (
@@ -67,6 +75,18 @@ const OrderConfirmation = () => {
         <h1 className="text-3xl font-bold text-primary mb-2">Thank You!</h1>
         <p className="text-gray-600">Your order has been placed successfully</p>
       </div>
+
+      {/* Payment Tracker for Mobile Money Payments */}
+      {isMobileMoneyPayment && paymentReference && (
+        <div className="mb-8">
+          <PaymentTracker 
+            paymentReference={paymentReference}
+            orderId={orderId}
+            amount={orderSummary?.total}
+            phoneNumber={paymentInfo?.mobileNumber || paymentInfo?.phoneNumber || paymentInfo?.phone}
+          />
+        </div>
+      )}
 
       <div className="bg-white rounded-sm border border-gray-200 p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
