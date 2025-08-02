@@ -14,7 +14,6 @@ import {
   Products,
   Services,
   Bookings,
-  Blogs,
   Posts,
   Settings,
 } from "../pages/admin";
@@ -36,7 +35,6 @@ export const adminRoutes = [
       <Route path="users" element={<Users />} />
       <Route path="notifications" element={<Notifications />} />
       <Route path="profile" element={<Profile />} />
-      <Route path="blog" element={<Blogs />} />
       <Route path="posts" element={<Posts />} />
       <Route path="services" element={<Services />} />
       <Route path="bookings" element={<Bookings />} />

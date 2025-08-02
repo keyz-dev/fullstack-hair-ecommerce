@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { ServiceStatSection, ServicesListView, AddServiceModal, UpdateServiceModal } from ".";
+import React, { useState, useEffect } from "react";
+import { ServiceStatSection, ServicesListView, AddServiceModal, UpdateServiceModal, ViewServiceModal } from ".";
 import { Button, DeleteModal } from "../../ui";
 import { toast } from "react-toastify";
 import { useService } from "../../../hooks";
@@ -7,13 +7,24 @@ import { useService } from "../../../hooks";
 const ServicesMainView = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
-  const { deleteService, loading } = useService();
+  const { deleteService, loading, fetchStats } = useService();
+
+  // Fetch stats on component mount
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   const handleEdit = (service) => {
     setSelectedService(service);
     setEditModalOpen(true);
+  };
+
+  const handleView = (service) => {
+    setSelectedService(service);
+    setViewModalOpen(true);
   };
 
   const handleDelete = (service) => {
@@ -41,18 +52,25 @@ const ServicesMainView = () => {
           Add Service
         </Button>
       </div>
-      <ServicesListView onEdit={handleEdit} onDelete={handleDelete} />
+      
+      <ServicesListView onEdit={handleEdit} onView={handleView} onDelete={handleDelete} />
       
       <AddServiceModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
       
-      {/* <UpdateServiceModal
+      <UpdateServiceModal
         isOpen={editModalOpen}
         onClose={() => { setEditModalOpen(false); setSelectedService(null); }}
         initialData={selectedService}
-      /> */}
+      />
+
+      <ViewServiceModal
+        isOpen={viewModalOpen}
+        onClose={() => { setViewModalOpen(false); setSelectedService(null); }}
+        service={selectedService}
+      />
       
       <DeleteModal
         isOpen={deleteModalOpen}

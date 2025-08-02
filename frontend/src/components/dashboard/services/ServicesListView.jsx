@@ -1,28 +1,71 @@
 import React, { useEffect } from "react";
 import { Table, SearchBar, FilterDropdown, Pagination, DropdownMenu, StatusPill } from "../../ui";
-import { Edit, Trash2, Clock, DollarSign } from "lucide-react";
+import { Edit, Trash2, Clock, DollarSign, Users, Eye, Power, PowerOff } from "lucide-react";
 import { useService } from "../../../hooks";
+import { useCategory } from "../../../hooks";
+import { useCurrency } from "../../../hooks";
+import { formatPriceWithSymbol, getCurrencyByCode } from "../../../utils/currencyUtils";
 
-const ServicesListView = ({ onEdit, onDelete }) => {
+const ServicesListView = ({ onEdit, onView, onDelete }) => {
   const {
-    services, page, totalPages, fetchServices, setPage, setSearch, search, filters, setFilters
+    services, 
+    pagination, 
+    fetchServices, 
+    setPage, 
+    setSearch, 
+    search, 
+    filters, 
+    setFilters,
+    loading,
+    activateService,
+    deactivateService
   } = useService();
 
-  // Example filter options (replace with real categories/statuses)
-  const categoryOptions = [{ value: "", label: "All Categories" }];
+  const { categories } = useCategory();
+  const { currencies } = useCurrency();
+
+  // Filter options
+  const categoryOptions = [
+    { value: "", label: "All Categories" },
+    ...(categories || []).map(cat => ({
+      value: cat._id,
+      label: cat.name
+    }))
+  ];
+
   const statusOptions = [
     { value: "", label: "All Statuses" },
-    { value: "true", label: "Active" },
-    { value: "false", label: "Inactive" },
+    { value: "draft", label: "Draft" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+    { value: "maintenance", label: "Maintenance" },
+  ];
+
+  const staffRequirementOptions = [
+    { value: "", label: "All Services" },
+    { value: "true", label: "Requires Staff" },
+    { value: "false", label: "No Staff Required" },
   ];
 
   useEffect(() => {
     fetchServices();
-  }, [page, filters, search, fetchServices]);
+  }, [pagination.page, filters, search, fetchServices]);
 
   const handleFilterChange = (filterName, value) => {
     setFilters({ ...filters, [filterName]: value });
     setPage(1);
+  };
+
+  const handleStatusToggle = async (service) => {
+    try {
+      if (service.status === 'active') {
+        await deactivateService(service._id);
+      } else {
+        await activateService(service._id);
+      }
+    } catch (error) {
+      console.error('Error toggling service status:', error);
+    }
   };
 
   const columns = React.useMemo(
@@ -30,8 +73,8 @@ const ServicesListView = ({ onEdit, onDelete }) => {
       {
         Header: "Image",
         accessor: "image",
-        Cell: ({ row }) =>
-          row.image ? (
+        Cell: ({ row }) => {
+          return row.image ? (
             <img
               src={row.image}
               alt={row.name}
@@ -41,7 +84,8 @@ const ServicesListView = ({ onEdit, onDelete }) => {
             <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-500">
               No Image
             </div>
-          ),
+          );
+        },
       },
       {
         Header: "Name",
@@ -59,15 +103,20 @@ const ServicesListView = ({ onEdit, onDelete }) => {
       },
       {
         Header: "Price",
-        accessor: "price",
-        Cell: ({ row }) => (
-          <div className="flex items-center gap-1">
-            <DollarSign size={14} className="text-green-600" />
-            <span className="font-medium">
-              {row.price} {row.currency}
-            </span>
-          </div>
-        ),
+        accessor: "basePrice",
+        Cell: ({ row }) => {
+          const currencyCode = row.currency || 'XAF';
+          const currencyData = getCurrencyByCode(currencyCode, currencies);
+          const formattedPrice = formatPriceWithSymbol(row.basePrice, currencyData, currencyCode);
+          
+          return (
+            <div className="flex items-center gap-1">
+              <span className="font-medium">
+                {formattedPrice}
+              </span>
+            </div>
+          );
+        },
       },
       {
         Header: "Duration",
@@ -80,14 +129,46 @@ const ServicesListView = ({ onEdit, onDelete }) => {
         ),
       },
       {
-        Header: "Status",
-        accessor: "isActive",
+        Header: "Staff",
+        accessor: "staff",
         Cell: ({ row }) => (
-          <StatusPill
-            status={row.isActive ? "active" : "inactive"}
-            text={row.isActive ? "Active" : "Inactive"}
-          />
+          <div className="flex items-center gap-1">
+            <Users size={14} className="text-purple-600" />
+            <span className="text-sm">
+              {row.requiresStaff ? 
+                (row.staff?.length || 0) + ' assigned' : 
+                'Not required'
+              }
+            </span>
+          </div>
         ),
+      },
+      {
+        Header: "Status",
+        accessor: "status",
+        Cell: ({ row }) => {
+          const getStatusConfig = (status) => {
+            if (status === 'active') {
+              return { status: "active", text: "Active" };
+            } else if (status === 'draft') {
+              return { status: "draft", text: "Draft" };
+            } else if (status === 'inactive') {
+              return { status: "inactive", text: "Inactive" };
+            } else if (status === 'maintenance') {
+              return { status: "maintenance", text: "Maintenance" };
+            }
+            return { status: "draft", text: "Draft" };
+          };
+
+          const statusConfig = getStatusConfig(row.status);
+          
+          return (
+            <StatusPill
+              status={statusConfig.status}
+              text={statusConfig.text}
+            />
+          );
+        },
       },
       {
         Header: "Created",
@@ -99,9 +180,19 @@ const ServicesListView = ({ onEdit, onDelete }) => {
         Cell: ({ row }) => {
           const menuItems = [
             {
+              label: "View Service",
+              icon: <Eye size={16} />,
+              onClick: () => onView(row),
+            },
+            {
               label: "Edit Service",
               icon: <Edit size={16} />,
               onClick: () => onEdit(row),
+            },
+            {
+              label: row.status === 'active' ? "Deactivate" : "Activate",
+              icon: row.status === 'active' ? <PowerOff size={16} /> : <Power size={16} />,
+              onClick: () => handleStatusToggle(row),
             },
             {
               label: "Delete Service",
@@ -114,47 +205,53 @@ const ServicesListView = ({ onEdit, onDelete }) => {
         },
       },
     ],
-    [onEdit, onDelete]
+    [onEdit, onView, onDelete, handleStatusToggle]
   );
 
   return (
-    <div className="bg-white rounded-sm shadow-sm border">
-      <div className="p-4 border-b">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="flex flex-col sm:flex-row gap-4 flex-1">
-            <SearchBar
-              placeholder="Search services..."
-              value={search}
-              onChange={(value) => setSearch(value)}
-              className="min-w-[200px]"
-            />
-            <FilterDropdown
-              options={categoryOptions}
-              value={filters.category}
-              onChange={(value) => handleFilterChange("category", value)}
-              placeholder="Filter by category"
-            />
-            <FilterDropdown
-              options={statusOptions}
-              value={filters.isActive}
-              onChange={(value) => handleFilterChange("isActive", value)}
-              placeholder="Filter by status"
-            />
-          </div>
+    <div className="space-y-6">
+      {/* Search and Filters */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div className="w-full md:w-1/3">
+          <SearchBar placeholder="Search services..." value={search} onChange={(value) => setSearch(value)} />
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+          <FilterDropdown
+            options={categoryOptions}
+            value={filters.category}
+            onChange={(value) => handleFilterChange("category", value)}
+            placeholder="Filter by category"
+          />
+          <FilterDropdown
+            options={statusOptions}
+            value={filters.status}
+            onChange={(value) => handleFilterChange("status", value)}
+            placeholder="Filter by status"
+          />
+          <FilterDropdown
+            options={staffRequirementOptions}
+            value={filters.requiresStaff}
+            onChange={(value) => handleFilterChange("requiresStaff", value)}
+            placeholder="Staff requirement"
+          />
         </div>
       </div>
 
-      <Table
-        columns={columns}
-        data={services}
-        loading={false}
-        className="min-h-[400px]"
-      />
+      {/* Table */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <Table
+          columns={columns}
+          data={services}
+          loading={loading}
+          className="min-h-[400px]"
+        />
+      </div>
 
-      <div className="p-4 border-t">
+      {/* Pagination */}
+      <div className="flex justify-center">
         <Pagination
-          currentPage={page}
-          totalPages={totalPages}
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
           onPageChange={setPage}
         />
       </div>

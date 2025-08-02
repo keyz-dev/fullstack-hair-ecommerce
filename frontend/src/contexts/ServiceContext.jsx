@@ -2,6 +2,20 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { serviceApi } from '../api/service';
 import { toast } from 'react-toastify';
 
+// Utility function to extract error message from API errors
+const extractErrorMessage = (error) => {
+  if (error?.response?.data?.message) {
+    return error.response.data.message;
+  }
+  if (error?.response?.data?.error) {
+    return error.response.data.error;
+  }
+  if (error?.message) {
+    return error.message;
+  }
+  return "An unexpected error occurred";
+};
+
 const ServiceContext = createContext();
 
 export const ServiceProvider = ({ children }) => {
@@ -11,8 +25,11 @@ export const ServiceProvider = ({ children }) => {
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
+    draft: 0,
     inactive: 0,
-    featured: 0,
+    withStaff: 0,
+    withoutStaff: 0,
+    byCategory: []
   });
   const [pagination, setPagination] = useState({
     page: 1,
@@ -22,8 +39,13 @@ export const ServiceProvider = ({ children }) => {
   });
   const [filters, setFilters] = useState({
     category: '',
-    isActive: '',
-    staff: '',
+    status: '',
+    requiresStaff: '',
+    minPrice: '',
+    maxPrice: '',
+    minDuration: '',
+    maxDuration: '',
+    staff: ''
   });
   const [search, setSearch] = useState('');
 
@@ -42,7 +64,7 @@ export const ServiceProvider = ({ children }) => {
       const response = await serviceApi.getAllServices(queryParams);
       
       if (response.success) {
-        setServices(response.services || response.data || []);
+        setServices(response.services || []);
         if (response.pagination) {
           setPagination(prev => ({
             ...prev,
@@ -53,26 +75,49 @@ export const ServiceProvider = ({ children }) => {
         }
       }
     } catch (err) {
-      setError(err.message || 'Failed to fetch services');
-      toast.error('Failed to fetch services');
+      const errorMessage = extractErrorMessage(err) || "Failed to fetch services";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   }, [pagination.page, pagination.limit, search, filters]);
 
+  const fetchActiveServices = useCallback(async (params = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await serviceApi.getActiveServices(params);
+      
+      if (response.success) {
+        setServices(response.services || []);
+      }
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err) || "Failed to fetch active services";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const fetchStats = useCallback(async () => {
     try {
       const response = await serviceApi.getServiceStats();
       if (response.success) {
-        setStats(response.stats || response.data || {
+        setStats(response.stats || {
           total: 0,
           active: 0,
+          draft: 0,
           inactive: 0,
-          featured: 0,
+          withStaff: 0,
+          withoutStaff: 0,
+          byCategory: []
         });
       }
     } catch (err) {
-      console.error('Failed to fetch service stats:', err);
+      const errorMessage = extractErrorMessage(err);
+      console.error('Failed to fetch service stats:', errorMessage);
     }
   }, []);
 
@@ -82,16 +127,24 @@ export const ServiceProvider = ({ children }) => {
     try {
       const response = await serviceApi.addService(serviceData);
       if (response.success) {
-        toast.success('Service created successfully');
         await fetchServices();
         await fetchStats();
+        toast.success('Service created successfully');
         return true;
       }
       return false;
     } catch (err) {
-      setError(err.message || 'Failed to create service');
-      toast.error('Failed to create service');
-      return false;
+      console.log('Service creation error details:', {
+        error: err,
+        response: err.response,
+        data: err.response?.data,
+        message: err.message
+      });
+      const errorMessage = extractErrorMessage(err) || "Failed to create service";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      // Re-throw the error so the calling component can handle it
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -110,9 +163,10 @@ export const ServiceProvider = ({ children }) => {
       }
       return false;
     } catch (err) {
-      setError(err.message || 'Failed to update service');
-      toast.error('Failed to update service');
-      return false;
+      const errorMessage = extractErrorMessage(err) || "Failed to update service";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -131,8 +185,73 @@ export const ServiceProvider = ({ children }) => {
       }
       return false;
     } catch (err) {
-      setError(err.message || 'Failed to delete service');
-      toast.error('Failed to delete service');
+      const errorMessage = extractErrorMessage(err) || "Failed to delete service";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchServices, fetchStats]);
+
+  const assignStaff = useCallback(async (serviceId, staffIds) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await serviceApi.assignStaff(serviceId, staffIds);
+      if (response.success) {
+        toast.success('Staff assigned successfully');
+        await fetchServices();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err) || "Failed to assign staff";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchServices]);
+
+  const activateService = useCallback(async (serviceId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await serviceApi.activateService(serviceId);
+      if (response.success) {
+        toast.success('Service activated successfully');
+        await fetchServices();
+        await fetchStats();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err) || "Failed to activate service";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchServices, fetchStats]);
+
+  const deactivateService = useCallback(async (serviceId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await serviceApi.deactivateService(serviceId);
+      if (response.success) {
+        toast.success('Service deactivated successfully');
+        await fetchServices();
+        await fetchStats();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err) || "Failed to deactivate service";
+      toast.error(errorMessage);
       return false;
     } finally {
       setLoading(false);
@@ -166,10 +285,14 @@ export const ServiceProvider = ({ children }) => {
     filters,
     search,
     fetchServices,
+    fetchActiveServices,
     fetchStats,
     createService,
     updateService,
     deleteService,
+    assignStaff,
+    activateService,
+    deactivateService,
     setPage,
     setLimit,
     setFilters: updateFilters,

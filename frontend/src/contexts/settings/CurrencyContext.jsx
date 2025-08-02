@@ -6,6 +6,7 @@ const CurrencyContext = createContext();
 
 const CurrencyProvider = ({ children }) => {
   const [currencies, setCurrencies] = useState([]);
+  const [activeCurrencies, setActiveCurrencies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -15,6 +16,20 @@ const CurrencyProvider = ({ children }) => {
       setError(null);
       const response = await currencyApi.getAllCurrencies();
       setCurrencies(response.currencies || []);
+    } catch (err) {
+      setError(err.message);
+      toast.error('Failed to fetch currencies');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchActiveCurrencies = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await currencyApi.getActiveCurrencies();
+      setActiveCurrencies(response.currencies || []);
     } catch (err) {
       setError(err.message);
       toast.error('Failed to fetch currencies');
@@ -93,14 +108,17 @@ const CurrencyProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchCurrencies();
+    fetchActiveCurrencies();
   }, []);
 
   const value = {
     currencies,
+    activeCurrencies,
     loading,
     error,
+    
     fetchCurrencies,
+    fetchActiveCurrencies,
     createCurrency,
     updateCurrency,
     deleteCurrency,

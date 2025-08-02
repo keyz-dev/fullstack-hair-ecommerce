@@ -5,6 +5,9 @@ import { CategoryProvider } from "./CategoryContext";
 import { ProductProvider } from "./ProductContext";
 import { CartProvider } from "./CartContext";
 import { PublicPaymentMethodProvider } from "./PublicPaymentMethodContext";
+import { CurrencyProvider } from "./settings/CurrencyContext";
+import { OrderProvider } from "./OrderContext";
+import { PostProvider } from "./PostContext";
 
 export const AppContext = ({ children }) => (
   <ThemeProvider>
@@ -13,7 +16,13 @@ export const AppContext = ({ children }) => (
         <ProductProvider>
           <CartProvider>
             <PublicPaymentMethodProvider>
-              {children}
+              <CurrencyProvider>
+                <OrderProvider>
+                  <PostProvider>
+                    {children}
+                  </PostProvider>
+                </OrderProvider>
+              </CurrencyProvider>
             </PublicPaymentMethodProvider>
           </CartProvider>
         </ProductProvider>

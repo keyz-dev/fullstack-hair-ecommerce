@@ -2,6 +2,7 @@ export { default as Button } from "./Button";
 export { default as Input } from "./Input";
 export { default as Select } from "./Select";
 export { default as TextArea } from "./TextArea";
+export { default as Textarea } from "./TextArea";
 export { Logo } from "./Logo";
 export { default as Loader } from "./Loader";
 export { default as ModalWrapper } from "./ModalWrapper";
@@ -19,6 +20,7 @@ export { default as HeroLoader } from "./HeroLoader";
 export { default as FileUploader } from "./FileUploader";
 export { default as FormHeader } from "./FormHeader"
 export { default as StatusPill } from "./StatusPill"
+export { default as Badge } from "./StatusPill"
 export { default as Table } from "./Table"
 export { default as FilterDropdown } from "./FilterDropdown"
 export { default as StatCard } from "./StatCard"
@@ -35,3 +37,6 @@ export { default as HeroSection } from './HeroSection';
 export { default as PhoneInput } from './PhoneInput';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as EmptyState } from './EmptyState';
+export { default as TagInput } from './TagInput';
+export { default as ImageUpload } from './ImageUpload';
+export { default as VideoUpload } from './VideoUpload';

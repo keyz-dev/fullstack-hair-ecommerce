@@ -257,69 +257,91 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
     }
   };
 
+  const handleClose = () => {
+    setFormData(initialFormData);
+    setNewTag('');
+    setNewVariant({ name: '', options: [], required: false });
+    setNewFeature({ title: '', description: '', icon: '' });
+    setErrors({});
+    setStep(1);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
     <ModalWrapper>
-      <div className="p-2 lg:p-6 w-full max-w-6xl relative max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 z-10"
-        >
-          <X size={24} />
-        </button>
-        
-        <FormHeader title="Update product" description="Edit product details" />
-        
+      <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-xl">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Update Product</h2>
+            <p className="text-sm text-gray-600 mt-1">Edit product details and settings</p>
+          </div>
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
         {/* Progress Steps */}
-        <ProgressSteps 
-          steps={steps} 
-          currentStep={step - 1} 
-          onStepClick={handleStepClick}
-        />
-
-        {/* Step Content */}
-        {step === 1 && (
-          <BasicInfoStep
-            formData={formData}
-            errors={errors}
-            handleChange={handleChange}
-            categoryOptions={categoryOptions}
-            onNext={() => setStep(2)}
+        <div className="px-6 pt-4">
+          <ProgressSteps 
+            steps={steps} 
+            currentStep={step - 1} 
+            onStepClick={handleStepClick}
           />
-        )}
+        </div>
 
-        {step === 2 && (
-          <ImagesStep
-            existingImages={existingImages}
-            newImages={newImages}
-            onRemoveExisting={removeExistingImage}
-            onRemoveNew={removeNewImage}
-            onAddImages={addImages}
-            onBack={() => setStep(1)}
-            onNext={() => setStep(3)}
-          />
-        )}
+        {/* Content Area - Scrollable */}
+        <div className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)]">
+          <div className="p-6">
+            {/* Step Content */}
+            {step === 1 && (
+              <BasicInfoStep
+                formData={formData}
+                errors={errors}
+                handleChange={handleChange}
+                categoryOptions={categoryOptions}
+                onNext={() => setStep(2)}
+              />
+            )}
 
-        {step === 3 && (
-          <SpecificationsStep
-            formData={formData}
-            errors={errors}
-            handleChange={handleChange}
-            handleSpecificationChange={handleSpecificationChange}
-            newTag={newTag}
-            setNewTag={setNewTag}
-            addTag={addTag} 
-            removeTag={removeTag}
-            newFeature={newFeature}
-            setNewFeature={setNewFeature}
-            addFeature={addFeature}
-            removeFeature={removeFeature}
-            onBack={() => setStep(2)}
-            onSubmit={handleUpdate}
-            loading={loading}
-          />
-        )}
+            {step === 2 && (
+              <ImagesStep
+                existingImages={existingImages}
+                newImages={newImages}
+                onRemoveExisting={removeExistingImage}
+                onRemoveNew={removeNewImage}
+                onAddImages={addImages}
+                onBack={() => setStep(1)}
+                onNext={() => setStep(3)}
+              />
+            )}
+
+            {step === 3 && (
+              <SpecificationsStep
+                formData={formData}
+                errors={errors}
+                handleChange={handleChange}
+                handleSpecificationChange={handleSpecificationChange}
+                newTag={newTag}
+                setNewTag={setNewTag}
+                addTag={addTag} 
+                removeTag={removeTag}
+                newFeature={newFeature}
+                setNewFeature={setNewFeature}
+                addFeature={addFeature}
+                removeFeature={removeFeature}
+                onBack={() => setStep(2)}
+                onSubmit={handleUpdate}
+                loading={loading}
+              />
+            )}
+          </div>
+        </div>
       </div>
     </ModalWrapper>
   );

@@ -1,203 +1,218 @@
 import React, { useState, useEffect } from 'react';
-import { ModalWrapper, Input, TextArea, Select, Button, FileUploader } from '../../ui';
-import { useService, useCategory } from '../../../hooks';
-import { toast } from 'react-toastify';
+import { ModalWrapper, Button } from '../../ui';
+import { useService } from '../../../hooks';
+import { useCategory } from '../../../hooks';
+import { X } from 'lucide-react';
+import { 
+  ServiceStepProgress, 
+  ServiceFormRenderer, 
+  ServiceActionButtons 
+} from './components';
 
 const AddServiceModal = ({ isOpen, onClose }) => {
   const { createService, loading } = useService();
   const { categories, fetchCategories } = useCategory();
-  
+
+  const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    currency: 'XAF',
-    duration: '',
-    category: '',
-    image: null,
-    isActive: true,
+    name: "",
+    description: "",
+    basePrice: "",
+    duration: "",
+    currency: "XAF",
+    category: "",
+    requiresStaff: true,
+    status: "draft",
+    specialInstructions: "",
+    cancellationPolicy: "",
+    tags: "",
   });
 
+  const [image, setImage] = useState(null);
   const [errors, setErrors] = useState({});
+
+  const steps = [
+    { title: "Basic Information", description: "Details & pricing" },
+    { title: "Configuration", description: "Category & staff" },
+    { title: "Additional Details", description: "Instructions & tags" },
+    { title: "Media", description: "Images" }
+  ];
 
   useEffect(() => {
     if (isOpen) {
       fetchCategories();
+      setCurrentStep(0);
     }
   }, [isOpen, fetchCategories]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors(prev => ({ ...prev, [field]: "" }));
     }
   };
 
-  const validateForm = () => {
+  const handleImageChange = (file) => {
+    setImage(file);
+  };
+
+  const validateCurrentStep = () => {
     const newErrors = {};
-    
-    if (!formData.name.trim()) newErrors.name = 'Service name is required';
-    if (!formData.description.trim()) newErrors.description = 'Description is required';
-    if (!formData.price || formData.price <= 0) newErrors.price = 'Valid price is required';
-    if (!formData.duration || formData.duration <= 0) newErrors.duration = 'Valid duration is required';
-    if (!formData.category) newErrors.category = 'Category is required';
+
+    switch (currentStep) {
+      case 0:
+        if (!formData.name.trim()) newErrors.name = "Service name is required";
+        if (formData.name.trim().length < 2) newErrors.name = "Service name must be at least 2 characters";
+        if (formData.name.trim().length > 100) newErrors.name = "Service name cannot exceed 100 characters";
+        
+        if (!formData.description.trim()) newErrors.description = "Service description is required";
+        if (formData.description.trim().length < 10) newErrors.description = "Service description must be at least 10 characters";
+        if (formData.description.trim().length > 1000) newErrors.description = "Service description cannot exceed 1000 characters";
+        
+        if (!formData.basePrice || parseFloat(formData.basePrice) <= 0) newErrors.basePrice = "Valid base price is required";
+        if (!formData.duration || parseInt(formData.duration) <= 0) newErrors.duration = "Valid duration is required";
+        if (parseInt(formData.duration) > 480) newErrors.duration = "Duration cannot exceed 480 minutes (8 hours)";
+        break;
+      case 1:
+        if (!formData.category) newErrors.category = "Category is required";
+        break;
+      default:
+        break;
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleNext = () => {
+    if (validateCurrentStep()) {
+      setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 0));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) return;
+    if (!validateCurrentStep()) return;
 
-    const formDataToSend = new FormData();
-    formDataToSend.append('name', formData.name);
-    formDataToSend.append('description', formData.description);
-    formDataToSend.append('price', formData.price);
-    formDataToSend.append('currency', formData.currency);
-    formDataToSend.append('duration', formData.duration);
-    formDataToSend.append('category', formData.category);
-    formDataToSend.append('isActive', formData.isActive);
-    
-    if (formData.image) {
-      formDataToSend.append('image', formData.image);
-    }
+    try {
+      const formDataToSend = new FormData();
+      
+             // Prepare data according to backend schema
+       const serviceData = {
+         name: formData.name,
+         description: formData.description,
+         basePrice: parseFloat(formData.basePrice),
+         duration: parseInt(formData.duration),
+         category: formData.category,
+         requiresStaff: formData.requiresStaff,
+         status: formData.status,
+         specialInstructions: formData.specialInstructions || undefined,
+         cancellationPolicy: formData.cancellationPolicy || undefined,
+         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : undefined,
+         // Add currency field
+         currency: formData.currency
+       };
 
-    const success = await createService(formDataToSend);
-    if (success) {
-      handleClose();
-    }
+             // Add non-empty fields to FormData
+       Object.keys(serviceData).forEach(key => {
+         if (serviceData[key] !== undefined && serviceData[key] !== "") {
+           if (key === 'tags' && Array.isArray(serviceData[key])) {
+             serviceData[key].forEach(tag => formDataToSend.append('tags[]', tag));
+           } else {
+             formDataToSend.append(key, serviceData[key]);
+           }
+         }
+       });
+
+      if (image) {
+        formDataToSend.append("serviceImage", image);
+      }
+
+             const success = await createService(formDataToSend);
+       
+       if (success) {
+         handleClose();
+       }
+     } catch (error) {
+       console.error("Error creating service:", error);
+       // Error is already handled by the context and shown in toast
+     }
   };
 
   const handleClose = () => {
     setFormData({
-      name: '',
-      description: '',
-      price: '',
-      currency: 'XAF',
-      duration: '',
-      category: '',
-      image: null,
-      isActive: true,
+      name: "",
+      description: "",
+      basePrice: "",
+      duration: "",
+      currency: "XAF",
+      category: "",
+      requiresStaff: true,
+      status: "draft",
+      specialInstructions: "",
+      cancellationPolicy: "",
+      tags: "",
     });
+    setImage(null);
     setErrors({});
+    setCurrentStep(0);
     onClose();
   };
 
-  const currencyOptions = [
-    { value: 'XAF', label: 'XAF (CFA Franc)' },
-    { value: 'USD', label: 'USD (US Dollar)' },
-    { value: 'EUR', label: 'EUR (Euro)' },
-  ];
-
-  const categoryOptions = categories.map(cat => ({
-    value: cat._id,
-    label: cat.name
-  }));
+  if (!isOpen) return null;
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={handleClose} title="Add New Service">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Service Name"
-            value={formData.name}
-            onChange={(value) => handleInputChange('name', value)}
-            error={errors.name}
-            required
-          />
-          
-          <Select
-            label="Category"
-            options={categoryOptions}
-            value={formData.category}
-            onChange={(value) => handleInputChange('category', value)}
-            error={errors.category}
-            required
-          />
+    <ModalWrapper>
+      <div className="p-2 lg:p-6 w-full max-w-2xl relative overflow-y-auto [&::-webkit-scrollbar]:hidden">
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 z-10"
+        >
+          <X size={24} />
+        </button>
+
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-center flex-col">
+          <h2 className="text-2xl font-bold text-primary mb-2">
+            Add New Service
+          </h2>
+          <p className="text-gray-600">
+            Create a new service for your salon
+          </p>
         </div>
 
-        <TextArea
-          label="Description"
-          value={formData.description}
-          onChange={(value) => handleInputChange('description', value)}
-          error={errors.description}
-          required
-          rows={4}
+        {/* Progress Steps */}
+        <ServiceStepProgress 
+          steps={steps} 
+          currentStep={currentStep} 
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Input
-            label="Price"
-            type="number"
-            value={formData.price}
-            onChange={(value) => handleInputChange('price', value)}
-            error={errors.price}
-            required
-            min="0"
-            step="0.01"
-          />
-          
-          <Select
-            label="Currency"
-            options={currencyOptions}
-            value={formData.currency}
-            onChange={(value) => handleInputChange('currency', value)}
-          />
-          
-          <Input
-            label="Duration (minutes)"
-            type="number"
-            value={formData.duration}
-            onChange={(value) => handleInputChange('duration', value)}
-            error={errors.duration}
-            required
-            min="1"
-          />
-        </div>
+        {/* Form Content */}
+        <ServiceFormRenderer
+          currentStep={currentStep}
+          formData={formData}
+          image={image}
+          errors={errors}
+          categories={categories}
+          onInputChange={handleInputChange}
+          onImageChange={handleImageChange}
+        />
 
-        <div className="space-y-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Service Image
-          </label>
-          <FileUploader
-            onFileSelect={(file) => handleInputChange('image', file)}
-            accept="image/*"
-            maxSize={5 * 1024 * 1024} // 5MB
-          />
-        </div>
-
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="isActive"
-            checked={formData.isActive}
-            onChange={(e) => handleInputChange('isActive', e.target.checked)}
-            className="h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
-          />
-          <label htmlFor="isActive" className="ml-2 block text-sm text-primary">
-            Active Service
-          </label>
-        </div>
-
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button
-            type="button"
-            onClick={handleClose}
-            additionalClasses="bg-gray-300 text-gray-700 hover:bg-gray-400"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            additionalClasses="bg-accent text-white hover:bg-accent/90"
-            disabled={loading}
-          >
-            {loading ? 'Creating...' : 'Create Service'}
-          </Button>
-        </div>
-      </form>
+        {/* Action Buttons */}
+        <ServiceActionButtons
+          currentStep={currentStep}
+          totalSteps={steps.length}
+          loading={loading}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onCancel={handleClose}
+          onSubmit={handleSubmit}
+        />
+      </div>
     </ModalWrapper>
   );
 };

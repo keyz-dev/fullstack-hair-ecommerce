@@ -12,7 +12,7 @@ const inProduction = process.env.NODE_ENV === 'production';
 // Ensure upload directories exist (only for development)
 function createUploadDirs() {
   if (inProduction) return;
-  const dirs = ['uploads', 'uploads/avatars', 'uploads/products', 'uploads/categories', 'uploads/icons'];
+  const dirs = ['uploads', 'uploads/avatars', 'uploads/products', 'uploads/categories', 'uploads/services', 'uploads/icons', 'uploads/posts', 'uploads/posts/images', 'uploads/posts/videos'];
   dirs.forEach((dir) => {
     const dirPath = path.join(process.cwd(), 'src', dir);
     if (!fs.existsSync(dirPath)) {
@@ -28,7 +28,14 @@ function getUploadSubDir(fieldname) {
     case 'productImage':
     case 'productImages': return 'products';
     case 'categoryImage': return 'categories';
+    case 'serviceImage': return 'services';
     case 'icon': return 'icons';
+    case 'postImage':
+    case 'postImages':
+      return 'posts/images';
+    case 'postVideo':
+    case 'postVideos':
+      return 'posts/videos';
     default: return 'others';
   }
 }

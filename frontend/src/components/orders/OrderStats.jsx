@@ -67,7 +67,7 @@ const OrderStats = ({ stats }) => {
     {
       title: "Pending",
       value: filteredStats.pending,
-      colorTheme: "yellow",
+      colorTheme: "purple",
       icon: Clock,
       description: "Orders awaiting processing",
     },
@@ -84,13 +84,6 @@ const OrderStats = ({ stats }) => {
       colorTheme: "red",
       icon: XCircle,
       description: "Orders cancelled",
-    },
-    {
-      title: "Total Spent",
-      value: formatCurrency(filteredStats.totalSpent),
-      colorTheme: "purple",
-      icon: DollarSign,
-      description: "Total amount spent on orders",
     }
   ];
 
@@ -116,19 +109,7 @@ const OrderStats = ({ stats }) => {
 
   return (
     <div className="mb-6">
-      <div className="flex items-center justify-end mb-4">
-        <div className="relative">
-          <DropdownMenu 
-            items={menuItems}
-            trigger={
-              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-                <MoreVertical className="w-4 h-4" />
-              </button>
-            }
-          />
-        </div>
-      </div>
-      
+        
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {statCards.map((card) => (
           <StatCard key={card.title} {...card} className="w-[180px] lg:w-[230px]" />

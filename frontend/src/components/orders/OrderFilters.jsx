@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, Filter, X } from 'lucide-react';
 
-const OrderFilters = ({ filters, onFilterChange, onSearch }) => {
+const OrderFilters = ({ filters, onFilterChange, onSearch, showCustomerTypeFilter = false }) => {
   const handleSearchChange = (e) => {
     onSearch(e.target.value);
   };
@@ -10,12 +10,16 @@ const OrderFilters = ({ filters, onFilterChange, onSearch }) => {
     onFilterChange('status', 'all');
     onFilterChange('dateRange', 'all');
     onFilterChange('paymentStatus', 'all');
+    if (showCustomerTypeFilter) {
+      onFilterChange('customerType', 'all');
+    }
     onSearch('');
   };
 
   const hasActiveFilters = filters.status !== 'all' || 
                           filters.dateRange !== 'all' || 
                           filters.paymentStatus !== 'all' || 
+                          (showCustomerTypeFilter && filters.customerType !== 'all') ||
                           filters.search;
 
   return (
@@ -84,6 +88,22 @@ const OrderFilters = ({ filters, onFilterChange, onSearch }) => {
             </select>
           </div>
 
+          {/* Customer Type Filter (Admin only) */}
+          {showCustomerTypeFilter && (
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">Customer:</label>
+              <select
+                value={filters.customerType || 'all'}
+                onChange={(e) => onFilterChange('customerType', e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-xs outline-0 text-sm focus:ring focus:ring-accent focus:border-accent"
+              >
+                <option value="all">All Customers</option>
+                <option value="registered">Registered</option>
+                <option value="guest">Guest</option>
+              </select>
+            </div>
+          )}
+
           {/* Clear Filters */}
           {hasActiveFilters && (
             <button
@@ -132,6 +152,17 @@ const OrderFilters = ({ filters, onFilterChange, onSearch }) => {
                   <button
                     onClick={() => onFilterChange('dateRange', 'all')}
                     className="ml-1 hover:text-purple-600"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {showCustomerTypeFilter && filters.customerType !== 'all' && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                  Customer: {filters.customerType}
+                  <button
+                    onClick={() => onFilterChange('customerType', 'all')}
+                    className="ml-1 hover:text-orange-600"
                   >
                     <X className="w-3 h-3" />
                   </button>

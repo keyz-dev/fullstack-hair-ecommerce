@@ -6,3 +6,6 @@
 {"level":"error","message":"Customer information is required","timestamp":"2025-08-01T14:00:32.263Z"}
 {"level":"error","message":"Order not found","timestamp":"2025-08-01T14:10:33.512Z"}
 {"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-01T15:02:02.102Z"}
+{"level":"error","message":"Unexpected field","timestamp":"2025-08-01T20:25:17.903Z"}
+{"level":"error","message":"Unexpected field","timestamp":"2025-08-01T20:25:55.744Z"}
+{"level":"error","message":"Service description must be at least 10 characters","timestamp":"2025-08-01T20:43:54.877Z"}

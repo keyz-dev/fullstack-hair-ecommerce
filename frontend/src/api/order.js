@@ -21,7 +21,7 @@ export const orderApi = {
   },
 
   // Admin: Get all orders - matches GET /order/admin/all in backend
-  getAllOrdersAdmin: async () => {
+  getAllOrders: async () => {
     const response = await api.get('/order/admin/all');
     return response.data;
   }

@@ -41,7 +41,7 @@ const TextArea = ({
         cols={cols}
         rows={rows}
         placeholder={placeholder}
-        className={`placeholder:text-xs placeholder:font-normal placeholder:text-placeholder outline-none p-2 form-input w-full bg-light_bg border-2  focus:border-accent transition-all ease-in-out duration-600 ${additionalClasses} ${
+        className={`placeholder:text-xs text-primary placeholder:font-normal placeholder:text-placeholder outline-none p-2 form-input w-full bg-light_bg border-2  focus:border-accent transition-all ease-in-out duration-600 ${additionalClasses} ${
           error && "border-error"
         }`}
         value={value}

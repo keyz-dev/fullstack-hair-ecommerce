@@ -6,6 +6,11 @@ const StatusPill = ({ status }) => {
       case "active":
       case "in_stock":
       case "approved":
+      case "completed":
+      case "delivered":
+      case "paid":
+      case "confirmed":
+      case "accepted":  
         return {
           bg: "bg-green-100",
           text: "text-green-800",
@@ -17,6 +22,10 @@ const StatusPill = ({ status }) => {
       case "invalid":
       case "unavailable":
       case "expired":
+      case "cancelled":
+      case "failed":
+      case "refunded":
+      case "declined":
         return {
           bg: "bg-red-100",
           text: "text-red-800",
@@ -26,6 +35,7 @@ const StatusPill = ({ status }) => {
       case "available":
       case "limited_stock":
       case "under_maintenance":
+      case "processing":
         return {
           bg: "bg-blue-100",
           text: "text-blue-800",

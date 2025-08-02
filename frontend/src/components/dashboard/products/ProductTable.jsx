@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { useProducts } from "../../../hooks/useProducts";
 import { Table, SearchBar, FilterDropdown, Pagination, DropdownMenu, StatusPill } from "../../ui";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Eye } from "lucide-react";
 
-const ProductTable = ({ onEdit, onDelete }) => {
+const ProductTable = ({ onEdit, onView, onDelete }) => {
   const {
     products, page, totalPages, fetchProducts, setPage, setSearch, search, filters, setFilters
   } = useProducts();
@@ -70,12 +70,17 @@ const ProductTable = ({ onEdit, onDelete }) => {
       Cell: ({ row }) => {
         const menuItems = [
           {
-            label: "Update",
+            label: "View Product",
+            icon: <Eye size={16} />,
+            onClick: () => onView(row),
+          },
+          {
+            label: "Edit Product",
             icon: <Edit size={16} />,
             onClick: () => onEdit(row),
           },
           {
-            label: "Delete",
+            label: "Delete Product",
             icon: <Trash2 size={16} />,
             onClick: () => onDelete(row),
             isDestructive: true,
@@ -98,7 +103,9 @@ const ProductTable = ({ onEdit, onDelete }) => {
         </div>
       </div>
       <Table columns={columns} data={products} emptyStateMessage="No products found." />
-      <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+      <div className="flex justify-center mt-4">
+        <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+      </div>
     </div>
   );
 };

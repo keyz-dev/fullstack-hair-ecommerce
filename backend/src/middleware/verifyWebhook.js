@@ -9,6 +9,14 @@ const verifyCamPayWebhook = (req, res, next) => {
 
   const { signature } = req.body;
 
+  if (!signature) {
+    console.error("❌ No signature provided in webhook");
+    return res.status(401).json({
+      error: "Unauthorized",
+      message: "Missing signature in webhook payload",
+    });
+  }
+
   const CAMPAY_WEBHOOK_KEY = process.env.CAMPAY_WEBHOOK_KEY;
 
   if (!CAMPAY_WEBHOOK_KEY) {

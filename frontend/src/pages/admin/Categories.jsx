@@ -51,14 +51,12 @@ const CategoriesMainView = () => {
     { value: "Completed", label: "Completed" }, 
   ];
 
-
-
   return (
     <section>
       <div className="flex justify-end items-center mb-4">
         <Button
           onClickHandler={() => setIsModalOpen(true)}
-          additionalClasses="bg-accent text-white"
+          additionalClasses="primarybtn"
         >
           Add Category
         </Button>

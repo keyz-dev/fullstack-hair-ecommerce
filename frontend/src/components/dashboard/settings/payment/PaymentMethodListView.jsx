@@ -1,8 +1,11 @@
 import React from 'react';
 import { Table, StatusPill, DropdownMenu } from '../../../ui';
 import { Edit, Trash2, ToggleLeft, ToggleRight, Settings, CheckCircle, AlertCircle } from 'lucide-react';
+import { useCurrency } from '../../../../hooks';
+import { formatPriceWithSymbol, getCurrencyByCode } from '../../../../utils/currencyUtils';
 
 const PaymentMethodListView = ({ paymentMethods, loading, onEdit, onDelete, onToggleStatus }) => {
+  const { currencies } = useCurrency();
   const getTypeLabel = (type) => {
     const typeLabels = {
       'MOBILE_MONEY': 'Mobile Money',
@@ -97,7 +100,13 @@ const PaymentMethodListView = ({ paymentMethods, loading, onEdit, onDelete, onTo
           </div>
           {row.minAmount && row.maxAmount && (
             <div className="text-gray-500 text-xs">
-              {row.minAmount} - {row.maxAmount} XAF
+              {(() => {
+                const currencyCode = row.currency || 'XAF';
+                const currencyData = getCurrencyByCode(currencyCode, currencies);
+                const minFormatted = formatPriceWithSymbol(row.minAmount, currencyData, currencyCode);
+                const maxFormatted = formatPriceWithSymbol(row.maxAmount, currencyData, currencyCode);
+                return `${minFormatted} - ${maxFormatted}`;
+              })()}
             </div>
           )}
         </div>

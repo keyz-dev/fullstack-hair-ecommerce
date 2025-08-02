@@ -35,11 +35,14 @@ const ProductStatSection = () => {
   ];
 
   return (
-      <div className="flex gap-2 sm:gap-4 flex-wrap">
-      {statCards.map((card) => (
-        <StatCard key={card.title} {...card} />
-      ))}
-    </div>
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-4">
+    {statCards.map((stat, index) => (
+      <StatCard
+        key={index}
+        {...stat}
+      />
+    ))}
+  </div>
   );
 };
 

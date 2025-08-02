@@ -1,6 +1,14 @@
-import React, { useEffect } from 'react';
-import { StatCard } from '../../ui';
-import { useService } from '../../../hooks';
+import React, { useEffect } from "react";
+import { StatCard } from "../../ui";
+import { useService } from "../../../hooks";
+import { 
+  Briefcase, 
+  Users, 
+  Clock, 
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 
 const ServiceStatSection = () => {
   const { stats, fetchStats } = useService();
@@ -11,43 +19,50 @@ const ServiceStatSection = () => {
 
   const statCards = [
     {
-      title: 'Total Services',
-      value: stats.total || 0,
-      icon: 'Briefcase',
-      color: 'blue',
-      change: '+12%',
-      changeType: 'positive',
+      title: "Total Services",
+      value: stats.total,
+      icon: Briefcase,
+      colorTheme: "blue",
+      description: "All services in the system"
     },
     {
-      title: 'Active Services',
-      value: stats.active || 0,
-      icon: 'CheckCircle',
-      color: 'green',
-      change: '+8%',
-      changeType: 'positive',
+      title: "Active Services",
+      value: stats.active,
+      icon: CheckCircle,
+      colorTheme: "green",
+      description: "Services available for booking"
     },
     {
-      title: 'Inactive Services',
-      value: stats.inactive || 0,
-      icon: 'XCircle',
-      color: 'red',
-      change: '-3%',
-      changeType: 'negative',
+      title: "Draft Services",
+      value: stats.draft,
+      icon: Clock,
+      colorTheme: "yellow",
+      description: "Services in development"
     },
     {
-      title: 'Featured Services',
-      value: stats.featured || 0,
-      icon: 'Star',
-      color: 'yellow',
-      change: '+15%',
-      changeType: 'positive',
+      title: "Inactive Services",
+      value: stats.inactive,
+      icon: XCircle,
+      colorTheme: "red",
+      description: "Services temporarily disabled"
     },
+    {
+      title: "With Staff",
+      value: stats.withStaff,
+      icon: Users,
+      colorTheme: "purple",
+      description: "Services with assigned staff"
+    }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-4">
       {statCards.map((stat, index) => (
-        <StatCard key={index} {...stat} />
+        <StatCard
+          key={index}
+          {...stat}
+          className="lg:w-[220px]"
+        />
       ))}
     </div>
   );

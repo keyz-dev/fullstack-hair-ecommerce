@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ModalWrapper, Input, TextArea, Select, Button, FileUploader } from '../../ui';
-import { useService, useCategory } from '../../../hooks';
+import { ModalWrapper, Button, Input, Select, TextArea, FileUploader } from '../../ui';
+import { useService } from '../../../hooks';
+import { useCategory } from '../../../hooks';
+import { X } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const UpdateServiceModal = ({ isOpen, onClose, initialData }) => {
@@ -10,14 +12,18 @@ const UpdateServiceModal = ({ isOpen, onClose, initialData }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    price: '',
-    currency: 'XAF',
+    basePrice: '',
     duration: '',
+    currency: 'XAF',
     category: '',
-    image: null,
-    isActive: true,
+    requiresStaff: true,
+    status: 'draft',
+    specialInstructions: '',
+    cancellationPolicy: '',
+    tags: '',
   });
 
+  const [image, setImage] = useState(null);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -31,13 +37,17 @@ const UpdateServiceModal = ({ isOpen, onClose, initialData }) => {
       setFormData({
         name: initialData.name || '',
         description: initialData.description || '',
-        price: initialData.price || '',
-        currency: initialData.currency || 'XAF',
+        basePrice: initialData.basePrice || '',
         duration: initialData.duration || '',
+        currency: initialData.currency || 'XAF',
         category: initialData.category?._id || initialData.category || '',
-        image: null,
-        isActive: initialData.isActive !== undefined ? initialData.isActive : true,
+        requiresStaff: initialData.requiresStaff !== undefined ? initialData.requiresStaff : true,
+        status: initialData.status || 'draft',
+        specialInstructions: initialData.specialInstructions || '',
+        cancellationPolicy: initialData.cancellationPolicy || '',
+        tags: initialData.tags ? (Array.isArray(initialData.tags) ? initialData.tags.join(', ') : initialData.tags) : '',
       });
+      setImage(null); // Reset image for new edit
     }
   }, [initialData]);
 
@@ -48,14 +58,26 @@ const UpdateServiceModal = ({ isOpen, onClose, initialData }) => {
     }
   };
 
+  const handleImageChange = (file) => {
+    setImage(file);
+  };
+
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.name.trim()) newErrors.name = 'Service name is required';
-    if (!formData.description.trim()) newErrors.description = 'Description is required';
-    if (!formData.price || formData.price <= 0) newErrors.price = 'Valid price is required';
-    if (!formData.duration || formData.duration <= 0) newErrors.duration = 'Valid duration is required';
-    if (!formData.category) newErrors.category = 'Category is required';
+    if (!formData.name.trim()) newErrors.name = "Service name is required";
+    if (formData.name.trim().length < 2) newErrors.name = "Service name must be at least 2 characters";
+    if (formData.name.trim().length > 100) newErrors.name = "Service name cannot exceed 100 characters";
+    
+    if (!formData.description.trim()) newErrors.description = "Service description is required";
+    if (formData.description.trim().length < 10) newErrors.description = "Service description must be at least 10 characters";
+    if (formData.description.trim().length > 1000) newErrors.description = "Service description cannot exceed 1000 characters";
+    
+    if (!formData.basePrice || parseFloat(formData.basePrice) <= 0) newErrors.basePrice = "Valid base price is required";
+    if (!formData.duration || parseInt(formData.duration) <= 0) newErrors.duration = "Valid duration is required";
+    if (parseInt(formData.duration) > 480) newErrors.duration = "Duration cannot exceed 480 minutes (8 hours)";
+    
+    if (!formData.category) newErrors.category = "Category is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -63,25 +85,49 @@ const UpdateServiceModal = ({ isOpen, onClose, initialData }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
 
-    const formDataToSend = new FormData();
-    formDataToSend.append('name', formData.name);
-    formDataToSend.append('description', formData.description);
-    formDataToSend.append('price', formData.price);
-    formDataToSend.append('currency', formData.currency);
-    formDataToSend.append('duration', formData.duration);
-    formDataToSend.append('category', formData.category);
-    formDataToSend.append('isActive', formData.isActive);
-    
-    if (formData.image) {
-      formDataToSend.append('image', formData.image);
-    }
+    try {
+      const formDataToSend = new FormData();
+      
+      // Prepare data according to backend schema
+      const serviceData = {
+        name: formData.name,
+        description: formData.description,
+        basePrice: parseFloat(formData.basePrice),
+        duration: parseInt(formData.duration),
+        category: formData.category,
+        requiresStaff: formData.requiresStaff,
+        status: formData.status,
+        specialInstructions: formData.specialInstructions || undefined,
+        cancellationPolicy: formData.cancellationPolicy || undefined,
+        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : undefined,
+        currency: formData.currency
+      };
 
-    const success = await updateService(initialData._id, formDataToSend);
-    if (success) {
-      handleClose();
+      // Add non-empty fields to FormData
+      Object.keys(serviceData).forEach(key => {
+        if (serviceData[key] !== undefined && serviceData[key] !== "") {
+          if (key === 'tags' && Array.isArray(serviceData[key])) {
+            serviceData[key].forEach(tag => formDataToSend.append('tags[]', tag));
+          } else {
+            formDataToSend.append(key, serviceData[key]);
+          }
+        }
+      });
+
+      if (image) {
+        formDataToSend.append("serviceImage", image);
+      }
+
+      const success = await updateService(initialData._id, formDataToSend);
+      
+      if (success) {
+        toast.success("Service updated successfully");
+        handleClose();
+      }
+    } catch (error) {
+      console.error("Error updating service:", error);
     }
   };
 
@@ -89,140 +135,213 @@ const UpdateServiceModal = ({ isOpen, onClose, initialData }) => {
     setFormData({
       name: '',
       description: '',
-      price: '',
-      currency: 'XAF',
+      basePrice: '',
       duration: '',
+      currency: 'XAF',
       category: '',
-      image: null,
-      isActive: true,
+      requiresStaff: true,
+      status: 'draft',
+      specialInstructions: '',
+      cancellationPolicy: '',
+      tags: '',
     });
+    setImage(null);
     setErrors({});
     onClose();
   };
 
-  const currencyOptions = [
-    { value: 'XAF', label: 'XAF (CFA Franc)' },
-    { value: 'USD', label: 'USD (US Dollar)' },
-    { value: 'EUR', label: 'EUR (Euro)' },
-  ];
-
-  const categoryOptions = categories.map(cat => ({
+  const categoryOptions = categories?.map(cat => ({
     value: cat._id,
     label: cat.name
-  }));
+  })) || [];
+
+  const statusOptions = [
+    { value: 'draft', label: 'Draft' },
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+    { value: 'maintenance', label: 'Maintenance' },
+  ];
+
+  if (!isOpen) return null;
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={handleClose} title="Update Service">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Service Name"
-            value={formData.name}
-            onChange={(value) => handleInputChange('name', value)}
-            error={errors.name}
-            required
-          />
-          
-          <Select
-            label="Category"
-            options={categoryOptions}
-            value={formData.category}
-            onChange={(value) => handleInputChange('category', value)}
-            error={errors.category}
-            required
-          />
-        </div>
-
-        <TextArea
-          label="Description"
-          value={formData.description}
-          onChange={(value) => handleInputChange('description', value)}
-          error={errors.description}
-          required
-          rows={4}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Input
-            label="Price"
-            type="number"
-            value={formData.price}
-            onChange={(value) => handleInputChange('price', value)}
-            error={errors.price}
-            required
-            min="0"
-            step="0.01"
-          />
-          
-          <Select
-            label="Currency"
-            options={currencyOptions}
-            value={formData.currency}
-            onChange={(value) => handleInputChange('currency', value)}
-          />
-          
-          <Input
-            label="Duration (minutes)"
-            type="number"
-            value={formData.duration}
-            onChange={(value) => handleInputChange('duration', value)}
-            error={errors.duration}
-            required
-            min="1"
-          />
-        </div>
-
-        <div className="space-y-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Service Image
-          </label>
-          {initialData?.image && (
-            <div className="mb-2">
-              <img
-                src={initialData.image}
-                alt="Current service image"
-                className="w-20 h-20 object-cover rounded border"
-              />
-              <p className="text-sm text-gray-500 mt-1">Current image</p>
-            </div>
-          )}
-          <FileUploader
-            onFileSelect={(file) => handleInputChange('image', file)}
-            accept="image/*"
-            maxSize={5 * 1024 * 1024} // 5MB
-          />
-        </div>
-
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="isActive"
-            checked={formData.isActive}
-            onChange={(e) => handleInputChange('isActive', e.target.checked)}
-            className="h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
-          />
-          <label htmlFor="isActive" className="ml-2 block text-sm text-primary">
-            Active Service
-          </label>
-        </div>
-
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button
-            type="button"
+    <ModalWrapper>
+      <div className="w-full max-w-4xl mx-auto bg-white rounded-lg shadow-xl">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Update Service</h2>
+            <p className="text-sm text-gray-600 mt-1">Edit service details and settings</p>
+          </div>
+          <button
             onClick={handleClose}
-            additionalClasses="bg-gray-300 text-gray-700 hover:bg-gray-400"
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
           >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            additionalClasses="bg-accent text-white hover:bg-accent/90"
-            disabled={loading}
-          >
-            {loading ? 'Updating...' : 'Update Service'}
-          </Button>
+            <X size={24} />
+          </button>
         </div>
-      </form>
+
+        {/* Content */}
+        <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
+          <div className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Service Name */}
+                <div className="md:col-span-2">
+                  <Input
+                    label="Service Name"
+                    value={formData.name}
+                    onChange={(value) => handleInputChange('name', value)}
+                    placeholder="Enter service name"
+                    error={errors.name}
+                    required
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="md:col-span-2">
+                  <TextArea
+                    label="Description"
+                    value={formData.description}
+                    onChange={(value) => handleInputChange('description', value)}
+                    placeholder="Describe the service"
+                    error={errors.description}
+                    required
+                  />
+                </div>
+
+                {/* Base Price */}
+                <div>
+                  <Input
+                    label={`Base Price (${formData.currency || 'XAF'})`}
+                    type="number"
+                    value={formData.basePrice}
+                    onChange={(value) => handleInputChange('basePrice', value)}
+                    placeholder="0"
+                    error={errors.basePrice}
+                    required
+                  />
+                </div>
+
+                {/* Duration */}
+                <div>
+                  <Input
+                    label="Duration (minutes)"
+                    type="number"
+                    value={formData.duration}
+                    onChange={(value) => handleInputChange('duration', value)}
+                    placeholder="60"
+                    error={errors.duration}
+                    required
+                  />
+                </div>
+
+                {/* Category */}
+                <div>
+                  <Select
+                    label="Category"
+                    options={categoryOptions}
+                    value={formData.category}
+                    onChange={(value) => handleInputChange('category', value)}
+                    placeholder="Select category"
+                    error={errors.category}
+                    required
+                  />
+                </div>
+
+                {/* Status */}
+                <div>
+                  <Select
+                    label="Status"
+                    options={statusOptions}
+                    value={formData.status}
+                    onChange={(value) => handleInputChange('status', value)}
+                    placeholder="Select status"
+                  />
+                </div>
+
+                {/* Requires Staff */}
+                <div>
+                  <Select
+                    label="Requires Staff"
+                    options={[
+                      { value: true, label: "Yes" },
+                      { value: false, label: "No" }
+                    ]}
+                    value={formData.requiresStaff}
+                    onChange={(value) => handleInputChange('requiresStaff', value)}
+                  />
+                </div>
+
+                {/* Special Instructions */}
+                <div className="md:col-span-2">
+                  <TextArea
+                    label="Special Instructions (Optional)"
+                    value={formData.specialInstructions}
+                    onChange={(value) => handleInputChange('specialInstructions', value)}
+                    placeholder="Any special instructions for this service"
+                  />
+                </div>
+
+                {/* Cancellation Policy */}
+                <div className="md:col-span-2">
+                  <TextArea
+                    label="Cancellation Policy (Optional)"
+                    value={formData.cancellationPolicy}
+                    onChange={(value) => handleInputChange('cancellationPolicy', value)}
+                    placeholder="Cancellation policy for this service"
+                  />
+                </div>
+
+                {/* Tags */}
+                <div className="md:col-span-2">
+                  <Input
+                    label="Tags (Optional)"
+                    value={formData.tags}
+                    onChange={(value) => handleInputChange('tags', value)}
+                    placeholder="Enter tags separated by commas"
+                  />
+                </div>
+
+                {/* Image Upload */}
+                <div className="md:col-span-2">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Service Image
+                    </label>
+                    {initialData?.image && (
+                      <div className="mb-2">
+                        <img
+                          src={initialData.image}
+                          alt="Current service image"
+                          className="w-20 h-20 object-cover rounded border"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">Current image</p>
+                      </div>
+                    )}
+                    <FileUploader
+                      onFileSelect={handleImageChange}
+                      accept="image/*"
+                      maxSize={5 * 1024 * 1024} // 5MB
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-end gap-3 pt-6 border-t mt-8">
+                <Button
+                  type="submit"
+                  additionalClasses="bg-accent text-white"
+                  loading={loading}
+                >
+                  Update Service
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </ModalWrapper>
   );
 };

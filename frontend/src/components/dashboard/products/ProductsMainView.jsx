@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { ProductStatSection, ProductTable, UpdateProductModal } from ".";
+import { ProductStatSection, ProductTable, UpdateProductModal, ViewProductModal } from ".";
 import { Button, DeleteModal } from "../../ui";
 import { toast } from "react-toastify";
 import { useProducts } from "../../../hooks/useProducts";
 
 const ProductsMainView = ({ setView }) => {
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { deleteProduct, loading } = useProducts();
@@ -13,6 +14,11 @@ const ProductsMainView = ({ setView }) => {
   const handleEdit = (product) => {
     setSelectedProduct(product);
     setEditModalOpen(true);
+  };
+
+  const handleView = (product) => {
+    setSelectedProduct(product);
+    setViewModalOpen(true);
   };
 
   const handleDelete = (product) => {
@@ -37,20 +43,27 @@ const ProductsMainView = ({ setView }) => {
           Add Product
         </Button>
       </div>
-      <ProductTable onEdit={handleEdit} onDelete={handleDelete} />
+      <ProductTable onEdit={handleEdit} onView={handleView} onDelete={handleDelete} />
       
       <UpdateProductModal
         isOpen={editModalOpen}
         onClose={() => { setEditModalOpen(false); setSelectedProduct(null); }}
         initialData={selectedProduct}
       />
+
+      <ViewProductModal
+        isOpen={viewModalOpen}
+        onClose={() => { setViewModalOpen(false); setSelectedProduct(null); }}
+        product={selectedProduct}
+      />
+      
       <DeleteModal
         isOpen={deleteModalOpen}
         onClose={() => { setDeleteModalOpen(false); setSelectedProduct(null); }}
         onConfirm={handleDeleteConfirm}
-        loading={loading}
-        itemName={selectedProduct?.name}
         title="Delete Product"
+        message={`Are you sure you want to delete "${selectedProduct?.name}"? This action cannot be undone.`}
+        loading={loading}
       />
     </section>
   );

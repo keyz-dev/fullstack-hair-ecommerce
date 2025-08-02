@@ -14,7 +14,6 @@ export const ROLE_CONFIGS = {
       { path: "bookings", label: "Bookings", icon: "Calendar" },
       { path: "categories", label: "Categories", icon: "Tag" },
       { path: "products", label: "Products", icon: "Package" },
-      { path: "blog", label: "Blog", icon: "BookOpen" },
       { path: "posts", label: "Posts", icon: "FileText" },
       { path: "services", label: "Services", icon: "Briefcase" },
       { path: "users", label: "Users", icon: "Users" },
