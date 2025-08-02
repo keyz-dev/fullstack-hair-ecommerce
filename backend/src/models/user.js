@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['client', 'admin', 'staff'],
+    enum: ['client', 'admin', 'staff', 'vendor'],
     default: 'client',
   },
   bookings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Booking' }],

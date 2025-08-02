@@ -12,7 +12,7 @@ const inProduction = process.env.NODE_ENV === 'production';
 // Ensure upload directories exist (only for development)
 function createUploadDirs() {
   if (inProduction) return;
-  const dirs = ['uploads', 'uploads/avatars', 'uploads/products', 'uploads/categories', 'uploads/services', 'uploads/icons', 'uploads/posts', 'uploads/posts/images', 'uploads/posts/videos'];
+  const dirs = ['uploads', 'uploads/avatars', 'uploads/products', 'uploads/categories', 'uploads/services', 'uploads/icons', 'uploads/posts', 'uploads/posts/images', 'uploads/posts/videos', 'uploads/posts/thumbnails'];
   dirs.forEach((dir) => {
     const dirPath = path.join(process.cwd(), 'src', dir);
     if (!fs.existsSync(dirPath)) {
@@ -33,9 +33,12 @@ function getUploadSubDir(fieldname) {
     case 'postImage':
     case 'postImages':
       return 'posts/images';
+    case 'videos':
     case 'postVideo':
     case 'postVideos':
       return 'posts/videos';
+    case 'thumbnail':
+      return 'posts/thumbnails';
     default: return 'others';
   }
 }
@@ -70,9 +73,21 @@ const storage = inProduction
 
 // --- File Filter ---
 const fileFilter = (req, file, cb) => {
-  if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|avif)$/)) {
-    return cb(new BadRequestError('Only image files are allowed!'), false);
+  // Allow images for most uploads
+  const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg|ico|avif)$/;
+  // Allow videos for post uploads
+  const videoExtensions = /\.(mp4|avi|mov|wmv|flv|webm|mkv)$/;
+  
+  if (file.fieldname === 'postVideo' || file.fieldname === 'postVideos') {
+    if (!file.originalname.match(videoExtensions)) {
+      return cb(new BadRequestError('Only video files are allowed for video uploads!'), false);
+    }
+  } else {
+    if (!file.originalname.match(imageExtensions)) {
+      return cb(new BadRequestError('Only image files are allowed!'), false);
+    }
   }
+  
   cb(null, true);
 };
 
@@ -80,7 +95,10 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { 
+    fileSize: 50 * 1024 * 1024, // 50MB for videos
+    files: 10 // Max 10 files
+  },
 });
 
 // --- Middleware: Cloudinary Upload (production) ---

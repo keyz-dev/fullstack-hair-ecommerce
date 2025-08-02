@@ -1,9 +1,9 @@
 const Post = require('../models/post');
+const Comment = require('../models/comment');
 const User = require('../models/user');
 const Category = require('../models/category');
 const Service = require('../models/service');
 const Product = require('../models/product');
-const { uploadToCloudinary } = require('../utils/cloudinary');
 const { createAdminLog } = require('../utils/adminLog');
 
 // Get all posts with filtering and pagination
@@ -49,7 +49,7 @@ const getAllPosts = async (req, res) => {
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
-        { content: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
         { tags: { $in: [new RegExp(search, 'i')] } }
       ];
     }
@@ -105,13 +105,18 @@ const getPostBySlug = async (req, res) => {
       .populate('categories', 'name')
       .populate('services', 'name price description')
       .populate('products', 'name price images description')
-      .populate('comments.user', 'name avatar')
-      .populate('comments.replies.user', 'name avatar')
       .populate('likes.user', 'name avatar');
 
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
+
+    // Get comment count separately
+    const commentCount = await Comment.countDocuments({
+      post: post._id,
+      isDeleted: false,
+      status: 'active'
+    });
 
     // Increment view count
     post.views += 1;
@@ -124,7 +129,10 @@ const getPostBySlug = async (req, res) => {
     }
 
     res.json({
-      post,
+      post: {
+        ...post.toObject(),
+        commentCount
+      },
       userLiked
     });
   } catch (error) {
@@ -138,9 +146,9 @@ const createPost = async (req, res) => {
   try {
     const {
       title,
-      content,
-      excerpt,
-      type,
+      description,
+      postType,
+      mediaType,
       status,
       featured,
       tags,
@@ -151,15 +159,16 @@ const createPost = async (req, res) => {
       metaTitle,
       metaDescription,
       scheduledFor,
-      socialShare
+      socialShare,
+      postMetadata
     } = req.body;
 
     const postData = {
       title,
-      content,
-      excerpt,
+      description,
       author: req.user._id,
-      type: type || 'post',
+      postType: postType || 'work-showcase',
+      mediaType: mediaType || 'images',
       status: status || 'draft',
       featured: featured || false,
       tags: tags || [],
@@ -170,43 +179,52 @@ const createPost = async (req, res) => {
       metaTitle,
       metaDescription,
       scheduledFor,
-      socialShare
+      socialShare,
+      postMetadata: postMetadata || {}
     };
 
-    // Handle image uploads
-    if (req.files && req.files.images) {
-      const imageFiles = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-      const uploadedImages = [];
-
-      for (let i = 0; i < imageFiles.length; i++) {
-        const result = await uploadToCloudinary(imageFiles[i], 'posts');
-        uploadedImages.push({
-          url: result.secure_url,
-          alt: req.body.imageAlts?.[i] || '',
-          caption: req.body.imageCaptions?.[i] || '',
-          order: i
-        });
+    // Handle file uploads based on mediaType (files are processed by multer middleware)
+    if (req.files) {
+      if (mediaType === 'images' && req.files.postImages) {
+        const imageFiles = Array.isArray(req.files.postImages) ? req.files.postImages : [req.files.postImages];
+        
+        postData.images = imageFiles.map((file, index) => ({
+          url: file.path,
+          caption: req.body.imageCaptions?.[index] || '',
+          order: index + 1
+        }));
       }
+      
+      if (mediaType === 'video') {
+        // For video posts, we need both video file and thumbnail
+        if (!req.files.postVideo || !req.files.postVideo[0]) {
+          return res.status(400).json({ message: 'Video file is required for video posts' });
+        }
 
-      postData.images = uploadedImages;
+        // Use video file path from multer
+        const videoFile = req.files.postVideo[0];
+        let thumbnailPath = videoFile.path; // Default to video path if no separate thumbnail
+        
+        // Check if separate thumbnail is provided
+        if (req.files.thumbnail && req.files.thumbnail[0]) {
+          thumbnailPath = req.files.thumbnail[0].path;
+        }
+
+        postData.video = {
+          url: videoFile.path,
+          thumbnail: thumbnailPath,
+          caption: req.body.videoCaption || ''
+        };
+      }
     }
 
-    // Handle video uploads
-    if (req.files && req.files.videos) {
-      const videoFiles = Array.isArray(req.files.videos) ? req.files.videos : [req.files.videos];
-      const uploadedVideos = [];
-
-      for (let i = 0; i < videoFiles.length; i++) {
-        const result = await uploadToCloudinary(videoFiles[i], 'posts/videos', { resource_type: 'video' });
-        uploadedVideos.push({
-          url: result.secure_url,
-          thumbnail: result.thumbnail_url,
-          duration: result.duration,
-          caption: req.body.videoCaptions?.[i] || ''
-        });
-      }
-
-      postData.videos = uploadedVideos;
+    // Validate media requirements
+    if (mediaType === 'images' && (!postData.images || postData.images.length === 0)) {
+      return res.status(400).json({ message: 'At least one image is required for image posts' });
+    }
+    
+    if (mediaType === 'video' && !postData.video) {
+      return res.status(400).json({ message: 'Video file is required for video posts' });
     }
 
     const post = new Post(postData);
@@ -242,40 +260,36 @@ const updatePost = async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    // Handle image uploads
-    if (req.files && req.files.images) {
-      const imageFiles = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-      const uploadedImages = [];
-
-      for (let i = 0; i < imageFiles.length; i++) {
-        const result = await uploadToCloudinary(imageFiles[i], 'posts');
-        uploadedImages.push({
-          url: result.secure_url,
-          alt: req.body.imageAlts?.[i] || '',
-          caption: req.body.imageCaptions?.[i] || '',
-          order: i
-        });
+    // Handle file uploads based on mediaType (files are processed by multer middleware)
+    if (req.files) {
+      if (req.body.mediaType === 'images' && req.files.postImages) {
+        const imageFiles = Array.isArray(req.files.postImages) ? req.files.postImages : [req.files.postImages];
+        
+        updateData.images = imageFiles.map((file, index) => ({
+          url: file.path,
+          caption: req.body.imageCaptions?.[index] || '',
+          order: index + 1
+        }));
+        updateData.video = undefined; // Clear video if switching to images
       }
+      
+      if (req.body.mediaType === 'video' && req.files.postVideo && req.files.postVideo[0]) {
+        // Use video file path from multer
+        const videoFile = req.files.postVideo[0];
+        let thumbnailPath = videoFile.path; // Default to video path if no separate thumbnail
+        
+        // Check if separate thumbnail is provided
+        if (req.files.thumbnail && req.files.thumbnail[0]) {
+          thumbnailPath = req.files.thumbnail[0].path;
+        }
 
-      updateData.images = uploadedImages;
-    }
-
-    // Handle video uploads
-    if (req.files && req.files.videos) {
-      const videoFiles = Array.isArray(req.files.videos) ? req.files.videos : [req.files.videos];
-      const uploadedVideos = [];
-
-      for (let i = 0; i < videoFiles.length; i++) {
-        const result = await uploadToCloudinary(videoFiles[i], 'posts/videos', { resource_type: 'video' });
-        uploadedVideos.push({
-          url: result.secure_url,
-          thumbnail: result.thumbnail_url,
-          duration: result.duration,
-          caption: req.body.videoCaptions?.[i] || ''
-        });
+        updateData.video = {
+          url: videoFile.path,
+          thumbnail: thumbnailPath,
+          caption: req.body.videoCaption || ''
+        };
+        updateData.images = []; // Clear images if switching to video
       }
-
-      updateData.videos = uploadedVideos;
     }
 
     const updatedPost = await Post.findByIdAndUpdate(
@@ -365,51 +379,12 @@ const toggleLike = async (req, res) => {
   }
 };
 
-// Add comment
+// Add comment (deprecated - use comment routes instead)
 const addComment = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { content, parentCommentId } = req.body;
-    const userId = req.user._id;
-
-    const post = await Post.findById(id);
-    if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
-    }
-
-    if (parentCommentId) {
-      // Add reply to existing comment
-      const parentComment = post.comments.id(parentCommentId);
-      if (!parentComment) {
-        return res.status(404).json({ message: 'Parent comment not found' });
-      }
-
-      parentComment.replies.push({
-        user: userId,
-        content
-      });
-    } else {
-      // Add new comment
-      post.comments.push({
-        user: userId,
-        content
-      });
-    }
-
-    await post.save();
-
-    // Populate user info for the new comment/reply
-    await post.populate('comments.user', 'name avatar');
-    await post.populate('comments.replies.user', 'name avatar');
-
-    res.json({
-      message: 'Comment added successfully',
-      post
-    });
-  } catch (error) {
-    console.error('Error adding comment:', error);
-    res.status(500).json({ message: 'Error adding comment', error: error.message });
-  }
+  res.status(410).json({
+    message: 'This endpoint is deprecated. Please use POST /api/comments/post/:postId instead',
+    newEndpoint: '/api/comments/post/' + req.params.id
+  });
 };
 
 // Get post analytics
@@ -422,13 +397,20 @@ const getPostAnalytics = async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
+    // Get comment count from separate collection
+    const commentCount = await Comment.countDocuments({
+      post: id,
+      isDeleted: false,
+      status: 'active'
+    });
+
     const analytics = {
       views: post.views,
       likes: post.likes.length,
-      comments: post.comments.length,
+      saves: post.saves.length,
+      comments: commentCount,
       shares: post.shares,
-      engagementRate: post.engagementRate,
-      totalReplies: post.comments.reduce((total, comment) => total + comment.replies.length, 0)
+      engagementRate: post.engagementRate
     };
 
     res.json(analytics);
