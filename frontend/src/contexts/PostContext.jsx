@@ -42,23 +42,26 @@ export const PostProvider = ({ children }) => {
         page: pagination.page,
         limit: pagination.limit,
         search,
-        ...filters,
+        status: filters.status,
+        category: filters.category,
+        tag: filters.tag,
+        featured: filters.featured,
+        author: filters.author,
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
         ...params,
       };
       
       const response = await postApi.getAllPosts(queryParams);
       
-      if (response.success) {
-        setPosts(response.posts || []);
-        if (response.pagination) {
-          setPagination(prev => ({
-            ...prev,
-            page: response.pagination.page,
-            totalPages: response.pagination.totalPages,
-            total: response.pagination.total,
-          }));
-        }
-      }
+      // Backend returns { posts, totalPages, currentPage, total, hasNext, hasPrev }
+      setPosts(response.posts || []);
+      setPagination(prev => ({
+        ...prev,
+        page: response.currentPage || 1,
+        totalPages: response.totalPages || 1,
+        total: response.total || 0,
+      }));
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || "Failed to fetch posts";
       setError(errorMessage);
@@ -66,14 +69,13 @@ export const PostProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, search, filters]);
+  }, [pagination.page, pagination.limit, search, filters.status, filters.category, filters.tag, filters.featured, filters.author, filters.sortBy, filters.sortOrder]);
 
   const fetchFeaturedPosts = useCallback(async (limit = 6) => {
     try {
       const response = await postApi.getFeaturedPosts(limit);
-      if (response.success) {
-        setFeaturedPosts(response.posts || []);
-      }
+      // Backend returns { posts }
+      setFeaturedPosts(response.posts || []);
       return response;
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || "Failed to fetch featured posts";
@@ -88,15 +90,17 @@ export const PostProvider = ({ children }) => {
     try {
       const response = await postApi.createPost(postData);
       if (response.success) {
-        setPosts(prev => [response.post, ...prev]);
-        toast.success("Post created successfully");
-        return response;
+        await fetchPosts();
+        await fetchFeaturedPosts();
+
+        return { success: true, message: response.message };
+      } else {
+        return { success: false, message: response.message };
       }
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || "Failed to create post";
       setError(errorMessage);
-      toast.error(errorMessage);
-      return null;
+      return { success: false, message: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -107,13 +111,12 @@ export const PostProvider = ({ children }) => {
     setError(null);
     try {
       const response = await postApi.updatePost(id, postData);
-      if (response.success) {
-        setPosts(prev => prev.map(post => 
-          post._id === id ? response.post : post
-        ));
-        toast.success("Post updated successfully");
-        return response;
-      }
+      // Backend returns { message, post }
+      setPosts(prev => prev.map(post => 
+        post._id === id ? response.post : post
+      ));
+      toast.success(response.message || "Post updated successfully");
+      return response;
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || "Failed to update post";
       setError(errorMessage);
@@ -129,11 +132,10 @@ export const PostProvider = ({ children }) => {
     setError(null);
     try {
       const response = await postApi.deletePost(id);
-      if (response.success) {
-        setPosts(prev => prev.filter(post => post._id !== id));
-        toast.success("Post deleted successfully");
-        return true;
-      }
+      // Backend returns { message }
+      setPosts(prev => prev.filter(post => post._id !== id));
+      toast.success(response.message || "Post deleted successfully");
+      return true;
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || "Failed to delete post";
       setError(errorMessage);
@@ -148,22 +150,25 @@ export const PostProvider = ({ children }) => {
     try {
       // This would be implemented when backend provides post stats
       // For now, we'll calculate basic stats from posts
-      const total = posts.length;
-      const published = posts.filter(post => post.status === 'published').length;
-      const draft = posts.filter(post => post.status === 'draft').length;
-      const featured = posts.filter(post => post.featured).length;
-      
-      setStats({
-        total,
-        published,
-        draft,
-        featured,
-        byCategory: []
+      // We'll use the current posts state directly without dependency
+      setStats(() => {
+        const total = posts.length;
+        const published = posts.filter(post => post.status === 'published').length;
+        const draft = posts.filter(post => post.status === 'draft').length;
+        const featured = posts.filter(post => post.featured).length;
+        
+        return {
+          total,
+          published,
+          draft,
+          featured,
+          byCategory: []
+        };
       });
     } catch (err) {
       console.error('Error fetching post stats:', err);
     }
-  }, [posts]);
+  }, []); // Remove posts dependency to prevent circular dependency
 
   const setFiltersAndFetch = useCallback((newFilters) => {
     setFilters(newFilters);

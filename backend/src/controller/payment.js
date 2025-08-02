@@ -56,7 +56,7 @@ exports.initiatePayment = async (req, res, next) => {
       amount: paymentData.amount,
       phoneNumber: normalizedPhone,
       description: paymentData.description,
-      userId: req.user?.id || null,
+      userId: req.authUser?.id || null,
       campayReference: paymentResponse.reference
     });
 

@@ -724,3 +724,6 @@
 {"level":"error","message":"getaddrinfo ENOTFOUND ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-02T07:30:00.574Z"}
 {"level":"error","message":"getaddrinfo ENOTFOUND ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-02T07:30:10.617Z"}
 {"level":"error","message":"getaddrinfo ENOTFOUND ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-02T07:30:10.618Z"}
+{"level":"error","message":"\"imageOrder[0]\" must be greater than or equal to 1. \"callToAction\" must be of type object. \"postMetadata\" must be of type object. \"socialShare\" must be of type object","timestamp":"2025-08-02T22:22:57.994Z"}
+{"level":"error","message":"\"callToAction\" must be of type object. \"postMetadata\" must be of type object. \"socialShare\" must be of type object","timestamp":"2025-08-02T22:34:00.350Z"}
+{"level":"error","message":"next is not defined","timestamp":"2025-08-02T22:47:39.588Z"}

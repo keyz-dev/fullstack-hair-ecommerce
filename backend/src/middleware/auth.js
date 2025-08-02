@@ -17,7 +17,7 @@ const authenticateUser = async (req, res, next) => {
     if (!user) {
       return next(new NotFoundError('User not found.'));
     }
-    req.rootUser = user;
+    req.authUser = user;
     next();
   } catch (err) {
     return next(new UnauthorizedError('Invalid or expired token.'));
@@ -27,7 +27,7 @@ const authenticateUser = async (req, res, next) => {
 // Role-based authorization middleware
 const authorizeRoles = (roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.rootUser.role)) {
+    if (!roles.includes(req.authUser.role)) {
       return next(
         new UnauthorizedError(`Only ${roles.join(', ')} are allowed to access this resource.`)
       );
@@ -49,17 +49,17 @@ const optionalAuth = async (req, res, next) => {
       const user = await User.findById(decoded.id);
       
       if (user) {
-        req.rootUser = user;
+        req.authUser = user;
       } else {
-        req.rootUser = null;
+        req.authUser = null;
       }
     } catch (err) {
       // Invalid token, treat as guest
-      req.rootUser = null;
+      req.authUser = null;
     }
   } else {
     // No token, treat as guest
-    req.rootUser = null;
+    req.authUser = null;
   }
   
   next();

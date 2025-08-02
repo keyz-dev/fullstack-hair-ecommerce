@@ -34,38 +34,44 @@ export const postApi = {
     
     // Add text fields
     Object.keys(postData).forEach(key => {
-      if (key !== 'images' && key !== 'videos' && key !== 'imageAlts' && key !== 'imageCaptions' && key !== 'videoCaptions') {
+      if (key !== 'postImages' && key !== 'postVideo' && key !== 'thumbnail' && 
+          key !== 'imageCaptions' && key !== 'videoCaption' && key !== 'imageOrder') {
         if (Array.isArray(postData[key])) {
           postData[key].forEach(item => {
             formData.append(key, item);
           });
+        } else if (typeof postData[key] === 'object') {
+          formData.append(key, JSON.stringify(postData[key]));
         } else {
           formData.append(key, postData[key]);
         }
       }
     });
 
-    // Add images
-    if (postData.images) {
-      Array.from(postData.images).forEach((image, index) => {
-        formData.append('images', image);
-        if (postData.imageAlts?.[index]) {
-          formData.append(`imageAlts[${index}]`, postData.imageAlts[index]);
-        }
+    // Add images for image posts
+    if (postData.mediaType === 'images' && postData.postImages) {
+      Array.from(postData.postImages).forEach((image, index) => {
+        formData.append('postImages', image);
         if (postData.imageCaptions?.[index]) {
-          formData.append(`imageCaptions[${index}]`, postData.imageCaptions[index]);
+          formData.append('imageCaptions', postData.imageCaptions[index]);
+        }
+        if (postData.imageOrder?.[index] !== undefined) {
+          formData.append('imageOrder', postData.imageOrder[index]);
         }
       });
     }
 
-    // Add videos
-    if (postData.videos) {
-      Array.from(postData.videos).forEach((video, index) => {
-        formData.append('videos', video);
-        if (postData.videoCaptions?.[index]) {
-          formData.append(`videoCaptions[${index}]`, postData.videoCaptions[index]);
-        }
-      });
+    // Add video for video posts
+    if (postData.mediaType === 'video' && postData.postVideo) {
+      formData.append('postVideo', postData.postVideo);
+      if (postData.videoCaption) {
+        formData.append('videoCaption', postData.videoCaption);
+      }
+      
+      // Add thumbnail if provided
+      if (postData.thumbnail) {
+        formData.append('thumbnail', postData.thumbnail);
+      }
     }
 
     const response = await api.post(`${URL_PREFIX}/`, formData, {
@@ -82,38 +88,44 @@ export const postApi = {
     
     // Add text fields
     Object.keys(postData).forEach(key => {
-      if (key !== 'images' && key !== 'videos' && key !== 'imageAlts' && key !== 'imageCaptions' && key !== 'videoCaptions') {
+      if (key !== 'postImages' && key !== 'postVideo' && key !== 'thumbnail' && 
+          key !== 'imageCaptions' && key !== 'videoCaption' && key !== 'imageOrder') {
         if (Array.isArray(postData[key])) {
           postData[key].forEach(item => {
             formData.append(key, item);
           });
+        } else if (typeof postData[key] === 'object') {
+          formData.append(key, JSON.stringify(postData[key]));
         } else {
           formData.append(key, postData[key]);
         }
       }
     });
 
-    // Add images
-    if (postData.images) {
-      Array.from(postData.images).forEach((image, index) => {
-        formData.append('images', image);
-        if (postData.imageAlts?.[index]) {
-          formData.append(`imageAlts[${index}]`, postData.imageAlts[index]);
-        }
+    // Add images for image posts
+    if (postData.mediaType === 'images' && postData.postImages) {
+      Array.from(postData.postImages).forEach((image, index) => {
+        formData.append('postImages', image);
         if (postData.imageCaptions?.[index]) {
-          formData.append(`imageCaptions[${index}]`, postData.imageCaptions[index]);
+          formData.append('imageCaptions', postData.imageCaptions[index]);
+        }
+        if (postData.imageOrder?.[index] !== undefined) {
+          formData.append('imageOrder', postData.imageOrder[index]);
         }
       });
     }
 
-    // Add videos
-    if (postData.videos) {
-      Array.from(postData.videos).forEach((video, index) => {
-        formData.append('videos', video);
-        if (postData.videoCaptions?.[index]) {
-          formData.append(`videoCaptions[${index}]`, postData.videoCaptions[index]);
-        }
-      });
+    // Add video for video posts
+    if (postData.mediaType === 'video' && postData.postVideo) {
+      formData.append('postVideo', postData.postVideo);
+      if (postData.videoCaption) {
+        formData.append('videoCaption', postData.videoCaption);
+      }
+      
+      // Add thumbnail if provided
+      if (postData.thumbnail) {
+        formData.append('thumbnail', postData.thumbnail);
+      }
     }
 
     const response = await api.put(`${URL_PREFIX}/${id}`, formData, {
@@ -136,9 +148,9 @@ export const postApi = {
     return response.data;
   },
 
-  // Add comment
+  // Add comment (deprecated - use comment routes instead)
   addComment: async (id, commentData) => {
-    const response = await api.post(`${URL_PREFIX}/${id}/comment`, commentData);
+    const response = await api.post(`/comments/post/${id}`, commentData);
     return response.data;
   },
 

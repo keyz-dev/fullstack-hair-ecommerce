@@ -5,7 +5,7 @@ const { BadRequestError } = require('../utils/errors');
 const getSettings = async (req, res, next) => {
   try {
     // If admin, return all; else only public
-    const isAdmin = req.user && req.user.role === 'admin';
+    const isAdmin = req.authUser && req.authUser.role === 'admin';
     const query = isAdmin ? {} : { isPublic: true };
     const settings = await Settings.find(query);
     res.status(200).json({ success: true, settings });

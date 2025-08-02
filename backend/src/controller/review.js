@@ -7,7 +7,7 @@ exports.createReview = async (req, res, next) => {
   try {
     const { productId } = req.params;
     const { rating, title, comment } = req.body;
-    const userId = req.user._id;
+    const userId = req.authUser._id;
 
     // Check if product exists
     const product = await Product.findById(productId);
@@ -77,7 +77,7 @@ exports.updateReview = async (req, res, next) => {
   try {
     const { reviewId } = req.params;
     const { rating, title, comment } = req.body;
-    const userId = req.user._id;
+    const userId = req.authUser._id;
 
     const review = await Review.findById(reviewId);
     if (!review) return next(new NotFoundError('Review not found'));
@@ -110,11 +110,11 @@ exports.updateReview = async (req, res, next) => {
 exports.deleteReview = async (req, res, next) => {
   try {
     const { reviewId } = req.params;
-    const userId = req.user._id;
+    const userId = req.authUser._id;
 
     const review = await Review.findById(reviewId);
     if (!review) return next(new NotFoundError('Review not found'));
-    if (review.user.toString() !== userId.toString() && req.user.role !== 'admin') {
+    if (review.user.toString() !== userId.toString() && req.authUser.role !== 'admin') {
       return next(new UnauthorizedError('You can only delete your own reviews'));
     }
 
@@ -140,7 +140,7 @@ exports.markReviewHelpful = async (req, res, next) => {
   try {
     const { reviewId } = req.params;
     const { helpful } = req.body;
-    const userId = req.user._id;
+    const userId = req.authUser._id;
 
     const review = await Review.findById(reviewId);
     if (!review) return next(new NotFoundError('Review not found'));

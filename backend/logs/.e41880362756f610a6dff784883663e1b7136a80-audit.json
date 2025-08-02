@@ -6,11 +6,6 @@
     "auditLog": "D:\\Projects\\braid_commerce\\backend\\logs\\.e41880362756f610a6dff784883663e1b7136a80-audit.json",
     "files": [
         {
-            "date": 1753268766964,
-            "name": "D:\\Projects\\braid_commerce\\backend\\logs\\Error_2025-07-23.log",
-            "hash": "4269499591a11c04a76989f886aca898e53849179b5306c39a88b50e4289558f"
-        },
-        {
             "date": 1753344582583,
             "name": "D:\\Projects\\braid_commerce\\backend\\logs\\Error_2025-07-24.log",
             "hash": "518360e6a3f427276100780434de8c24545dcf75074da2ca2d11f9071fa5240e"
@@ -59,6 +54,11 @@
             "date": 1754091613276,
             "name": "D:\\Projects\\braid_commerce\\backend\\logs\\Error_2025-08-02.log",
             "hash": "d5607fae6a701ffc0adb4f74fcef49480b6b4bc1e250ac0d1c11d7ac3c8c7845"
+        },
+        {
+            "date": 1754175878805,
+            "name": "D:\\Projects\\braid_commerce\\backend\\logs\\Error_2025-08-03.log",
+            "hash": "91d835ed8e41027b23e0e720c8dc904205b46c7127442ca8ef0bc9ae8a806b31"
         }
     ],
     "hashType": "sha256"

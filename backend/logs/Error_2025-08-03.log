@@ -1,0 +1,5 @@
+{"level":"error","message":"\"callToAction.link\" is not allowed to be empty","timestamp":"2025-08-02T23:04:38.799Z"}
+{"level":"error","message":"\"callToAction.link\" is not allowed to be empty","timestamp":"2025-08-02T23:22:22.195Z"}
+{"level":"error","message":"\"postMetadata.timeRequired\" is not allowed to be empty","timestamp":"2025-08-02T23:34:04.167Z"}
+{"level":"error","message":"\"scheduledFor\" must be in ISO 8601 date format","timestamp":"2025-08-02T23:38:44.028Z"}
+{"level":"error","message":"\"callToAction.text\" is not allowed to be empty","timestamp":"2025-08-02T23:42:15.869Z"}

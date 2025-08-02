@@ -5,9 +5,12 @@ const Category = require('../models/category');
 const Service = require('../models/service');
 const Product = require('../models/product');
 const { createAdminLog } = require('../utils/adminLog');
+const { validate } = require('../middleware/validate');
+const { createPostSchema } = require('../schema/postSchema');
+const { BadRequestError, NotFoundError, InternalServerError } = require('../utils/errors');
 
 // Get all posts with filtering and pagination
-const getAllPosts = async (req, res) => {
+const getAllPosts = async (req, res, next) => {
   try {
     const {
       page = 1,
@@ -90,12 +93,12 @@ const getAllPosts = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching posts:', error);
-    res.status(500).json({ message: 'Error fetching posts', error: error.message });
+    return next(new InternalServerError('Error fetching posts'));
   }
 };
 
 // Get single post by slug
-const getPostBySlug = async (req, res) => {
+const getPostBySlug = async (req, res, next) => {
   try {
     const { slug } = req.params;
     const { userId } = req.query;
@@ -137,12 +140,12 @@ const getPostBySlug = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching post:', error);
-    res.status(500).json({ message: 'Error fetching post', error: error.message });
+    return next(new InternalServerError('Error fetching post'));
   }
 };
 
 // Create new post
-const createPost = async (req, res) => {
+const createPost = async (req, res, next) => {
   try {
     const {
       title,
@@ -163,50 +166,114 @@ const createPost = async (req, res) => {
       postMetadata
     } = req.body;
 
+    // Helper function to parse JSON strings to objects
+    const parseJsonField = (field) => {
+      if (typeof field === 'string') {
+        try {
+          return JSON.parse(field);
+        } catch (error) {
+          console.error('Error parsing JSON field:', error);
+          return field;
+        }
+      }
+      return field;
+    };
+
+    // Parse all object fields
+    const parsedData = {
+      callToAction: parseJsonField(callToAction),
+      socialShare: parseJsonField(socialShare),
+      postMetadata: parseJsonField(postMetadata),
+      tags: parseJsonField(tags),
+      categories: parseJsonField(categories),
+      services: parseJsonField(services),
+      products: parseJsonField(products)
+    };
+
     const postData = {
       title,
       description,
-      author: req.user._id,
+      author: req.authUser?._id,
       postType: postType || 'work-showcase',
       mediaType: mediaType || 'images',
       status: status || 'draft',
       featured: featured || false,
-      tags: tags || [],
-      categories: categories || [],
-      services: services || [],
-      products: products || [],
-      callToAction,
       metaTitle,
       metaDescription,
       scheduledFor,
-      socialShare,
-      postMetadata: postMetadata || {}
+      ...parsedData
     };
+
+    console.log('Parsed postData:', postData);
+
+    // Validate the parsed data using the schema
+    const { error } = createPostSchema.validate(postData);
+    if (error) {
+      return next(new BadRequestError(error.details[0].message));
+    }
 
     // Handle file uploads based on mediaType (files are processed by multer middleware)
     if (req.files) {
       if (mediaType === 'images' && req.files.postImages) {
         const imageFiles = Array.isArray(req.files.postImages) ? req.files.postImages : [req.files.postImages];
         
-        postData.images = imageFiles.map((file, index) => ({
+        // Validate that images were actually uploaded
+        if (imageFiles.length === 0) {
+          return next(new BadRequestError('At least one image is required for image posts'));
+        }
+        
+        // Validate file paths exist
+        const validImages = imageFiles.filter(file => file && file.path);
+        if (validImages.length === 0) {
+          return next(new BadRequestError('No valid images were uploaded'));
+        }
+        
+        // Parse imageOrder and imageCaptions arrays properly
+        let imageOrderArray = req.body.imageOrder;
+        let imageCaptionsArray = req.body.imageCaptions;
+        
+        if (typeof imageOrderArray === 'string') {
+          try {
+            imageOrderArray = JSON.parse(imageOrderArray);
+          } catch (error) {
+            console.error('Error parsing imageOrder:', error);
+            imageOrderArray = [];
+          }
+        }
+        
+        if (typeof imageCaptionsArray === 'string') {
+          try {
+            imageCaptionsArray = JSON.parse(imageCaptionsArray);
+          } catch (error) {
+            console.error('Error parsing imageCaptions:', error);
+            imageCaptionsArray = [];
+          }
+        }
+        
+        postData.images = validImages.map((file, index) => ({
           url: file.path,
-          caption: req.body.imageCaptions?.[index] || '',
-          order: index + 1
+          caption: imageCaptionsArray?.[index] || '',
+          order: parseInt(imageOrderArray?.[index]) || index + 1
         }));
       }
       
       if (mediaType === 'video') {
         // For video posts, we need both video file and thumbnail
         if (!req.files.postVideo || !req.files.postVideo[0]) {
-          return res.status(400).json({ message: 'Video file is required for video posts' });
+          return next(new BadRequestError('Video file is required for video posts'));
+        }
+
+        // Validate video file was actually uploaded
+        const videoFile = req.files.postVideo[0];
+        if (!videoFile || !videoFile.path) {
+          return next(new BadRequestError('Invalid video file uploaded'));
         }
 
         // Use video file path from multer
-        const videoFile = req.files.postVideo[0];
         let thumbnailPath = videoFile.path; // Default to video path if no separate thumbnail
         
         // Check if separate thumbnail is provided
-        if (req.files.thumbnail && req.files.thumbnail[0]) {
+        if (req.files.thumbnail && req.files.thumbnail[0] && req.files.thumbnail[0].path) {
           thumbnailPath = req.files.thumbnail[0].path;
         }
 
@@ -218,21 +285,24 @@ const createPost = async (req, res) => {
       }
     }
 
-    // Validate media requirements
+    // Validate media requirements after file processing
     if (mediaType === 'images' && (!postData.images || postData.images.length === 0)) {
-      return res.status(400).json({ message: 'At least one image is required for image posts' });
+      return next(new BadRequestError('At least one image is required for image posts'));
     }
     
     if (mediaType === 'video' && !postData.video) {
-      return res.status(400).json({ message: 'Video file is required for video posts' });
+      return next(new BadRequestError('Video file is required for video posts'));
     }
+
+    console.log(req.files)
+    console.log(postData)
 
     const post = new Post(postData);
     await post.save();
 
     // Create admin log
     await createAdminLog({
-      user: req.user._id,
+      user: req.authUser._id,
       action: 'CREATE_POST',
       details: `Created post: ${title}`,
       resourceId: post._id,
@@ -245,20 +315,41 @@ const createPost = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating post:', error);
-    res.status(500).json({ message: 'Error creating post', error: error.message });
+    return next(new InternalServerError('Error creating post'));
   }
 };
 
 // Update post
-const updatePost = async (req, res) => {
+const updatePost = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    let updateData = req.body;
 
     const post = await Post.findById(id);
     if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return next(new NotFoundError('Post not found'));
     }
+
+    // Helper function to parse JSON strings to objects
+    const parseJsonField = (field) => {
+      if (typeof field === 'string') {
+        try {
+          return JSON.parse(field);
+        } catch (error) {
+          console.error('Error parsing JSON field:', error);
+          return field;
+        }
+      }
+      return field;
+    };
+
+    // Parse all object fields
+    const fieldsToParse = ['callToAction', 'socialShare', 'postMetadata', 'tags', 'categories', 'services', 'products'];
+    fieldsToParse.forEach(field => {
+      if (updateData[field]) {
+        updateData[field] = parseJsonField(updateData[field]);
+      }
+    });
 
     // Handle file uploads based on mediaType (files are processed by multer middleware)
     if (req.files) {
@@ -300,7 +391,7 @@ const updatePost = async (req, res) => {
 
     // Create admin log
     await createAdminLog({
-      user: req.user._id,
+      user: req.authUser._id,
       action: 'UPDATE_POST',
       details: `Updated post: ${updatedPost.title}`,
       resourceId: updatedPost._id,
@@ -313,25 +404,25 @@ const updatePost = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating post:', error);
-    res.status(500).json({ message: 'Error updating post', error: error.message });
+    return next(new InternalServerError('Error updating post'));
   }
 };
 
 // Delete post
-const deletePost = async (req, res) => {
+const deletePost = async (req, res, next) => {
   try {
     const { id } = req.params;
 
     const post = await Post.findById(id);
     if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return next(new NotFoundError('Post not found'));
     }
 
     await Post.findByIdAndDelete(id);
 
     // Create admin log
     await createAdminLog({
-      user: req.user._id,
+      user: req.authUser._id,
       action: 'DELETE_POST',
       details: `Deleted post: ${post.title}`,
       resourceId: post._id,
@@ -341,19 +432,19 @@ const deletePost = async (req, res) => {
     res.json({ message: 'Post deleted successfully' });
   } catch (error) {
     console.error('Error deleting post:', error);
-    res.status(500).json({ message: 'Error deleting post', error: error.message });
+    return next(new InternalServerError('Error deleting post'));
   }
 };
 
 // Like/Unlike post
-const toggleLike = async (req, res) => {
+const toggleLike = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const userId = req.user._id;
+    const userId = req.authUser._id;
 
     const post = await Post.findById(id);
     if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return next(new NotFoundError('Post not found'));
     }
 
     const existingLike = post.likes.find(like => like.user.toString() === userId.toString());
@@ -375,26 +466,23 @@ const toggleLike = async (req, res) => {
     });
   } catch (error) {
     console.error('Error toggling like:', error);
-    res.status(500).json({ message: 'Error toggling like', error: error.message });
+    return next(new InternalServerError('Error toggling like'));
   }
 };
 
 // Add comment (deprecated - use comment routes instead)
-const addComment = async (req, res) => {
-  res.status(410).json({
-    message: 'This endpoint is deprecated. Please use POST /api/comments/post/:postId instead',
-    newEndpoint: '/api/comments/post/' + req.params.id
-  });
+const addComment = async (req, res, next) => {
+  return next(new BadRequestError('This endpoint is deprecated. Please use POST /api/comments/post/:postId instead'));
 };
 
 // Get post analytics
-const getPostAnalytics = async (req, res) => {
+const getPostAnalytics = async (req, res, next) => {
   try {
     const { id } = req.params;
 
     const post = await Post.findById(id);
     if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return next(new NotFoundError('Post not found'));
     }
 
     // Get comment count from separate collection
@@ -416,12 +504,12 @@ const getPostAnalytics = async (req, res) => {
     res.json(analytics);
   } catch (error) {
     console.error('Error fetching post analytics:', error);
-    res.status(500).json({ message: 'Error fetching analytics', error: error.message });
+    return next(new InternalServerError('Error fetching analytics'));
   }
 };
 
 // Get featured posts
-const getFeaturedPosts = async (req, res) => {
+const getFeaturedPosts = async (req, res, next) => {
   try {
     const { limit = 6 } = req.query;
 
@@ -437,12 +525,12 @@ const getFeaturedPosts = async (req, res) => {
     res.json(posts);
   } catch (error) {
     console.error('Error fetching featured posts:', error);
-    res.status(500).json({ message: 'Error fetching featured posts', error: error.message });
+    return next(new InternalServerError('Error fetching featured posts'));
   }
 };
 
 // Get posts by category
-const getPostsByCategory = async (req, res) => {
+const getPostsByCategory = async (req, res, next) => {
   try {
     const { categoryId } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -470,7 +558,7 @@ const getPostsByCategory = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching posts by category:', error);
-    res.status(500).json({ message: 'Error fetching posts by category', error: error.message });
+    return next(new InternalServerError('Error fetching posts by category'));
   }
 };
 

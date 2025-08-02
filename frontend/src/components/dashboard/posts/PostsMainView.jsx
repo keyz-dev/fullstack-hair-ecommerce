@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { PostStatSection, PostsListView, CreatePostModal, EditPostModal, ViewPostModal } from ".";
+import { PostStatSection, PostsListView, EditPostModal, ViewPostModal } from ".";
 import { Button, DeleteModal } from "../../ui";
 import { usePost } from "../../../hooks";
 
-const PostsMainView = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+const PostsMainView = ({ setView }) => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -15,7 +14,7 @@ const PostsMainView = () => {
   useEffect(() => {
     fetchPosts();
     fetchStats();
-  }, [fetchPosts, fetchStats]);
+  }, []); // Empty dependency array since we only want to run this once on mount
 
   const handleEdit = (post) => {
     setSelectedPost(post);
@@ -45,7 +44,7 @@ const PostsMainView = () => {
       <PostStatSection posts={posts} featuredPosts={featuredPosts} />
       <div className="flex justify-end items-center mb-4">
         <Button 
-          onClickHandler={() => setIsModalOpen(true)} 
+          onClickHandler={() => setView('create')} 
           additionalClasses="primarybtn"
         >
           Add Post
@@ -54,16 +53,11 @@ const PostsMainView = () => {
       
       <PostsListView onEdit={handleEdit} onView={handleView} onDelete={handleDelete} />
       
-      <CreatePostModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
-      
-      {/* <EditPostModal
+      <EditPostModal
         isOpen={editModalOpen}
         onClose={() => { setEditModalOpen(false); setSelectedPost(null); }}
         initialData={selectedPost}
-      /> */}
+      />
 
       <ViewPostModal
         isOpen={viewModalOpen}

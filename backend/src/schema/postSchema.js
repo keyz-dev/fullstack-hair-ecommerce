@@ -36,6 +36,22 @@ const createPostSchema = Joi.object({
       'any.only': 'Media type must be either images or video',
       'any.required': 'Media type is required'
     }),
+  
+  imageCaptions: Joi.array()
+    .items(Joi.string().trim().allow(''))
+    .optional()
+    .default([])
+    .messages({
+      'array.base': 'Image captions must be an array'
+    }),
+  
+  imageOrder: Joi.array()
+    .items(Joi.number().integer().min(1))
+    .optional()
+    .default([])
+    .messages({
+      'array.base': 'Image order must be an array'
+    }),
 
   status: Joi.string()
     .valid('draft', 'published', 'archived')
@@ -83,26 +99,26 @@ const createPostSchema = Joi.object({
     }),
 
   callToAction: Joi.object({
-    text: Joi.string().max(100),
-    link: Joi.string().uri(),
-    type: Joi.string().valid('booking', 'product', 'contact', 'whatsapp', 'custom')
+    text: Joi.string().max(100).optional(),
+    link: Joi.string().uri().allow(null, '').optional(),
+    type: Joi.string().optional()
   }).optional(),
 
   postMetadata: Joi.object({
-    difficulty: Joi.string().valid('beginner', 'intermediate', 'advanced', 'professional'),
-    timeRequired: Joi.string().max(50),
-    clientConsent: Joi.boolean().default(false)
+    difficulty: Joi.string().valid('beginner', 'intermediate', 'advanced', 'professional').optional(),
+    timeRequired: Joi.string().max(50).allow(null, '').optional(),
+    clientConsent: Joi.boolean().default(false).optional()
   }).optional().default({}),
 
-  metaTitle: Joi.string().max(60).allow('').optional(),
-  metaDescription: Joi.string().max(160).allow('').optional(),
+  metaTitle: Joi.string().max(60).allow('').optional().default(''),
+  metaDescription: Joi.string().max(160).allow('').optional().default(''),
   
-  scheduledFor: Joi.date().iso().optional(),
+  scheduledFor: Joi.date().iso().allow(null, '').optional(),
 
   socialShare: Joi.object({
-    facebook: Joi.boolean().default(false),
-    instagram: Joi.boolean().default(false),
-    whatsapp: Joi.boolean().default(false)
+    facebook: Joi.boolean().default(false).optional(),
+    instagram: Joi.boolean().default(false).optional(),
+    whatsapp: Joi.boolean().default(false).optional()
   }).optional().default({})
 }).custom((value, helpers) => {
   // Custom validation to ensure media requirements are met
@@ -118,6 +134,27 @@ const createPostSchema = Joi.object({
     // For video posts, we expect video and optionally thumbnail to be uploaded via multer
     // This will be validated in the controller after file upload
     return value;
+  }
+  
+  return value;
+}).custom((value, helpers) => {
+  // Additional validation for business logic
+  const { mediaType, callToAction, scheduledFor } = value;
+  
+  // Handle scheduledFor field - convert empty string to null
+  if (scheduledFor === '') {
+    value.scheduledFor = null;
+  }
+  
+  // Validate call to action if provided
+  if (callToAction) {
+    if (callToAction.type === 'custom' && (!callToAction.link || callToAction.link.trim() === '')) {
+      return helpers.error('any.invalid', { message: 'Custom call to action requires a link' });
+    }
+    
+    if (callToAction.type === 'product' && (!callToAction.link || callToAction.link.trim() === '' || !callToAction.text)) {
+      return helpers.error('any.invalid', { message: 'Product call to action requires both text and link' });
+    }
   }
   
   return value;
@@ -192,7 +229,7 @@ const updatePostSchema = Joi.object({
 
   callToAction: Joi.object({
     text: Joi.string().max(100),
-    link: Joi.string().uri(),
+    link: Joi.string().uri().allow(null, ''),
     type: Joi.string().valid('booking', 'product', 'contact', 'whatsapp', 'custom')
   }).optional(),
 
@@ -205,7 +242,7 @@ const updatePostSchema = Joi.object({
   metaTitle: Joi.string().max(60).allow(''),
   metaDescription: Joi.string().max(160).allow(''),
   
-  scheduledFor: Joi.date().iso().optional(),
+  scheduledFor: Joi.date().iso().allow(null, '').optional(),
 
   socialShare: Joi.object({
     facebook: Joi.boolean(),

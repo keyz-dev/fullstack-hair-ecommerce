@@ -29,12 +29,12 @@ const newOrder = async (req, res, next) => {
       ...customerInfo,
       phone: normalizePhoneNumber(customerInfo.phone)
     };
-  } else if (req.rootUser) {
+  } else if (req.authUser) {
     finalCustomerInfo = {
-      firstName: req.rootUser.name?.split(' ')[0] || '',
-      lastName: req.rootUser.name?.split(' ')[1] || '',
-      email: req.rootUser.email,
-      phone: req.rootUser.phone
+      firstName: req.authUser.name?.split(' ')[0] || '',
+      lastName: req.authUser.name?.split(' ')[1] || '',
+      email: req.authUser.email,
+      phone: req.authUser.phone
     };
   } else {
     return next(new BadRequestError('Customer information is required for guest users'));
@@ -95,8 +95,8 @@ const newOrder = async (req, res, next) => {
   };
 
   // Add user info (authenticated user or guest)
-  if (req.rootUser) {
-    orderData.user = req.rootUser._id;
+  if (req.authUser) {
+    orderData.user = req.authUser._id;
   }
 
   const order = new Order(orderData);
@@ -120,7 +120,7 @@ const getAdminOrders = async (req, res, next) => {
 
 // Get my orders
 const getMyOrders = async (req, res, next) => {
-  const orders = await Order.find({ user: req.rootUser._id }).populate('paymentMethod');
+  const orders = await Order.find({ user: req.authUser._id }).populate('paymentMethod');
   res.status(200).json({ success: true, orders });
 };
 
@@ -134,7 +134,7 @@ const getSingleOrder = async (req, res, next) => {
   if (!order) return next(new NotFoundError('Order not found'));
   
   // Check if user is authorized to view this order
-  if (order.user && order.user.toString() !== req.rootUser._id.toString()) {
+  if (order.user && order.user.toString() !== req.authUser._id.toString()) {
     return next(new UnauthorizedError('You are not authorized to view this order'));
   }
   

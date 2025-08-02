@@ -5,7 +5,7 @@ const { NotFoundError, BadRequestError } = require('../utils/errors');
 // 1. Add product to wishlist
 exports.addToWishlist = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.authUser._id;
     const { productId } = req.body;
     const product = await Product.findById(productId);
     if (!product) return next(new NotFoundError('Product not found'));
@@ -26,7 +26,7 @@ exports.addToWishlist = async (req, res, next) => {
 // 2. Remove product from wishlist
 exports.removeFromWishlist = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.authUser._id;
     const { productId } = req.params;
     let wishlist = await Wishlist.findOne({ user: userId });
     if (!wishlist) return res.status(404).json({ success: false, message: 'Wishlist not found' });
@@ -40,7 +40,7 @@ exports.removeFromWishlist = async (req, res, next) => {
 // 3. Get user wishlist
 exports.getWishlist = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.authUser._id;
     const wishlist = await Wishlist.findOne({ user: userId }).populate('products.product');
     res.status(200).json({ success: true, wishlist });
   } catch (err) { next(err); }
@@ -49,7 +49,7 @@ exports.getWishlist = async (req, res, next) => {
 // 4. Check if product is in wishlist
 exports.isInWishlist = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.authUser._id;
     const { productId } = req.params;
     const wishlist = await Wishlist.findOne({ user: userId });
     const isIn = wishlist && wishlist.products.some(p => p.product.toString() === productId);

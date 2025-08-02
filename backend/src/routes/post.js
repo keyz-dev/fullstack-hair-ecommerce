@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateUser, authorizeRoles } = require('../middleware/auth');
-const { upload, handleCloudinaryUpload, formatFilePaths } = require('../middleware/multer');
+const { upload, handleCloudinaryUpload, formatFilePaths, handleUploadError } = require('../middleware/multer');
+
 const {
   getAllPosts,
   getPostBySlug,
@@ -26,17 +27,17 @@ router.post('/:id/like', authenticateUser, toggleLike);
 // Note: Comments now handled by /api/comments routes
 
 // Admin routes (require admin privileges)
-router.post('/', upload.fields([
+router.post('/', authenticateUser, authorizeRoles(['admin']), upload.fields([
   { name: 'postImages', maxCount: 10 },
   { name: 'postVideo', maxCount: 1 },
   { name: 'thumbnail', maxCount: 1 }
-]), handleCloudinaryUpload, formatFilePaths, createPost);
+]), handleUploadError, handleCloudinaryUpload, formatFilePaths, createPost);
 
 router.put('/:id', authenticateUser, authorizeRoles(['admin']), upload.fields([
   { name: 'postImages', maxCount: 10 },
   { name: 'postVideo', maxCount: 1 },
   { name: 'thumbnail', maxCount: 1 }
-]), handleCloudinaryUpload, formatFilePaths, updatePost);
+]), handleUploadError, handleCloudinaryUpload, formatFilePaths, updatePost);
 
 router.delete('/:id', authenticateUser, authorizeRoles(['admin']), deletePost);
 router.get('/:id/analytics', authenticateUser, authorizeRoles(['admin']), getPostAnalytics);

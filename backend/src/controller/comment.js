@@ -73,7 +73,7 @@ const createComment = async (req, res) => {
   try {
     const { postId } = req.params;
     const { content, parentCommentId } = req.body;
-    const userId = req.user._id;
+    const userId = req.authUser._id;
 
     // Verify post exists
     const post = await Post.findById(postId);
@@ -106,8 +106,8 @@ const createComment = async (req, res) => {
     await comment.populate('author', 'name avatar');
 
     // Log admin activity if user is admin
-    if (req.user.role === 'admin') {
-      await createAdminLog(req.user._id, 'comment', 'create', comment._id);
+    if (req.authUser.role === 'admin') {
+      await createAdminLog(req.authUser._id, 'comment', 'create', comment._id);
     }
 
     res.status(201).json({
@@ -125,7 +125,7 @@ const updateComment = async (req, res) => {
   try {
     const { id } = req.params;
     const { content } = req.body;
-    const userId = req.user._id;
+    const userId = req.authUser._id;
 
     const comment = await Comment.findById(id);
     if (!comment) {
@@ -133,7 +133,7 @@ const updateComment = async (req, res) => {
     }
 
     // Check if user owns the comment or is admin
-    if (comment.author.toString() !== userId.toString() && req.user.role !== 'admin') {
+    if (comment.author.toString() !== userId.toString() && req.authUser.role !== 'admin') {
       return res.status(403).json({ message: 'Not authorized to update this comment' });
     }
 
@@ -143,8 +143,8 @@ const updateComment = async (req, res) => {
     await comment.populate('author', 'name avatar');
 
     // Log admin activity if user is admin
-    if (req.user.role === 'admin') {
-      await createAdminLog(req.user._id, 'comment', 'update', comment._id);
+    if (req.authUser.role === 'admin') {
+      await createAdminLog(req.authUser._id, 'comment', 'update', comment._id);
     }
 
     res.json({
@@ -161,7 +161,7 @@ const updateComment = async (req, res) => {
 const deleteComment = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user._id;
+    const userId = req.authUser._id;
 
     const comment = await Comment.findById(id);
     if (!comment) {
@@ -169,7 +169,7 @@ const deleteComment = async (req, res) => {
     }
 
     // Check if user owns the comment or is admin
-    if (comment.author.toString() !== userId.toString() && req.user.role !== 'admin') {
+    if (comment.author.toString() !== userId.toString() && req.authUser.role !== 'admin') {
       return res.status(403).json({ message: 'Not authorized to delete this comment' });
     }
 
@@ -184,8 +184,8 @@ const deleteComment = async (req, res) => {
     );
 
     // Log admin activity if user is admin
-    if (req.user.role === 'admin') {
-      await createAdminLog(req.user._id, 'comment', 'delete', comment._id);
+    if (req.authUser.role === 'admin') {
+      await createAdminLog(req.authUser._id, 'comment', 'delete', comment._id);
     }
 
     res.json({ message: 'Comment deleted successfully' });
@@ -199,7 +199,7 @@ const deleteComment = async (req, res) => {
 const toggleCommentLike = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user._id;
+    const userId = req.authUser._id;
 
     const comment = await Comment.findById(id);
     if (!comment) {
@@ -290,7 +290,7 @@ const moderateComment = async (req, res) => {
     await comment.save();
 
     // Log admin activity
-    await createAdminLog(req.user._id, 'comment', 'moderate', comment._id, {
+    await createAdminLog(req.authUser._id, 'comment', 'moderate', comment._id, {
       action: 'status_change',
       newStatus: status
     });

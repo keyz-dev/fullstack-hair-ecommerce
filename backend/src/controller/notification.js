@@ -14,7 +14,7 @@ exports.createNotification = async (req, res, next) => {
 // Get all notifications for a user
 exports.getUserNotifications = async (req, res, next) => {
   try {
-    const notifications = await Notification.find({ user: req.rootUser._id });
+    const notifications = await Notification.find({ user: req.authUser._id });
     res.json({ success: true, notifications });
   } catch (err) {
     next(err);

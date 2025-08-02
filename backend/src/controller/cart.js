@@ -5,7 +5,7 @@ const { AppError, NotFoundError } = require('../utils/errors');
 // Get user's cart
 exports.getCart = async (req, res, next) => {
   try {
-    const cart = await Cart.findOne({ user: req.rootUser._id }).populate('items.product');
+    const cart = await Cart.findOne({ user: req.authUser._id }).populate('items.product');
     res.json({ success: true, cart });
   } catch (err) {
     next(err);
@@ -15,9 +15,9 @@ exports.getCart = async (req, res, next) => {
 // Add item to cart
 exports.addToCart = async (req, res, next) => {
   try {
-    let cart = await Cart.findOne({ user: req.rootUser._id });
+    let cart = await Cart.findOne({ user: req.authUser._id });
     if (!cart) {
-      cart = await Cart.create({ user: req.rootUser._id, items: [] });
+      cart = await Cart.create({ user: req.authUser._id, items: [] });
     }
     const { product, quantity } = req.body;
     const existingItem = cart.items.find(item => item.product.toString() === product);
@@ -38,7 +38,7 @@ exports.addToCart = async (req, res, next) => {
 exports.updateCartItem = async (req, res, next) => {
   try {
     const { product, quantity } = req.body;
-    const cart = await Cart.findOne({ user: req.rootUser._id });
+    const cart = await Cart.findOne({ user: req.authUser._id });
     if (!cart) return next(new NotFoundError('Cart not found'));
     const item = cart.items.find(item => item.product.toString() === product);
     if (!item) return next(new NotFoundError('Product not in cart'));
@@ -59,7 +59,7 @@ exports.updateCartItem = async (req, res, next) => {
 exports.removeFromCart = async (req, res, next) => {
   try {
     const { product } = req.body;
-    const cart = await Cart.findOne({ user: req.rootUser._id });
+    const cart = await Cart.findOne({ user: req.authUser._id });
     if (!cart) return next(new NotFoundError('Cart not found'));
     cart.items = cart.items.filter(item => item.product.toString() !== product);
     cart.updatedAt = Date.now();

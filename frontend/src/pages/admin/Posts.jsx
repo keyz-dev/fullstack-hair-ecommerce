@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PostProvider } from '../../contexts/PostContext';
-import { PostsMainView } from '../../components/dashboard/posts';
+import { PostsMainView, CreatePostPage } from '../../components/dashboard/posts';
 
 const Posts = () => {
+  const [view, setView] = useState('main');
+  
   return (
-      <PostsMainView />
+    <PostProvider>
+      <section>
+        {view === 'main' ? (
+          <PostsMainView setView={setView} />
+        ) : (
+          <CreatePostPage setView={setView} />
+        )}
+      </section>
+    </PostProvider>
   );
 };
 

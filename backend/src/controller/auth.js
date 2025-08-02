@@ -141,7 +141,7 @@ exports.googleLogin = async (req, res, next) => {
 
 // Verify token
 exports.verifyToken = async (req, res, next) => {
-  const user  = req.rootUser;
+  const user  = req.authUser;
   res.status(200).json({
     status: "success",
     message: "Token verified",

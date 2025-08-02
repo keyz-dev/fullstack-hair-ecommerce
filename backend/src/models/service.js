@@ -143,7 +143,6 @@ serviceSchema.virtual('activePricing').get(function() {
 // Index for better query performance
 serviceSchema.index({ category: 1, status: 1 });
 serviceSchema.index({ staff: 1 });
-serviceSchema.index({ slug: 1 });
 
 // Pre-save middleware to generate slug if not provided
 serviceSchema.pre('save', function(next) {
