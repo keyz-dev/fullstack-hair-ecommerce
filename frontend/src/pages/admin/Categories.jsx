@@ -11,6 +11,7 @@ const CategoriesMainView = () => {
     filters,
     pagination,
     filteredCategories,
+    stats,
     actions,
     fetchCategories,
     deleteCategory
@@ -21,61 +22,22 @@ const CategoriesMainView = () => {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [categoryToDelete, setCategoryToDelete] = React.useState(null);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
+  const [isSearching, setIsSearching] = React.useState(false);
 
   // Load categories on component mount
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
 
-  // Refetch categories when filters change
-  useEffect(() => {
-    fetchCategories(1);
-  }, [filters, fetchCategories]);
+  // No need to refetch when filters change since filtering is client-side
 
-  // Filter configurations
-  const filterConfigs = [
-    {
-      key: 'status',
-      label: 'Status',
-      defaultValue: 'all',
-      colorClass: 'bg-green-100 text-green-800',
-      options: [
-        { value: 'all', label: 'All Statuses' },
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' },
-        { value: 'archived', label: 'Archived' },
-      ]
-    },
-    {
-      key: 'sortBy',
-      label: 'Sort By',
-      defaultValue: 'name',
-      colorClass: 'bg-purple-100 text-purple-800',
-      options: [
-        { value: 'name', label: 'Name' },
-        { value: 'createdAt', label: 'Date Created' },
-        { value: 'updatedAt', label: 'Last Updated' },
-      ]
-    }
-  ];
-
-  // Handle filter changes
-  const handleFilterChange = (filterType, value) => {
-    actions.setFilter(filterType, value);
-  };
-
-  // Handle search
-  const handleSearch = (searchTerm) => {
-    actions.setSearch(searchTerm);
-  };
-
-  // Handle edit
-  const handleEdit = () => {
+  // Handle category edit
+  const handleCategoryEdit = () => {
     setEditModalOpen(true);
   };
 
-  // Handle delete
-  const handleDelete = (category) => {
+  // Handle category delete
+  const handleCategoryDelete = (category) => {
     setCategoryToDelete(category);
     setDeleteModalOpen(true);
   };
@@ -92,6 +54,21 @@ const CategoriesMainView = () => {
       setDeleteModalOpen(false);
       setCategoryToDelete(null);
     }
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (filterType, value) => {
+    actions.setFilter(filterType, value);
+  };
+
+  // Handle search
+  const handleSearch = (searchTerm) => {
+    actions.setSearch(searchTerm);
+  };
+
+  // Handle searching state change
+  const handleSearchingChange = (searching) => {
+    setIsSearching(searching);
   };
 
   // Refresh categories
@@ -125,11 +102,12 @@ const CategoriesMainView = () => {
   }
 
   return (
-    <section className="space-y-6">
+    <div className="lg:px-3">
       {/* Category Statistics */}
-      <CategoryStatSection />
+      <CategoryStatSection stats={stats} loading={loading} />
 
-      <div className="flex justify-end items-center">
+      {/* Add Category Button */}
+      <div className="flex justify-end items-center my-3">
         <Button
           onClickHandler={() => setIsModalOpen(true)}
           additionalClasses="primarybtn"
@@ -144,18 +122,45 @@ const CategoriesMainView = () => {
         onFilterChange={handleFilterChange}
         onSearch={handleSearch}
         onClearAll={actions.clearAllFilters}
-        filterConfigs={filterConfigs}
+        onSearchingChange={handleSearchingChange}
+        filterConfigs={[
+          {
+            key: 'status',
+            label: 'Status',
+            defaultValue: 'all',
+            colorClass: 'bg-green-100 text-green-800',
+            options: [
+              { value: 'all', label: 'All Statuses' },
+              { value: 'active', label: 'Active' },
+              { value: 'inactive', label: 'Inactive' },
+              { value: 'archived', label: 'Archived' },
+            ]
+          },
+          {
+            key: 'sortBy',
+            label: 'Sort By',
+            defaultValue: 'name',
+            colorClass: 'bg-purple-100 text-purple-800',
+            options: [
+              { value: 'name', label: 'Name' },
+              { value: 'createdAt', label: 'Date Created' },
+              { value: 'updatedAt', label: 'Last Updated' },
+            ]
+          }
+        ]}
         searchPlaceholder="Search categories by name or description..."
         loading={loading}
       />
 
       {/* Categories List */}
-      <CategoriesListView
-        categories={filteredCategories}
-        loading={loading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      <div className="mt-6">
+        <CategoriesListView
+          categories={filteredCategories}
+          loading={loading || isSearching}
+          onEdit={handleCategoryEdit}
+          onDelete={handleCategoryDelete}
+        />
+      </div>
 
       {/* Pagination */}
       {pagination.total > pagination.limit && (
@@ -207,7 +212,7 @@ const CategoriesMainView = () => {
         message={`Are you sure you want to delete "${categoryToDelete?.name}"? This action cannot be undone.`}
         loading={deleteLoading}
       />
-    </section>
+    </div>
   );
 };
 

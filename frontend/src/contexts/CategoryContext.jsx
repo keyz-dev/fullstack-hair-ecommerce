@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useCallback, useEffect } from "react";
+import React, { createContext, useReducer, useCallback, useEffect, useMemo } from "react";
 import { categoryApi } from "../api/category";
 import { toast } from "react-toastify";
 
@@ -119,10 +119,7 @@ export const CategoryProvider = ({ children }) => {
       
       const response = await categoryApi.getAllCategories({
         page,
-        limit: state.pagination.limit,
-        status: state.filters.status !== 'all' ? state.filters.status : undefined,
-        search: state.filters.search || undefined,
-        sortBy: state.filters.sortBy
+        limit: state.pagination.limit
       });
       
       const fetchedCategories = response.data || [];
@@ -139,11 +136,11 @@ export const CategoryProvider = ({ children }) => {
       dispatch({ type: CATEGORY_ACTIONS.SET_ERROR, payload: errorMessage });
       toast.error('Failed to load categories');
     }
-  }, [state.pagination.limit, state.filters]);
+  }, [state.pagination.limit]);
 
-  // Filter categories based on current filters (client-side)
+  // Filter and sort categories based on current filters (client-side)
   const getFilteredCategories = useCallback(() => {
-    return state.categories.filter(category => {
+    let filtered = state.categories.filter(category => {
       // Status filter
       if (state.filters.status !== 'all' && category.status !== state.filters.status) {
         return false;
@@ -162,7 +159,25 @@ export const CategoryProvider = ({ children }) => {
       
       return true;
     });
-  }, [state.categories, state.filters]);
+
+    // Sort the filtered results
+    if (state.filters.sortBy) {
+      filtered.sort((a, b) => {
+        switch (state.filters.sortBy) {
+          case 'name':
+            return (a.name || '').localeCompare(b.name || '');
+          case 'createdAt':
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          case 'updatedAt':
+            return new Date(b.updatedAt) - new Date(a.updatedAt);
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return filtered;
+  }, [state.categories, state.filters.status, state.filters.search, state.filters.sortBy]);
 
   // Get category by ID
   const getCategory = useCallback(async (id) => {
@@ -254,7 +269,7 @@ export const CategoryProvider = ({ children }) => {
   }, []);
 
   // Actions
-  const actions = {
+  const actions = useMemo(() => ({
     // Filter management
     setFilter: (filterType, value) => {
       dispatch({ type: CATEGORY_ACTIONS.SET_FILTERS, payload: { [filterType]: value } });
@@ -278,7 +293,7 @@ export const CategoryProvider = ({ children }) => {
     clearAllFilters: () => {
       dispatch({ type: CATEGORY_ACTIONS.SET_FILTERS, payload: initialState.filters });
     }
-  };
+  }), []);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -286,7 +301,7 @@ export const CategoryProvider = ({ children }) => {
   }, [fetchCategories]);
 
   // Context value
-  const value = {
+  const value = useMemo(() => ({
     ...state,
     filteredCategories: getFilteredCategories(),
     stats: calculateStats(state.categories),
@@ -296,7 +311,17 @@ export const CategoryProvider = ({ children }) => {
     createCategory,
     updateCategory,
     deleteCategory
-  };
+  }), [
+    state,
+    getFilteredCategories,
+    calculateStats,
+    actions,
+    fetchCategories,
+    getCategory,
+    createCategory,
+    updateCategory,
+    deleteCategory
+  ]);
 
   return (
     <CategoryContext.Provider value={value}>

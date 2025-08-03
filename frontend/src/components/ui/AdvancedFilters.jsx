@@ -10,7 +10,8 @@ const AdvancedFilters = ({
   searchPlaceholder = "Search...",
   className = "",
   loading = false,
-  debounceMs = 300
+  debounceMs = 300,
+  onSearchingChange
 }) => {
   const [searchValue, setSearchValue] = useState(filters.search || '');
   const [isSearching, setIsSearching] = useState(false);
@@ -28,6 +29,13 @@ const AdvancedFilters = ({
 
     return () => clearTimeout(timer);
   }, [searchValue, filters.search, onSearch, debounceMs]);
+
+  // Notify parent component when searching state changes
+  useEffect(() => {
+    if (onSearchingChange) {
+      onSearchingChange(isSearching);
+    }
+  }, [isSearching, onSearchingChange]);
 
   const handleSearchChange = (e) => {
     setSearchValue(e.target.value);

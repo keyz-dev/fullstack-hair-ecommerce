@@ -1,15 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { StatRenderer } from "../../ui";
 import { FolderOpen, CheckCircle, XCircle } from "lucide-react";
-import { useCategory } from "../../../hooks/useCategory";
 
-const CategoryStatSection = () => {
-  const { stats, fetchCategories, loading } = useCategory();
-
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
-
+const CategoryStatSection = ({ stats, loading }) => {
   const statCards = [
     {
       title: "Total Categories",
