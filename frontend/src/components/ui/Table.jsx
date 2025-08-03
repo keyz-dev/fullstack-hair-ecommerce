@@ -16,8 +16,38 @@ TableCell.displayName = "TableCell";
 const Table = ({ columns, data, emptyStateMessage, onRowClick, clickableRows = false, isLoading = false }) => {
   if (isLoading) {
     return (
-      <div className="p-6 text-center text-gray-500">
-        Loading...
+      <div className="p-6">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              {columns.map((col, index) => (
+                <th
+                  key={index}
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  {col.Header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {[...Array(5)].map((_, rowIndex) => (
+              <tr key={rowIndex} className="hover:bg-gray-50">
+                {columns.map((col, colIndex) => (
+                  <td
+                    key={colIndex}
+                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
+                  >
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    </div>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }
@@ -31,8 +61,8 @@ const Table = ({ columns, data, emptyStateMessage, onRowClick, clickableRows = f
   }
 
   return (
-    <div className="">
-      <table className="min-w-full divide-y divide-gray-200">
+    <div className="overflow-hidden">
+      <table className="w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
             {columns.map((col, index) => (

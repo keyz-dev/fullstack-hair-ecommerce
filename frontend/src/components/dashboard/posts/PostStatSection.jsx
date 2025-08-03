@@ -1,8 +1,8 @@
 import React from 'react';
-import { StatCard } from '../../ui';
+import { StatRenderer } from '../../ui';
 import { FileText, Eye, Heart, MessageCircle } from 'lucide-react';
 
-const PostStatSection = ({ stats }) => {
+const PostStatSection = ({ stats, loading = false }) => {
   const statCards = [
     {
       title: 'Total Posts',
@@ -37,14 +37,7 @@ const PostStatSection = ({ stats }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
-      {statCards.map((stat, index) => (
-        <StatCard
-          key={index}
-          {...stat}
-        />
-      ))}
-    </div>
+    <StatRenderer statCards={statCards} className="lg:w-[230px]" isLoading={loading} />
   );
 };
 

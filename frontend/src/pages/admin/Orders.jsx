@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import { useAuth } from '../../hooks';
-import { useOrder } from '../../contexts/OrderContext';
+import { useAuth, useOrder } from '../../hooks';
 import { 
   AdminOrderListView, 
   OrderDetailsModal, 
@@ -8,7 +7,6 @@ import {
   OrderStats, 
 } from '../../components/orders';
 import { Button, LoadingSpinner, EmptyState } from '../../components/ui';
-import { Download, RefreshCw, Plus } from 'lucide-react';
 
 const Orders = () => {
   const { user } = useAuth();
@@ -83,10 +81,7 @@ const Orders = () => {
     fetchAllOrders(pagination.page);
   };
 
-  // Export orders
-  const handleExport = () => {
-    actions.exportOrders();
-  };
+
 
   if (loading && orders.length === 0) {
     return (

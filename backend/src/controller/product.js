@@ -98,24 +98,47 @@ const getAllProducts = async (req, res, next) => {
       category,
       isActive,
       stock,
+      stock_status,
       isFeatured,
       isOnSale,
       tags,
       minPrice,
       maxPrice,
+      price_range,
     } = req.query;
     
     page = parseInt(page);
     limit = parseInt(limit);
     const query = {};
     
-    if (category) query.category = category;
+    if (category && category !== 'all' && category !== '') query.category = category;
     if (isActive !== undefined) query.isActive = isActive === "true";
     if (isFeatured !== undefined) query.isFeatured = isFeatured === "true";
     if (isOnSale !== undefined) query.isOnSale = isOnSale === "true";
-    if (stock === "in") query.stock = { $gt: 0 };
-    if (stock === "out") query.stock = 0;
-    if (minPrice || maxPrice) {
+    // Handle stock status filter
+    if (stock_status) {
+      if (stock_status === "in_stock") {
+        query.stock = { $gt: 10 };
+      } else if (stock_status === "limited_stock") {
+        query.stock = { $gt: 0, $lte: 10 };
+      } else if (stock_status === "out_of_stock") {
+        query.stock = 0;
+      }
+    } else if (stock === "in") query.stock = { $gt: 0 };
+    else if (stock === "out") query.stock = 0;
+
+    // Handle price range filter
+    if (price_range) {
+      query.price = {};
+      if (price_range === "low") {
+        query.price.$lt = 50;
+      } else if (price_range === "medium") {
+        query.price.$gte = 50;
+        query.price.$lte = 200;
+      } else if (price_range === "high") {
+        query.price.$gt = 200;
+      }
+    } else if (minPrice || maxPrice) {
       query.price = {};
       if (minPrice) query.price.$gte = parseFloat(minPrice);
       if (maxPrice) query.price.$lte = parseFloat(maxPrice);

@@ -59,7 +59,30 @@ exports.updateCategory = async (req, res, next) => {
 // Get all categories
 exports.getAllCategories = async (req, res, next) => {
   try {
-    const categories = await Category.find({});
+    const { search = '', status = '', type = '' } = req.query;
+    
+    // Build query
+    const query = {};
+    
+    // Search functionality
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    // Status filter
+    if (status) {
+      query.status = status;
+    }
+    
+    // Type filter (if category has a type field)
+    if (type) {
+      query.type = type;
+    }
+    
+    const categories = await Category.find(query);
     const categoryIds = categories.map(cat => cat._id);
 
     // Get product counts per category

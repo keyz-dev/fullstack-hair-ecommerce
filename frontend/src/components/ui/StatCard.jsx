@@ -10,6 +10,7 @@ const StatCard = ({
   trendValue,
   colorTheme = "white",
   className = "w-[180px] lg:w-[250px]",
+  isLoading = false,
   ...props
 }) => {
   const theme = colorThemes[colorTheme] || colorThemes.white;
@@ -46,7 +47,11 @@ const StatCard = ({
       )}
       {/* Value */}
       <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-2 sm:mb-3">
-        {typeof value === "number" ? value.toLocaleString() : value}
+        {isLoading ? (
+          <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+        ) : (
+          typeof value === "number" ? value.toLocaleString() : value
+        )}
       </div>
 
       {/* Description */}

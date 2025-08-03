@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Table, SearchBar, FilterDropdown, Pagination, DropdownMenu, StatusPill } from "../../ui";
+import { Table, Pagination, DropdownMenu, StatusPill, AdvancedFilters } from "../../ui";
 import { Edit, Trash2, Clock, DollarSign, Users, Eye, Power, PowerOff } from "lucide-react";
 import { useService } from "../../../hooks";
 import { useCategory } from "../../../hooks";
@@ -16,6 +16,7 @@ const ServicesListView = ({ onEdit, onView, onDelete }) => {
     search, 
     filters, 
     setFilters,
+    clearAllFilters,
     loading,
     activateService,
     deactivateService
@@ -24,27 +25,45 @@ const ServicesListView = ({ onEdit, onView, onDelete }) => {
   const { categories } = useCategory();
   const { currencies } = useCurrency();
 
-  // Filter options
-  const categoryOptions = [
-    { value: "", label: "All Categories" },
-    ...(categories || []).map(cat => ({
-      value: cat._id,
-      label: cat.name
-    }))
-  ];
-
-  const statusOptions = [
-    { value: "", label: "All Statuses" },
-    { value: "draft", label: "Draft" },
-    { value: "active", label: "Active" },
-    { value: "inactive", label: "Inactive" },
-    { value: "maintenance", label: "Maintenance" },
-  ];
-
-  const staffRequirementOptions = [
-    { value: "", label: "All Services" },
-    { value: "true", label: "Requires Staff" },
-    { value: "false", label: "No Staff Required" },
+  // Filter configurations
+  const filterConfigs = [
+    {
+      key: 'category',
+      label: 'Category',
+      defaultValue: '',
+      colorClass: 'bg-blue-100 text-blue-800',
+      options: [
+        { value: '', label: 'All Categories' },
+        ...(categories || []).map(cat => ({
+          value: cat._id,
+          label: cat.name
+        }))
+      ]
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      defaultValue: '',
+      colorClass: 'bg-green-100 text-green-800',
+      options: [
+        { value: '', label: 'All Statuses' },
+        { value: 'draft', label: 'Draft' },
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+        { value: 'maintenance', label: 'Maintenance' },
+      ]
+    },
+    {
+      key: 'requiresStaff',
+      label: 'Staff',
+      defaultValue: '',
+      colorClass: 'bg-purple-100 text-purple-800',
+      options: [
+        { value: '', label: 'All Services' },
+        { value: 'true', label: 'Requires Staff' },
+        { value: 'false', label: 'No Staff Required' },
+      ]
+    }
   ];
 
   useEffect(() => {
@@ -210,32 +229,15 @@ const ServicesListView = ({ onEdit, onView, onDelete }) => {
 
   return (
     <div className="space-y-6">
-      {/* Search and Filters */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div className="w-full md:w-1/3">
-          <SearchBar placeholder="Search services..." value={search} onChange={(value) => setSearch(value)} />
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-          <FilterDropdown
-            options={categoryOptions}
-            value={filters.category}
-            onChange={(value) => handleFilterChange("category", value)}
-            placeholder="Filter by category"
-          />
-          <FilterDropdown
-            options={statusOptions}
-            value={filters.status}
-            onChange={(value) => handleFilterChange("status", value)}
-            placeholder="Filter by status"
-          />
-          <FilterDropdown
-            options={staffRequirementOptions}
-            value={filters.requiresStaff}
-            onChange={(value) => handleFilterChange("requiresStaff", value)}
-            placeholder="Staff requirement"
-          />
-        </div>
-      </div>
+      {/* Advanced Search and Filters */}
+      <AdvancedFilters
+        filters={{ ...filters, search }}
+        onFilterChange={handleFilterChange}
+        onSearch={setSearch}
+        onClearAll={clearAllFilters}
+        filterConfigs={filterConfigs}
+        searchPlaceholder="Search services by name or description..."
+      />
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -244,6 +246,7 @@ const ServicesListView = ({ onEdit, onView, onDelete }) => {
           data={services}
           loading={loading}
           className="min-h-[400px]"
+          emptyStateMessage="No services found"
         />
       </div>
 

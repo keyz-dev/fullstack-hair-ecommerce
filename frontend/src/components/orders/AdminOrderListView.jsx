@@ -1,8 +1,6 @@
 import React from "react";
-import { Table, StatusPill, DropdownMenu } from "../ui";
+import { Table, StatusPill, DropdownMenu, UserInfo } from "../ui";
 import { Edit, Trash2, Eye, Download, Truck, User } from "lucide-react";
-import { OrderStatusBadge, PaymentStatusBadge } from "./";
-import UserInfo from "../ui/UserInfo";
 
 const AdminOrderListView = ({ onView, onEdit, onDelete, loading, orders }) => {
   const formatDate = (dateString) => {

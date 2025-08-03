@@ -12,8 +12,9 @@ const getAllPosts = async (req, res, next) => {
     const {
       page = 1,
       limit = 10,
-      status = 'published',
+      status,
       type,
+      postType,
       category,
       tag,
       search,
@@ -25,18 +26,21 @@ const getAllPosts = async (req, res, next) => {
 
     const query = {};
 
-    // Status filter - only apply if status is provided
-    if (status) {
+    // Status filter - only apply if status is provided and not empty
+    if (status && status !== '') {
       query.status = status;
     }
 
-    // Type filter
+    // Type filter (support both type and postType for backward compatibility)
     if (type) {
-      query.type = type;
+      query.postType = type;
+    }
+    if (postType) {
+      query.postType = postType;
     }
 
-    // Category filter
-    if (category) {
+    // Category filter - only apply if category is provided and not 'all'
+    if (category && category !== 'all' && category !== '') {
       query.categories = category;
     }
 
@@ -80,8 +84,7 @@ const getAllPosts = async (req, res, next) => {
 
     const total = await Post.countDocuments(query);
 
-    console.log("\n Fetched posts")
-    console.log(posts)
+    // Debug logs removed - posts fetching working correctly
 
     res.json({
       message: 'Posts fetched successfully',

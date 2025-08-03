@@ -1,16 +1,29 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 
-const FilterDropdown = ({ label, options, selected, setSelected }) => {
+const FilterDropdown = ({ label, options, selected, setSelected, value, onChange, placeholder }) => {
+  const handleChange = (e) => {
+    const newValue = e.target.value;
+    if (setSelected) {
+      setSelected(newValue);
+    }
+    if (onChange) {
+      onChange(newValue);
+    }
+  };
+
+  const currentValue = value || selected || '';
+  const currentOptions = options || [];
+  const currentPlaceholder = placeholder || `All ${label}s`;
   return (
     <div className="relative">
       <select
-        value={selected}
-        onChange={(e) => setSelected(e.target.value)}
+        value={currentValue}
+        onChange={handleChange}
         className="appearance-none w-full bg-white border border-gray-300 rounded-xs py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-secondary"
       >
-        <option value="">{`All ${label}s`}</option>
-        {options.map((option) => (
+        <option value="">{currentPlaceholder}</option>
+        {currentOptions.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>

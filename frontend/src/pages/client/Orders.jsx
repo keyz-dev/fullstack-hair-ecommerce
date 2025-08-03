@@ -1,16 +1,13 @@
 import React, { useEffect } from 'react';
-import { useAuth } from '../../hooks';
-import { useOrder } from '../../contexts/OrderContext';
+import { useAuth, useOrder } from '../../hooks';
 import { 
   ClientOrderListView, 
   OrderDetailsModal, 
   OrderFilters, 
   OrderStats, 
-  OrderTimeline,
-  OrderActions
 } from '../../components/orders';
 import { Button, LoadingSpinner, EmptyState } from '../../components/ui';
-import { Search, Filter, Download, RefreshCw } from 'lucide-react';
+import { Download, RefreshCw } from 'lucide-react';
 
 const Orders = () => {
   const { user } = useAuth();
@@ -21,7 +18,6 @@ const Orders = () => {
     selectedOrder,
     showDetailsModal,
     filters,
-    pagination,
     stats: orderStats,
     filteredOrders,
     actions,

@@ -1,59 +1,135 @@
-import { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useCategory } from "../../hooks";
-import { CategoriesListView, AddCategoryModal, UpdateCategoryModal } from "../../components/dashboard/categories"
-import { Button, SearchBar, FilterDropdown, DeleteModal } from "../../components/ui";
+import { CategoriesListView, AddCategoryModal, UpdateCategoryModal, CategoryStatSection } from "../../components/dashboard/categories"
+import { Button, AdvancedFilters, DeleteModal, LoadingSpinner, EmptyState } from "../../components/ui";
 
 const CategoriesMainView = () => {
-  const { fetchCategories, categories, loading, deleteCategory } = useCategory();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState({
-    name: "",
-    description: "",
-  });
+  const {
+    categories,
+    loading,
+    error,
+    filters,
+    pagination,
+    filteredCategories,
+    actions,
+    fetchCategories,
+    deleteCategory
+  } = useCategory();
 
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [editModalOpen, setEditModalOpen] = React.useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
+  const [categoryToDelete, setCategoryToDelete] = React.useState(null);
+  const [deleteLoading, setDeleteLoading] = React.useState(false);
+
+  // Load categories on component mount
   useEffect(() => {
-    const searchParams = { ...filters, search: searchTerm };
-    fetchCategories(searchParams);
-  }, [searchTerm, filters, fetchCategories]);
+    fetchCategories();
+  }, [fetchCategories]);
 
-  const handleFilterChange = (filterName, value) => {
-    setFilters((prev) => ({ ...prev, [filterName]: value }));
+  // Refetch categories when filters change
+  useEffect(() => {
+    fetchCategories(1);
+  }, [filters, fetchCategories]);
+
+  // Filter configurations
+  const filterConfigs = [
+    {
+      key: 'status',
+      label: 'Status',
+      defaultValue: 'all',
+      colorClass: 'bg-green-100 text-green-800',
+      options: [
+        { value: 'all', label: 'All Statuses' },
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+        { value: 'archived', label: 'Archived' },
+      ]
+    },
+    {
+      key: 'sortBy',
+      label: 'Sort By',
+      defaultValue: 'name',
+      colorClass: 'bg-purple-100 text-purple-800',
+      options: [
+        { value: 'name', label: 'Name' },
+        { value: 'createdAt', label: 'Date Created' },
+        { value: 'updatedAt', label: 'Last Updated' },
+      ]
+    }
+  ];
+
+  // Handle filter changes
+  const handleFilterChange = (filterType, value) => {
+    actions.setFilter(filterType, value);
   };
 
-  const handleEdit = (category) => {
-    setSelectedCategory(category);
+  // Handle search
+  const handleSearch = (searchTerm) => {
+    actions.setSearch(searchTerm);
+  };
+
+  // Handle edit
+  const handleEdit = () => {
     setEditModalOpen(true);
   };
 
+  // Handle delete
   const handleDelete = (category) => {
-    setSelectedCategory(category);
+    setCategoryToDelete(category);
     setDeleteModalOpen(true);
   };
 
+  // Handle delete confirmation
   const handleDeleteConfirm = async () => {
+    if (!categoryToDelete) return;
+    
     setDeleteLoading(true);
-    await deleteCategory(selectedCategory._id);
+    const success = await deleteCategory(categoryToDelete._id);
     setDeleteLoading(false);
-    setDeleteModalOpen(false);
-    setSelectedCategory(null);
-    fetchCategories();
+    
+    if (success) {
+      setDeleteModalOpen(false);
+      setCategoryToDelete(null);
+    }
   };
 
-  const categoryOptions = [
-    { value: "", label: "All Categories" },
-    { value: "Upcoming", label: "Upcoming" },
-    { value: "Active", label: "Active" },
-    { value: "Completed", label: "Completed" }, 
-  ];
+  // Refresh categories
+  const handleRefresh = () => {
+    actions.refreshCategories();
+    fetchCategories(pagination.page);
+  };
+
+  if (loading && categories.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  if (error && categories.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <EmptyState
+          title="Failed to Load Categories"
+          description={error}
+          action={
+            <Button onClick={handleRefresh} variant="primary">
+              Try Again
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
-    <section>
-      <div className="flex justify-end items-center mb-4">
+    <section className="space-y-6">
+      {/* Category Statistics */}
+      <CategoryStatSection />
+
+      <div className="flex justify-end items-center">
         <Button
           onClickHandler={() => setIsModalOpen(true)}
           additionalClasses="primarybtn"
@@ -62,50 +138,73 @@ const CategoriesMainView = () => {
         </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-        <div className="w-full lg:w-1/3">
-          <SearchBar
-            placeholder="Search category..."
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-          />
-        </div>
-        <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-          <FilterDropdown
-            options={categoryOptions}
-            value={filters.category}
-            onChange={(e) => handleFilterChange("category", e.target.value)}
-          />
-          <FilterDropdown
-            options={categoryOptions}
-            value={filters.category}
-            onChange={(e) => handleFilterChange("category", e.target.value)}
-          />
-        </div>
-      </div>
+      {/* Advanced Search and Filters */}
+      <AdvancedFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onSearch={handleSearch}
+        onClearAll={actions.clearAllFilters}
+        filterConfigs={filterConfigs}
+        searchPlaceholder="Search categories by name or description..."
+        loading={loading}
+      />
 
+      {/* Categories List */}
       <CategoriesListView
-        categories={categories}
+        categories={filteredCategories}
         loading={loading}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
 
+      {/* Pagination */}
+      {pagination.total > pagination.limit && (
+        <div className="flex justify-center mt-6">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchCategories(pagination.page - 1)}
+              disabled={pagination.page === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-gray-600">
+              Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchCategories(pagination.page + 1)}
+              disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Modals */}
       <AddCategoryModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
       <UpdateCategoryModal
         isOpen={editModalOpen}
-        onClose={() => { setEditModalOpen(false); setSelectedCategory(null); fetchCategories(); }}
-        initialData={selectedCategory}
+        onClose={() => { 
+          setEditModalOpen(false); 
+          fetchCategories(pagination.page);
+        }}
       />
       <DeleteModal
         isOpen={deleteModalOpen}
-        onClose={() => { setDeleteModalOpen(false); setSelectedCategory(null); }}
+        onClose={() => { 
+          setDeleteModalOpen(false); 
+          setCategoryToDelete(null); 
+        }}
         onConfirm={handleDeleteConfirm}
-        itemName={selectedCategory?.name}
         title="Delete Category"
+        message={`Are you sure you want to delete "${categoryToDelete?.name}"? This action cannot be undone.`}
         loading={deleteLoading}
       />
     </section>

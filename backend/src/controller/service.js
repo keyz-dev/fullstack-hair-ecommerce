@@ -94,8 +94,8 @@ exports.getAllServices = async (req, res, next) => {
       ];
     }
 
-    // Category filter
-    if (category) {
+    // Category filter - only apply if category is provided and not 'all'
+    if (category && category !== 'all' && category !== '') {
       query.category = category;
     }
 
@@ -175,7 +175,7 @@ exports.getActiveServices = async (req, res, next) => {
 
     const query = { status: 'active' };
 
-    if (category) {
+    if (category && category !== 'all' && category !== '') {
       query.category = category;
     }
 

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { StatCard } from "../../ui";
+import { StatRenderer } from "../../ui";
 import { Box, CheckCircle, XCircle } from "lucide-react";
 import { useProducts } from "../../../hooks/useProducts";
 
@@ -26,6 +26,13 @@ const ProductStatSection = () => {
       description: "Products currently in stock",
     },
     {
+      title: "Limited Stock",
+      value: stats?.limitedStock ?? (loading ? "..." : 0),
+      colorTheme: "orange",
+      icon: CheckCircle,
+      description: "Products with limited stock",
+    },
+    {
       title: "Out of Stock",
       value: stats?.outOfStock ?? (loading ? "..." : 0),
       colorTheme: "red",
@@ -35,14 +42,7 @@ const ProductStatSection = () => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-4">
-    {statCards.map((stat, index) => (
-      <StatCard
-        key={index}
-        {...stat}
-      />
-    ))}
-  </div>
+    <StatRenderer statCards={statCards} className="lg:w-[230px]" isLoading={loading} />
   );
 };
 

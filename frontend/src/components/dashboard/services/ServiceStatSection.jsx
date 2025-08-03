@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { StatCard } from "../../ui";
+import { StatRenderer } from "../../ui";
 import { useService } from "../../../hooks";
 import { 
   Briefcase, 
@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 const ServiceStatSection = () => {
-  const { stats, fetchStats } = useService();
+  const { stats, fetchStats, loading } = useService();
 
   useEffect(() => {
     fetchStats();
@@ -56,15 +56,7 @@ const ServiceStatSection = () => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-4">
-      {statCards.map((stat, index) => (
-        <StatCard
-          key={index}
-          {...stat}
-          className="lg:w-[220px]"
-        />
-      ))}
-    </div>
+    <StatRenderer statCards={statCards} className="lg:w-[230px]" isLoading={loading} />
   );
 };
 

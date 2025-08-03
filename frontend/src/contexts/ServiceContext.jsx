@@ -276,6 +276,23 @@ export const ServiceProvider = ({ children }) => {
     setPagination(prev => ({ ...prev, page: 1 }));
   }, []);
 
+  const clearAllFilters = useCallback(() => {
+    const clearedFilters = {
+      category: '',
+      status: '',
+      requiresStaff: '',
+      minPrice: '',
+      maxPrice: '',
+      minDuration: '',
+      maxDuration: '',
+      staff: ''
+    };
+    setFilters(clearedFilters);
+    setSearch('');
+    setPagination(prev => ({ ...prev, page: 1 }));
+    fetchServices({ page: 1 });
+  }, [fetchServices]);
+
   const value = {
     services,
     loading,
@@ -297,6 +314,7 @@ export const ServiceProvider = ({ children }) => {
     setLimit,
     setFilters: updateFilters,
     setSearch: updateSearch,
+    clearAllFilters,
   };
 
   return (

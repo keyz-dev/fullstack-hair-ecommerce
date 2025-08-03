@@ -24,11 +24,12 @@ export const PostProvider = ({ children }) => {
     total: 0,
   });
   const [filters, setFilters] = useState({
-    status: 'published',
+    status: '',
     category: '',
     tag: '',
     featured: '',
     author: '',
+    postType: '',
     sortBy: 'publishedAt',
     sortOrder: 'desc'
   });
@@ -42,7 +43,6 @@ export const PostProvider = ({ children }) => {
         page: pagination.page,
         limit: pagination.limit,
         search,
-        status: filters.status,
         category: filters.category,
         tag: filters.tag,
         featured: filters.featured,
@@ -51,6 +51,16 @@ export const PostProvider = ({ children }) => {
         sortOrder: filters.sortOrder,
         ...params,
       };
+
+      // Handle postType filter - backend expects 'type'
+      if (filters.postType && filters.postType !== '') {
+        queryParams.type = filters.postType;
+      }
+      
+      // Only add status if it's not empty
+      if (filters.status && filters.status !== '') {
+        queryParams.status = filters.status;
+      }
       
       const response = await postApi.getAllPosts(queryParams);
 
@@ -75,7 +85,43 @@ export const PostProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, search, filters.status, filters.category, filters.tag, filters.featured, filters.author, filters.sortBy, filters.sortOrder]);
+  }, [pagination.page, pagination.limit, search, filters.category, filters.tag, filters.featured, filters.author, filters.postType, filters.sortBy, filters.sortOrder]);
+
+  // Separate function for initial fetch that doesn't depend on filters
+  const fetchInitialPosts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const queryParams = {
+        page: 1,
+        limit: 10,
+        sortBy: 'publishedAt',
+        sortOrder: 'desc'
+      };
+      
+      const response = await postApi.getAllPosts(queryParams);
+
+      if (response.success && response.data) {
+        const { posts, pagination: newPagination } = response.data;
+        setPosts(posts || []);
+        setPagination(prev => ({
+          ...prev,
+          page: newPagination.currentPage || 1,
+          totalPages: newPagination.totalPages || 1,
+          total: newPagination.total || 0,
+        }));
+      } else {
+        setPosts([]);
+        setPagination(prev => ({ ...prev, page: 1, totalPages: 1, total: 0 }));
+      }
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err) || "Failed to fetch posts";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const fetchFeaturedPosts = useCallback(async (limit = 6) => {
     try {
@@ -183,6 +229,23 @@ export const PostProvider = ({ children }) => {
     fetchPosts({ page: 1 });
   }, [fetchPosts]);
 
+  const clearAllFilters = useCallback(() => {
+    const clearedFilters = {
+      status: '',
+      category: '',
+      tag: '',
+      featured: '',
+      author: '',
+      postType: '',
+      sortBy: 'publishedAt',
+      sortOrder: 'desc'
+    };
+    setFilters(clearedFilters);
+    setSearch('');
+    setPagination(prev => ({ ...prev, page: 1 }));
+    fetchPosts({ page: 1 });
+  }, [fetchPosts]);
+
   const setPageAndFetch = useCallback((page) => {
     setPagination(prev => ({ ...prev, page }));
     fetchPosts({ page });
@@ -201,6 +264,7 @@ export const PostProvider = ({ children }) => {
     
     // Actions
     fetchPosts,
+    fetchInitialPosts,
     fetchFeaturedPosts,
     createPost,
     updatePost,
@@ -209,6 +273,7 @@ export const PostProvider = ({ children }) => {
     setFiltersAndFetch,
     setSearchAndFetch,
     setPageAndFetch,
+    clearAllFilters,
     setError: (error) => setError(error),
     clearError: () => setError(null)
   };

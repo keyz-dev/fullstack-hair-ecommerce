@@ -1,28 +1,82 @@
 import React, { useEffect } from "react";
 import { useProducts } from "../../../hooks/useProducts";
-import { Table, SearchBar, FilterDropdown, Pagination, DropdownMenu, StatusPill } from "../../ui";
+import { Table, Pagination, DropdownMenu, StatusPill, AdvancedFilters } from "../../ui";
 import { Edit, Trash2, Eye } from "lucide-react";
+import { useCategory } from "../../../hooks";
 
 const ProductTable = ({ onEdit, onView, onDelete }) => {
   const {
-    products, page, totalPages, fetchProducts, setPage, setSearch, search, filters, setFilters
+    loading,
+    filters,
+    pagination,
+    filteredProducts,
+    actions,
+    fetchProducts
   } = useProducts();
 
-  // Example filter options (replace with real categories/statuses)
-  const categoryOptions = [{ value: "", label: "All Categories" }];
-  const statusOptions = [
-    { value: "", label: "All Statuses" },
-    { value: "in", label: "In Stock" },
-    { value: "out", label: "Out of Stock" },
+  const { categories } = useCategory();
+
+  // Filter configurations
+  const filterConfigs = [
+    {
+      key: 'category',
+      label: 'Category',
+      defaultValue: 'all',
+      colorClass: 'bg-blue-100 text-blue-800',
+      options: [
+        { value: 'all', label: 'All Categories' },
+        ...(categories || []).map(cat => ({
+          value: cat._id,
+          label: cat.name
+        }))
+      ]
+    },
+    {
+      key: 'status',
+      label: 'Stock',
+      defaultValue: 'all',
+      colorClass: 'bg-green-100 text-green-800',
+      options: [
+        { value: 'all', label: 'All Stock' },
+        { value: 'in_stock', label: 'In Stock' },
+        { value: 'limited_stock', label: 'Limited Stock' },
+        { value: 'out_of_stock', label: 'Out of Stock' },
+      ]
+    },
+    {
+      key: 'priceRange',
+      label: 'Price',
+      defaultValue: 'all',
+      colorClass: 'bg-purple-100 text-purple-800',
+      options: [
+        { value: 'all', label: 'All Prices' },
+        { value: 'low', label: 'Under $50' },
+        { value: 'medium', label: '$50 - $200' },
+        { value: 'high', label: 'Over $200' },
+      ]
+    }
   ];
 
+  // Load products on component mount only
   useEffect(() => {
     fetchProducts();
-  }, [page, filters, search, fetchProducts]);
+  }, []); // Empty dependency array - only run on mount
 
-  const handleFilterChange = (filterName, value) => {
-    setFilters({ ...filters, [filterName]: value });
-    setPage(1);
+  // Refetch products when filters change
+  useEffect(() => {
+    if (Object.keys(filters).length > 0) {
+      fetchProducts(1);
+    }
+  }, [filters]); // Only depend on filters, not fetchProducts
+
+  // Handle filter changes
+  const handleFilterChange = (filterType, value) => {
+    actions.setFilter(filterType, value);
+  };
+
+  // Handle search
+  const handleSearch = (searchTerm) => {
+    actions.setSearch(searchTerm);
   };
 
   const columns = [
@@ -41,7 +95,7 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
       Header: "Category",
       accessor: "category",
       Cell: ({ row }) =>
-        <span className="">{row.category.name || 'Cat name'}</span>
+        <span className="">{row.category?.name || 'N/A'}</span>
     },
     { 
       Header: "Price", 
@@ -56,21 +110,22 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
         return `${row.price}`;
       }
     },
-    { Header: "Stock", accessor: "stock" },
+    { Header: "Stock", accessor: "stockQuantity" },
     {
       Header: "Status",
       accessor: "stock_status",
       Cell: ({ row }) => {
-        const status = row.stock > 10 ? "in_stock" : row.stock === 0 ? "out_of_stock" : "limited_stock";
+        const status = row.stockQuantity > 10 ? "in_stock" : row.stockQuantity === 0 ? "out_of_stock" : "limited_stock";
         return <StatusPill status={status} />;
-      },
-    },  
+      }
+    },
     {
       id: "actions",
+      Header: "Actions",
       Cell: ({ row }) => {
         const menuItems = [
           {
-            label: "View Product",
+            label: "View Details",
             icon: <Eye size={16} />,
             onClick: () => onView(row),
           },
@@ -86,26 +141,48 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
             isDestructive: true,
           },
         ];
-        return <DropdownMenu items={menuItems} />;
+        return (
+          <div onClick={(e) => e.stopPropagation()}>
+            <DropdownMenu items={menuItems} />
+          </div>
+        );
       },
     },
   ];
 
   return (
-    <div>
-      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-        <div className="w-full md:w-1/3">
-          <SearchBar placeholder="Search products..." searchTerm={search} setSearchTerm={setSearch} />
+    <div className="space-y-6">
+      {/* Advanced Search and Filters */}
+      <AdvancedFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onSearch={handleSearch}
+        onClearAll={actions.clearAllFilters}
+        filterConfigs={filterConfigs}
+        searchPlaceholder="Search products by name, description, or SKU..."
+        loading={loading}
+      />
+
+      {/* Products Table */}
+      <Table
+        columns={columns}
+        data={filteredProducts}
+        isLoading={loading}
+        emptyStateMessage="No products found. Try adjusting your filters or check back later."
+        onRowClick={onView}
+        clickableRows={true}
+      />
+
+      {/* Pagination */}
+      {pagination.total > pagination.limit && (
+        <div className="flex justify-center mt-6">
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={Math.ceil(pagination.total / pagination.limit)}
+            onPageChange={fetchProducts}
+          />
         </div>
-        <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-          <FilterDropdown label="Category" options={categoryOptions} selected={filters.category || ""} setSelected={val => handleFilterChange("category", val)} />
-          <FilterDropdown label="Status" options={statusOptions} selected={filters.stock || ""} setSelected={val => handleFilterChange("stock", val)} />
-        </div>
-      </div>
-      <Table columns={columns} data={products} emptyStateMessage="No products found." />
-      <div className="flex justify-center mt-4">
-        <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
-      </div>
+      )}
     </div>
   );
 };

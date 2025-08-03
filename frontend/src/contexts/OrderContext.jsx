@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useReducer } from 'react';
+import React, { createContext, useReducer } from 'react';
 import { useAuth } from '../hooks';
 import { orderApi } from '../api/order';
 import { usePaymentTracker } from '../hooks';
 import { toast } from 'react-toastify';
-import { extractErrorMessage } from '../utils/extractError';
 
 // Initial state
 const initialState = {
@@ -344,11 +343,4 @@ export const OrderProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the order context
-export const useOrder = () => {
-  const context = useContext(OrderContext);
-  if (!context) {
-    throw new Error('useOrder must be used within an OrderProvider');
-  }
-  return context;
-}; 
+export { OrderContext }
