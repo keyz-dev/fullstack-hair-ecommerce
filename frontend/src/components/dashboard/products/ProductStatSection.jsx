@@ -1,15 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { StatRenderer } from "../../ui";
 import { Box, CheckCircle, XCircle } from "lucide-react";
-import { useProducts } from "../../../hooks/useProducts";
 
-const ProductStatSection = () => {
-  const { stats, fetchStats, loading } = useProducts();
-
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
-
+const ProductStatSection = ({ stats, loading }) => {
   const statCards = [
     {
       title: "Total Products",

@@ -129,34 +129,33 @@ const ProductProvider = ({ children }) => {
 
   // Calculate product statistics
   const calculateStats = useCallback((products) => {
-    return {
+    console.log('Calculating stats for products:', products.map(p => ({ name: p.name, stock: p.stock })));
+    
+    const stats = {
       total: products.length,
-      active: products.filter(p => p.status === 'active').length,
-      inactive: products.filter(p => p.status === 'inactive').length,
-      inStock: products.filter(p => p.stockQuantity > 10).length,
-      limitedStock: products.filter(p => p.stockQuantity > 0 && p.stockQuantity <= 10).length,
-      outOfStock: products.filter(p => p.stockQuantity <= 0).length,
+      active: products.filter(p => p.isActive === true).length,
+      inactive: products.filter(p => p.isActive === false).length,
+      inStock: products.filter(p => p.stock > 10).length,
+      limitedStock: products.filter(p => p.stock > 0 && p.stock <= 10).length,
+      outOfStock: products.filter(p => p.stock <= 0).length,
       totalRevenue: products
-        .filter(p => p.status === 'active')
-        .reduce((sum, p) => sum + (p.price * p.soldQuantity || 0), 0)
+        .filter(p => p.isActive === true)
+        .reduce((sum, p) => sum + (p.price * (p.soldQuantity || 0)), 0)
     };
+    
+    console.log('Calculated stats:', stats);
+    return stats;
   }, []);
 
   // Fetch all products
-  const fetchProducts = useCallback(async (page = 1, filters = null) => {
+  const fetchProducts = useCallback(async (page = 1) => {
     try {
       dispatch({ type: PRODUCT_ACTIONS.SET_LOADING, payload: true });
       
-      const currentFilters = filters || state.filters;
-      const currentLimit = state.pagination.limit;
-      
       const response = await productApi.getAllProducts({
         page,
-        limit: currentLimit,
-        status: currentFilters.status !== 'all' ? currentFilters.status : undefined,
-        category: currentFilters.category !== 'all' ? currentFilters.category : undefined,
-        search: currentFilters.search || undefined,
-        sort: currentFilters.sortBy
+        limit: state.pagination.limit,
+        sort: state.filters.sortBy
       });
       
       const fetchedProducts = response.data?.products || [];
@@ -183,30 +182,43 @@ const ProductProvider = ({ children }) => {
   // Fetch product stats
   const fetchStats = useCallback(async () => {
     try {
-      const response = await productApi.getProductStats();
-      const stats = response.stats || calculateStats(state.products);
-      
-      dispatch({ type: PRODUCT_ACTIONS.SET_STATS, payload: stats });
+      // Always use calculated stats from current products for consistency
+      const calculatedStats = calculateStats(state.products);
+      dispatch({ type: PRODUCT_ACTIONS.SET_STATS, payload: calculatedStats });
       
     } catch (err) {
-      console.error('Error fetching product stats:', err);
+      console.error('Error calculating product stats:', err);
       // Fallback to calculated stats
       const calculatedStats = calculateStats(state.products);
       dispatch({ type: PRODUCT_ACTIONS.SET_STATS, payload: calculatedStats });
     }
-  }, [calculateStats]);
+  }, [calculateStats, state.products]);
 
-  // Filter products based on current filters (client-side)
+  // Filter and sort products based on current filters (client-side)
   const getFilteredProducts = useCallback(() => {
-    return state.products.filter(product => {
-      // Status filter
-      if (state.filters.status !== 'all' && product.status !== state.filters.status) {
-        return false;
+    let filtered = state.products.filter(product => {
+      // Status filter (stock status)
+      if (state.filters.status !== 'all') {
+        const stock = product.stock || 0;
+        let productStatus;
+        if (stock > 10) productStatus = 'in_stock';
+        else if (stock === 0) productStatus = 'out_of_stock';
+        else productStatus = 'limited_stock';
+        
+
+        
+        if (productStatus !== state.filters.status) {
+          return false;
+        }
       }
       
       // Category filter
-      if (state.filters.category !== 'all' && product.category !== state.filters.category) {
-        return false;
+      if (state.filters.category !== 'all') {
+        const productCategoryId = typeof product.category === 'object' ? product.category._id : product.category;
+
+        if (productCategoryId !== state.filters.category) {
+          return false;
+        }
       }
       
       // Price range filter
@@ -214,13 +226,13 @@ const ProductProvider = ({ children }) => {
         const price = product.price || 0;
         switch (state.filters.priceRange) {
           case 'low':
-            if (price > 10000) return false;
+            if (price > 50) return false;
             break;
           case 'medium':
-            if (price < 10000 || price > 50000) return false;
+            if (price < 50 || price > 200) return false;
             break;
           case 'high':
-            if (price < 50000) return false;
+            if (price < 200) return false;
             break;
           default:
             break;
@@ -243,7 +255,35 @@ const ProductProvider = ({ children }) => {
       
       return true;
     });
-  }, [state.products, state.filters]);
+
+    // Sort the filtered results
+    if (state.filters.sortBy) {
+      filtered.sort((a, b) => {
+        switch (state.filters.sortBy) {
+          case 'name':
+            return (a.name || '').localeCompare(b.name || '');
+          case '-name':
+            return (b.name || '').localeCompare(a.name || '');
+          case 'price':
+            return (a.price || 0) - (b.price || 0);
+          case '-price':
+            return (b.price || 0) - (a.price || 0);
+          case 'createdAt':
+            return new Date(a.createdAt) - new Date(b.createdAt);
+          case '-createdAt':
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          case 'updatedAt':
+            return new Date(a.updatedAt) - new Date(b.updatedAt);
+          case '-updatedAt':
+            return new Date(b.updatedAt) - new Date(a.updatedAt);
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return filtered;
+  }, [state.products, state.filters.status, state.filters.category, state.filters.priceRange, state.filters.search, state.filters.sortBy]);
 
   // Create product
   const createProduct = useCallback(async (data) => {

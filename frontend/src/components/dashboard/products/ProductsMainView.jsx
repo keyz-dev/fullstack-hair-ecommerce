@@ -17,6 +17,7 @@ const ProductsMainView = ({ setView }) => {
     loading,
     error,
     filteredProducts,
+    stats,
     actions,
     fetchProducts,
     deleteProduct
@@ -89,7 +90,7 @@ const ProductsMainView = ({ setView }) => {
 
   return (
     <section className="space-y-6">
-      <ProductStatSection />
+      <ProductStatSection stats={stats} loading={loading} />
       
       <div className="flex justify-end items-center">
         <Button onClickHandler={() => setView('add')} additionalClasses="bg-accent text-white">

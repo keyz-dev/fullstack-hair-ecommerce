@@ -5,6 +5,8 @@ import { Edit, Trash2, Eye } from "lucide-react";
 import { useCategory } from "../../../hooks";
 
 const ProductTable = ({ onEdit, onView, onDelete }) => {
+  const [isSearching, setIsSearching] = React.useState(false);
+  
   const {
     loading,
     filters,
@@ -14,7 +16,7 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
     fetchProducts
   } = useProducts();
 
-  const { categories } = useCategory();
+  const { categories, loading: categoriesLoading } = useCategory();
 
   // Filter configurations
   const filterConfigs = [
@@ -26,7 +28,7 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
       options: [
         { value: 'all', label: 'All Categories' },
         ...(categories || []).map(cat => ({
-          value: cat._id,
+          value: cat._id || cat.id,
           label: cat.name
         }))
       ]
@@ -50,9 +52,9 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
       colorClass: 'bg-purple-100 text-purple-800',
       options: [
         { value: 'all', label: 'All Prices' },
-        { value: 'low', label: 'Under $50' },
-        { value: 'medium', label: '$50 - $200' },
-        { value: 'high', label: 'Over $200' },
+        { value: 'low', label: 'Low Price' },
+        { value: 'medium', label: 'Medium Price' },
+        { value: 'high', label: 'High Price' },
       ]
     }
   ];
@@ -62,12 +64,7 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
     fetchProducts();
   }, []); // Empty dependency array - only run on mount
 
-  // Refetch products when filters change
-  useEffect(() => {
-    if (Object.keys(filters).length > 0) {
-      fetchProducts(1);
-    }
-  }, [filters]); // Only depend on filters, not fetchProducts
+  // No need to refetch when filters change since filtering is client-side
 
   // Handle filter changes
   const handleFilterChange = (filterType, value) => {
@@ -77,6 +74,11 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
   // Handle search
   const handleSearch = (searchTerm) => {
     actions.setSearch(searchTerm);
+  };
+
+  // Handle searching state change
+  const handleSearchingChange = (searching) => {
+    setIsSearching(searching);
   };
 
   const columns = [
@@ -110,12 +112,17 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
         return `${row.price}`;
       }
     },
-    { Header: "Stock", accessor: "stockQuantity" },
+    { 
+      Header: "Stock", 
+      accessor: "stock",
+      Cell: ({ row }) => row.stock || 0
+    },
     {
       Header: "Status",
       accessor: "stock_status",
       Cell: ({ row }) => {
-        const status = row.stockQuantity > 10 ? "in_stock" : row.stockQuantity === 0 ? "out_of_stock" : "limited_stock";
+        const stock = row.stock || 0;
+        const status = stock > 10 ? "in_stock" : stock === 0 ? "out_of_stock" : "limited_stock";
         return <StatusPill status={status} />;
       }
     },
@@ -158,6 +165,7 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
         onFilterChange={handleFilterChange}
         onSearch={handleSearch}
         onClearAll={actions.clearAllFilters}
+        onSearchingChange={handleSearchingChange}
         filterConfigs={filterConfigs}
         searchPlaceholder="Search products by name, description, or SKU..."
         loading={loading}
@@ -167,7 +175,7 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
       <Table
         columns={columns}
         data={filteredProducts}
-        isLoading={loading}
+        isLoading={loading || isSearching}
         emptyStateMessage="No products found. Try adjusting your filters or check back later."
         onRowClick={onView}
         clickableRows={true}
