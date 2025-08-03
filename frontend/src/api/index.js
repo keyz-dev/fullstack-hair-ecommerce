@@ -1,11 +1,16 @@
 // api.js
 import axios from "axios";
 
-// Production URL
-// export const API_BASE_URL = "https://fullstack-hair-ecommerce.onrender.com/v2/api";
+const isProduction = import.meta.env.VITE_ENV === "production";
 
-// Development URL
-export const API_BASE_URL = "http://localhost:5000/v2/api";
+let API_BASE_URL;
+if (isProduction) {
+  API_BASE_URL = import.meta.env.VITE_REMOTE_BACKEND_API_URL;
+} else {
+  API_BASE_URL = import.meta.env.VITE_LOCAL_BACKEND_API_URL;
+}
+
+export { API_BASE_URL };
 
 const api = axios.create({
   baseURL: API_BASE_URL,
