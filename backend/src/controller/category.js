@@ -12,6 +12,7 @@ exports.addCategory = async (req, res, next) => {
   try {
     const { error, value } = categoryCreateSchema.validate(req.body);
     if (error) return next(new BadRequestError(error.details[0].message));
+
     let image = req.file ? req.file.path : undefined;
     const category = await Category.create({ ...value, image });
     res.status(201).json({

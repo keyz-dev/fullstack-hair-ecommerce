@@ -107,6 +107,8 @@ const handleCloudinaryUpload = async (req, res, next) => {
 
   try {
     if (!req.file && !req.files) return next();
+
+    // Handle single file upload (upload.single)
     if (req.file) {
       const folderName = getCloudinaryFolder(req.file.fieldname);
       req.file.folderName = folderName;
@@ -115,24 +117,58 @@ const handleCloudinaryUpload = async (req, res, next) => {
         resource_type: 'auto',
       });
       req.file.path = result.secure_url;
-    } else if (req.files && req.files.length > 0) {
-      const uploadPromises = req.files.map((file) => {
-        const folderName = getCloudinaryFolder(file.fieldname);
-        file.folderName = folderName;
-        return uploadToCloudinary(file.buffer, {
-          folder: folderName,
-          resource_type: 'auto',
+    } 
+    
+    // Handle multiple files
+    else if (req.files) {
+      // Case 1: req.files is an array (from upload.array)
+      if (Array.isArray(req.files)) {
+        const uploadPromises = req.files.map((file) => {
+          const folderName = getCloudinaryFolder(file.fieldname);
+          file.folderName = folderName;
+          return uploadToCloudinary(file.buffer, {
+            folder: folderName,
+            resource_type: 'auto',
+          });
         });
-      });
 
-      const results = await Promise.all(uploadPromises);
+        const results = await Promise.all(uploadPromises);
 
-      req.files = results.map((result, index) => ({
-        ...result,
-        path: result.secure_url,
-        folderName: req.files[index].folderName,
-      }));
+        req.files = results.map((result, index) => ({
+          ...req.files[index],
+          path: result.secure_url,
+          public_id: result.public_id,
+        }));
+      } 
+      // Case 2: req.files is an object (from upload.fields)
+      else if (typeof req.files === 'object' && req.files !== null) {
+        const uploadedFiles = {};
+        const fieldPromises = Object.keys(req.files).map(async (fieldname) => {
+          const filesInField = req.files[fieldname];
+          
+          const uploadPromises = filesInField.map((file) => {
+            const folderName = getCloudinaryFolder(file.fieldname);
+            file.folderName = folderName;
+            return uploadToCloudinary(file.buffer, {
+              folder: folderName,
+              resource_type: 'auto',
+            });
+          });
+
+          const results = await Promise.all(uploadPromises);
+
+          uploadedFiles[fieldname] = results.map((result, index) => ({
+            ...filesInField[index],
+            path: result.secure_url,
+            public_id: result.public_id,
+          }));
+        });
+
+        await Promise.all(fieldPromises);
+        req.files = uploadedFiles;
+      }
     }
+
     next();
   } catch (error) {
     next(error);

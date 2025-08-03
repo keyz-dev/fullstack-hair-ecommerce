@@ -12,10 +12,10 @@ export const PostProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     total: 0,
-    published: 0,
-    draft: 0,
     featured: 0,
-    byCategory: []
+    totalViews: 0,
+    totalLikes: 0,
+    totalComments: 0,
   });
   const [pagination, setPagination] = useState({
     page: 1,
@@ -53,15 +53,21 @@ export const PostProvider = ({ children }) => {
       };
       
       const response = await postApi.getAllPosts(queryParams);
-      
-      // Backend returns { posts, totalPages, currentPage, total, hasNext, hasPrev }
-      setPosts(response.posts || []);
-      setPagination(prev => ({
-        ...prev,
-        page: response.currentPage || 1,
-        totalPages: response.totalPages || 1,
-        total: response.total || 0,
-      }));
+
+      if (response.success && response.data) {
+        const { posts, pagination: newPagination } = response.data;
+        setPosts(posts || []);
+        setPagination(prev => ({
+          ...prev,
+          page: newPagination.currentPage || 1,
+          totalPages: newPagination.totalPages || 1,
+          total: newPagination.total || 0,
+        }));
+      } else {
+        // Handle cases where the API call might not be successful
+        setPosts([]);
+        setPagination(prev => ({ ...prev, page: 1, totalPages: 1, total: 0 }));
+      }
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || "Failed to fetch posts";
       setError(errorMessage);
@@ -92,10 +98,9 @@ export const PostProvider = ({ children }) => {
       if (response.success) {
         await fetchPosts();
         await fetchFeaturedPosts();
-
         return { success: true, message: response.message };
       } else {
-        return { success: false, message: response.message };
+        return { success: false, message: response.message || 'Failed to create post' };
       }
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || "Failed to create post";
@@ -104,7 +109,7 @@ export const PostProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchFeaturedPosts, fetchPosts]);
 
   const updatePost = useCallback(async (id, postData) => {
     setLoading(true);
@@ -147,28 +152,24 @@ export const PostProvider = ({ children }) => {
   }, []);
 
   const fetchStats = useCallback(async () => {
+    setLoading(true);
     try {
-      // This would be implemented when backend provides post stats
-      // For now, we'll calculate basic stats from posts
-      // We'll use the current posts state directly without dependency
-      setStats(() => {
-        const total = posts.length;
-        const published = posts.filter(post => post.status === 'published').length;
-        const draft = posts.filter(post => post.status === 'draft').length;
-        const featured = posts.filter(post => post.featured).length;
-        
-        return {
-          total,
-          published,
-          draft,
-          featured,
-          byCategory: []
-        };
+      const data = await postApi.getPostStats();
+      setStats({
+        total: data.totalPosts || 0,
+        featured: data.featuredPosts || 0,
+        totalViews: data.totalViews || 0,
+        totalLikes: data.totalLikes || 0,
+        totalComments: data.totalComments || 0,
       });
     } catch (err) {
-      console.error('Error fetching post stats:', err);
+      const errorMessage = extractErrorMessage(err) || "Failed to fetch post stats";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
-  }, []); // Remove posts dependency to prevent circular dependency
+  }, []);
 
   const setFiltersAndFetch = useCallback((newFilters) => {
     setFilters(newFilters);

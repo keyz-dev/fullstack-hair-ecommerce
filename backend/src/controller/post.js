@@ -1,13 +1,10 @@
 const Post = require('../models/post');
 const Comment = require('../models/comment');
-const User = require('../models/user');
-const Category = require('../models/category');
-const Service = require('../models/service');
-const Product = require('../models/product');
 const { createAdminLog } = require('../utils/adminLog');
 const { validate } = require('../middleware/validate');
 const { createPostSchema } = require('../schema/postSchema');
 const { BadRequestError, NotFoundError, InternalServerError } = require('../utils/errors');
+const { cleanUpFileImages } = require('../utils/imageCleanup');
 
 // Get all posts with filtering and pagination
 const getAllPosts = async (req, res, next) => {
@@ -28,7 +25,7 @@ const getAllPosts = async (req, res, next) => {
 
     const query = {};
 
-    // Status filter
+    // Status filter - only apply if status is provided
     if (status) {
       query.status = status;
     }
@@ -83,13 +80,22 @@ const getAllPosts = async (req, res, next) => {
 
     const total = await Post.countDocuments(query);
 
+    console.log("\n Fetched posts")
+    console.log(posts)
+
     res.json({
-      posts,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
-      total,
-      hasNext: page * limit < total,
-      hasPrev: page > 1
+      message: 'Posts fetched successfully',
+      success: true,
+      data: {
+        posts,
+        pagination: {
+          totalPages: Math.ceil(total / limit),
+          currentPage: page,
+          total,
+          hasNext: page * limit < total,
+          hasPrev: page > 1
+        }
+      }
     });
   } catch (error) {
     console.error('Error fetching posts:', error);
@@ -166,154 +172,121 @@ const createPost = async (req, res, next) => {
       postMetadata
     } = req.body;
 
-    // Helper function to parse JSON strings to objects
     const parseJsonField = (field) => {
       if (typeof field === 'string') {
         try {
           return JSON.parse(field);
         } catch (error) {
-          console.error('Error parsing JSON field:', error);
-          return field;
+          console.error(`Error parsing field: ${field}`, error);
+          return null;
         }
       }
       return field;
     };
 
-    // Parse all object fields
-    const parsedData = {
+    const postData = {
+      title,
+      description,
+      postType,
+      mediaType,
+      status,
+      featured,
+      metaTitle,
+      metaDescription,
+      scheduledFor: scheduledFor ? new Date(scheduledFor) : undefined,
       callToAction: parseJsonField(callToAction),
       socialShare: parseJsonField(socialShare),
       postMetadata: parseJsonField(postMetadata),
       tags: parseJsonField(tags),
       categories: parseJsonField(categories),
       services: parseJsonField(services),
-      products: parseJsonField(products)
+      products: parseJsonField(products),
     };
 
-    const postData = {
-      title,
-      description,
-      author: req.authUser?._id,
-      postType: postType || 'work-showcase',
-      mediaType: mediaType || 'images',
-      status: status || 'draft',
-      featured: featured || false,
-      metaTitle,
-      metaDescription,
-      scheduledFor,
-      ...parsedData
-    };
-
-    console.log('Parsed postData:', postData);
-
-    // Validate the parsed data using the schema
     const { error } = createPostSchema.validate(postData);
+
+    // Generate slug from title
+    if (postData.title) {
+      postData.slug = postData.title
+        .toLowerCase()
+        .trim()
+        .replace(/&/g, '-and-')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+    }
+
+    // set the author
+    postData.author = req.authUser?._id;
+
     if (error) {
       return next(new BadRequestError(error.details[0].message));
     }
 
-    // Handle file uploads based on mediaType (files are processed by multer middleware)
     if (req.files) {
       if (mediaType === 'images' && req.files.postImages) {
         const imageFiles = Array.isArray(req.files.postImages) ? req.files.postImages : [req.files.postImages];
-        
-        // Validate that images were actually uploaded
-        if (imageFiles.length === 0) {
-          return next(new BadRequestError('At least one image is required for image posts'));
-        }
-        
-        // Validate file paths exist
         const validImages = imageFiles.filter(file => file && file.path);
         if (validImages.length === 0) {
           return next(new BadRequestError('No valid images were uploaded'));
         }
-        
-        // Parse imageOrder and imageCaptions arrays properly
-        let imageOrderArray = req.body.imageOrder;
-        let imageCaptionsArray = req.body.imageCaptions;
-        
-        if (typeof imageOrderArray === 'string') {
-          try {
-            imageOrderArray = JSON.parse(imageOrderArray);
-          } catch (error) {
-            console.error('Error parsing imageOrder:', error);
-            imageOrderArray = [];
-          }
-        }
-        
-        if (typeof imageCaptionsArray === 'string') {
-          try {
-            imageCaptionsArray = JSON.parse(imageCaptionsArray);
-          } catch (error) {
-            console.error('Error parsing imageCaptions:', error);
-            imageCaptionsArray = [];
-          }
-        }
-        
+
+        let imageOrderArray = parseJsonField(req.body.imageOrder) || [];
+        let imageCaptionsArray = parseJsonField(req.body.imageCaptions) || [];
+
         postData.images = validImages.map((file, index) => ({
           url: file.path,
           caption: imageCaptionsArray?.[index] || '',
           order: parseInt(imageOrderArray?.[index]) || index + 1
         }));
-      }
-      
-      if (mediaType === 'video') {
-        // For video posts, we need both video file and thumbnail
-        if (!req.files.postVideo || !req.files.postVideo[0]) {
+      } else if (mediaType === 'video') {
+        const videoFile = req.files.postVideo?.[0];
+        const thumbnailFile = req.files.thumbnail?.[0];
+
+        if (!videoFile) {
           return next(new BadRequestError('Video file is required for video posts'));
         }
-
-        // Validate video file was actually uploaded
-        const videoFile = req.files.postVideo[0];
-        if (!videoFile || !videoFile.path) {
-          return next(new BadRequestError('Invalid video file uploaded'));
-        }
-
-        // Use video file path from multer
-        let thumbnailPath = videoFile.path; // Default to video path if no separate thumbnail
-        
-        // Check if separate thumbnail is provided
-        if (req.files.thumbnail && req.files.thumbnail[0] && req.files.thumbnail[0].path) {
-          thumbnailPath = req.files.thumbnail[0].path;
+        if (!thumbnailFile) {
+          return next(new BadRequestError('Thumbnail is required for video posts'));
         }
 
         postData.video = {
           url: videoFile.path,
-          thumbnail: thumbnailPath,
+          thumbnail: thumbnailFile.path,
           caption: req.body.videoCaption || ''
         };
       }
     }
 
-    // Validate media requirements after file processing
     if (mediaType === 'images' && (!postData.images || postData.images.length === 0)) {
       return next(new BadRequestError('At least one image is required for image posts'));
     }
-    
-    if (mediaType === 'video' && !postData.video) {
+    if (mediaType === 'video' && (!postData.video || !postData.video.url)) {
       return next(new BadRequestError('Video file is required for video posts'));
     }
 
-    console.log(req.files)
-    console.log(postData)
+    console.log("\n=======About to the created ============")
+    console.log("postData: ", postData)
+    console.log("\n===================")
 
     const post = new Post(postData);
     await post.save();
 
-    // Create admin log
     await createAdminLog({
       user: req.authUser._id,
       action: 'CREATE_POST',
-      details: `Created post: ${title}`,
+      details: `Created new post: ${post.title}`,
       resourceId: post._id,
       resourceType: 'Post'
     });
 
     res.status(201).json({
       message: 'Post created successfully',
+      success: true,
       post
     });
   } catch (error) {
+    if (req.files || req.file) await cleanUpFileImages(req);
     console.error('Error creating post:', error);
     return next(new InternalServerError('Error creating post'));
   }
@@ -350,6 +323,26 @@ const updatePost = async (req, res, next) => {
         updateData[field] = parseJsonField(updateData[field]);
       }
     });
+
+    // Handle scheduledFor date conversion
+    if (updateData.scheduledFor !== undefined) {
+      if (updateData.scheduledFor && updateData.scheduledFor !== '' && updateData.scheduledFor !== 'null') {
+        try {
+          // Convert to ISO format if it's not already
+          const date = new Date(updateData.scheduledFor);
+          if (!isNaN(date.getTime())) {
+            updateData.scheduledFor = date.toISOString();
+          } else {
+            updateData.scheduledFor = null;
+          }
+        } catch (error) {
+          console.error('Error parsing scheduledFor date:', error);
+          updateData.scheduledFor = null;
+        }
+      } else {
+        updateData.scheduledFor = null;
+      }
+    }
 
     // Handle file uploads based on mediaType (files are processed by multer middleware)
     if (req.files) {
@@ -562,15 +555,57 @@ const getPostsByCategory = async (req, res, next) => {
   }
 };
 
+const getPostStats = async (req, res, next) => {
+  try {
+    const stats = await Post.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalPosts: { $sum: 1 },
+          totalViews: { $sum: '$views' },
+          totalLikes: { $sum: '$likes' },
+          totalComments: { $sum: '$comments' },
+        }
+      },
+      {
+        $addFields: {
+          // This is a separate, potentially slower query. Consider if needed.
+          featuredPosts: { $sum: 0 } // Placeholder, will be calculated below
+        }
+      }
+    ]);
+
+    const featuredPostsCount = await Post.countDocuments({ featured: true });
+
+    if (stats.length > 0) {
+      stats[0].featuredPosts = featuredPostsCount;
+      res.json(stats[0]);
+    } else {
+      // If there are no posts, return zeroed stats
+      res.json({
+        totalPosts: 0,
+        totalViews: 0,
+        totalLikes: 0,
+        totalComments: 0,
+        featuredPosts: 0
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching post stats:', error);
+    return next(new InternalServerError('Error fetching post stats'));
+  }
+};
+
 module.exports = {
   getAllPosts,
   getPostBySlug,
   createPost,
   updatePost,
   deletePost,
+  getPostStats,
   toggleLike,
   addComment,
   getPostAnalytics,
   getFeaturedPosts,
   getPostsByCategory
-}; 
+};

@@ -44,17 +44,29 @@ const postSchema = new mongoose.Schema({
   },
   
   // For image posts - carousel of images
-  images: [{
-    url: { type: String, required: true },
-    caption: { type: String, maxlength: 200 },
-    order: { type: Number, required: true }
-  }],
-  
+  images: {
+    type: [{
+      url: { type: String, required: true },
+      caption: { type: String, maxlength: 200 },
+      order: { type: Number, required: true }
+    }],
+    required: function() { return this.mediaType === 'images'; }
+  },
+
   // For video posts - single video
   video: {
-    url: { type: String },
-    thumbnail: { type: String, required: true },
-    caption: { type: String, maxlength: 200 }
+    type: {
+      url: { 
+        type: String, 
+        required: function() { return this.mediaType === 'video'; }
+      },
+      thumbnail: { 
+        type: String, 
+        required: function() { return this.mediaType === 'video'; }
+      },
+      caption: { type: String, maxlength: 200 }
+    },
+    required: function() { return this.mediaType === 'video'; }
   },
   
   // References to existing models (no duplication)
@@ -223,15 +235,5 @@ postSchema.pre('save', function(next) {
   next();
 });
 
-// Pre-save middleware to generate slug
-postSchema.pre('save', function(next) {
-  if (this.isModified('title') && !this.slug) {
-    this.slug = this.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-  }
-  next();
-});
 
 module.exports = mongoose.model('Post', postSchema); 

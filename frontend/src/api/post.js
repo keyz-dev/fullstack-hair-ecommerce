@@ -159,4 +159,10 @@ export const postApi = {
     const response = await api.get(`${URL_PREFIX}/${id}/analytics`);
     return response.data;
   },
+
+  // Get all post stats
+  getPostStats: async () => {
+    const response = await api.get(`${URL_PREFIX}/admin/stats`);
+    return response.data;
+  },
 }; 

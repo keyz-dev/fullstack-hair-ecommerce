@@ -2,35 +2,35 @@ import React from 'react';
 import { StatCard } from '../../ui';
 import { FileText, Eye, Heart, MessageCircle } from 'lucide-react';
 
-const PostStatSection = ({posts = [], featuredPosts = []}) => {
-  const stats = [
+const PostStatSection = ({ stats }) => {
+  const statCards = [
     {
       title: 'Total Posts',
-      value: posts.length,
+      value: stats?.total || 0,
       icon: FileText,
       colorTheme: 'blue'
     },
     {
       title: 'Featured Posts',
-      value: featuredPosts.length,
+      value: stats?.featured || 0,
       icon: FileText,
       colorTheme: 'yellow'
     },
     {
       title: 'Total Views',
-      value: posts.reduce((sum, post) => sum + (post.views || 0), 0),
+      value: stats?.totalViews || 0,
       icon: Eye,
       colorTheme: 'green'
     },
     {
       title: 'Total Likes',
-      value: posts.reduce((sum, post) => sum + (post.likes?.length || 0), 0),
+      value: stats?.totalLikes || 0,
       icon: Heart,
       colorTheme: 'red'
     },
     {
       title: 'Total Comments',
-      value: posts.reduce((sum, post) => sum + (post.comments?.length || 0), 0),
+      value: stats?.totalComments || 0,
       icon: MessageCircle,
       colorTheme: 'purple'
     }
@@ -38,7 +38,7 @@ const PostStatSection = ({posts = [], featuredPosts = []}) => {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
-      {stats.map((stat, index) => (
+      {statCards.map((stat, index) => (
         <StatCard
           key={index}
           {...stat}
@@ -48,4 +48,4 @@ const PostStatSection = ({posts = [], featuredPosts = []}) => {
   );
 };
 
-export default PostStatSection; 
+export default PostStatSection;

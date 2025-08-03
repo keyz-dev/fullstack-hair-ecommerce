@@ -105,25 +105,34 @@ const cleanUpInstanceImages = async (instance) => {
 
 const cleanUpFileImages = async (req) => {
   if (!req.file && !req.files) return;
-  let imagePaths = [];
+  
+  const imagePaths = [];
 
+  // Case 1: Single file upload (req.file)
   if (req.file) {
     imagePaths.push(req.file.path);
   }
 
-  if (req.files && Object.keys(req.files).length > 0) {
-    Object.keys(req.files).forEach((key) => {
-      if (Array.isArray(req.files[key])) {
-        imagePaths.push(...req.files[key].map((file) => file.path));
-      } else {
-        imagePaths.push(req.files[key].path);
-      }
-    });
+  // Case 2: Multiple file uploads (req.files)
+  if (req.files) {
+    // upload.array() gives an array
+    if (Array.isArray(req.files)) {
+      imagePaths.push(...req.files.map((file) => file.path));
+    }
+    // upload.fields() gives an object of arrays
+    else if (typeof req.files === 'object' && req.files !== null) {
+      Object.values(req.files).forEach(fileArray => {
+        if (Array.isArray(fileArray)) {
+          imagePaths.push(...fileArray.map(file => file.path));
+        }
+      });
+    }
   }
 
-  // Delete all collected image paths (both local and Cloudinary)
-  if (imagePaths.length > 0) {
-    await deleteImages(imagePaths);
+  // Delete all collected image paths that are valid strings
+  const validImagePaths = imagePaths.filter(p => typeof p === 'string' && p);
+  if (validImagePaths.length > 0) {
+    await deleteImages(validImagePaths);
   }
 };
 

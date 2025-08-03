@@ -8,13 +8,13 @@ const PostsMainView = ({ setView }) => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
-  const { deletePost, loading, fetchStats, fetchPosts, posts, featuredPosts } = usePost();
+  const { deletePost, loading, fetchStats, fetchPosts, posts, stats } = usePost();
 
   // Fetch posts and stats on component mount
   useEffect(() => {
     fetchPosts();
     fetchStats();
-  }, []); // Empty dependency array since we only want to run this once on mount
+  }, [fetchPosts, fetchStats]);
 
   const handleEdit = (post) => {
     setSelectedPost(post);
@@ -39,9 +39,11 @@ const PostsMainView = ({ setView }) => {
     }
   };
 
+  console.log(posts)
+
   return (
     <section>
-      <PostStatSection posts={posts} featuredPosts={featuredPosts} />
+      <PostStatSection stats={stats} />
       <div className="flex justify-end items-center mb-4">
         <Button 
           onClickHandler={() => setView('create')} 
