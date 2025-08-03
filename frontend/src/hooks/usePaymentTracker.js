@@ -16,6 +16,8 @@ const usePaymentTracker = () => {
   useEffect(() => {
     // Remove /v2/api from the URL for Socket.IO connection
     const backendUrl = API_BASE_URL.replace('/v2/api', '');
+
+    console.log("backendUrl", backendUrl);
     
     socketRef.current = io(backendUrl, {
       transports: ['websocket', 'polling'],
