@@ -89,3 +89,9 @@
 {"level":"error","message":"User not found.","timestamp":"2025-08-03T20:28:50.816Z"}
 {"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T20:40:57.338Z"}
 {"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T20:40:57.347Z"}
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T22:46:30.655Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T22:46:30.658Z"}
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T22:47:29.872Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T22:47:29.876Z"}
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T22:52:31.500Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T22:52:31.502Z"}

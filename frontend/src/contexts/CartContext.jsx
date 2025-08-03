@@ -1,8 +1,10 @@
-import React, { createContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useState, useCallback, useEffect, useMemo } from 'react';
+import { useCurrency } from '../hooks/useCurrency';
 
 const CartContext = createContext();
 
 const CartProvider = ({ children }) => {
+  const { convertPrice, formatPrice, userCurrency } = useCurrency();
   const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem('cart');
     return savedCart ? JSON.parse(savedCart) : [];
@@ -27,7 +29,7 @@ const CartProvider = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // Add item to cart
+  // Add item to cart with currency conversion
   const addToCart = useCallback((product, quantity = 1) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item._id === product._id);
@@ -40,11 +42,19 @@ const CartProvider = ({ children }) => {
             : item
         );
       } else {
-        // Add new item
-        return [...prevItems, { ...product, quantity }];
+        // Add new item with converted price
+        const convertedPrice = convertPrice(product.price, product.currency, userCurrency);
+        return [...prevItems, { 
+          ...product, 
+          quantity,
+          originalPrice: product.price,
+          originalCurrency: product.currency,
+          price: convertedPrice,
+          currency: userCurrency
+        }];
       }
     });
-  }, []);
+  }, [convertPrice, userCurrency]);
 
   // Remove item from cart
   const removeFromCart = useCallback((productId) => {
@@ -70,10 +80,23 @@ const CartProvider = ({ children }) => {
     setCartItems([]);
   }, []);
 
-  // Calculate cart totals
-  const cartTotal = cartItems.reduce((total, item) => {
-    return total + (item.price * item.quantity);
-  }, 0);
+  // Update cart prices when currency changes
+  useEffect(() => {
+    setCartItems(prevItems => 
+      prevItems.map(item => ({
+        ...item,
+        price: convertPrice(item.originalPrice || item.price, item.originalCurrency || item.currency, userCurrency),
+        currency: userCurrency
+      }))
+    );
+  }, [userCurrency, convertPrice]);
+
+  // Calculate cart totals in user's currency
+  const cartTotal = useMemo(() => {
+    return cartItems.reduce((total, item) => {
+      return total + (item.price * item.quantity);
+    }, 0);
+  }, [cartItems]);
 
   // Count unique items (not total quantity)
   const cartItemCount = cartItems.length;
@@ -89,6 +112,11 @@ const CartProvider = ({ children }) => {
     return item ? item.quantity : 0;
   }, [cartItems]);
 
+  // Format cart total price
+  const formatCartTotal = useCallback(() => {
+    return formatPrice(cartTotal, userCurrency);
+  }, [cartTotal, formatPrice, userCurrency]);
+
   const value = {
     cartItems,
     cartTotal,
@@ -101,6 +129,7 @@ const CartProvider = ({ children }) => {
     clearCart,
     isInCart,
     getItemQuantity,
+    formatCartTotal,
   };
 
   return (

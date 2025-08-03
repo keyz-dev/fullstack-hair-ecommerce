@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useCurrency } from '../../hooks/useCurrency';
 import CouponSection from './CouponSection';
 
 const OrderSummary = ({
@@ -16,9 +17,10 @@ const OrderSummary = ({
   isCouponExpanded,
   setIsCouponExpanded,
   onApplyCoupon,
-  onRemoveCoupon,
-  formatPrice
+  onRemoveCoupon
 }) => {
+  const { formatPrice } = useCurrency();
+
   return (
     <div className="lg:w-100">
       <div className="bg-white rounded-sm border border-gray-200 p-6 sticky top-4">
@@ -41,13 +43,13 @@ const OrderSummary = ({
         <div className="space-y-2 mb-4">
           <div className="flex justify-between">
             <span className="text-gray-600">Subtotal</span>
-            <span className="font-medium">{formatPrice(cartTotal, cartItems[0]?.currency)}</span>
+            <span className="font-medium">{formatPrice(cartTotal)}</span>
           </div>
           {appliedCoupon && (
             <div className="flex justify-between">
               <span className="text-gray-600">Discount</span>
               <span className="font-medium text-green-600">
-                -{formatPrice(discountAmount, cartItems[0]?.currency)}
+                -{formatPrice(discountAmount)}
               </span>
             </div>
           )}
@@ -61,7 +63,7 @@ const OrderSummary = ({
           <div className="flex justify-between">
             <span className="text-lg font-bold">Total</span>
             <span className="text-lg font-bold text-primary">
-              {formatPrice(finalTotal, cartItems[0]?.currency)}
+              {formatPrice(finalTotal)}
             </span>
           </div>
         </div>

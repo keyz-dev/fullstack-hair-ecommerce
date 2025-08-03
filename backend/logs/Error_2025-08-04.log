@@ -1,0 +1,2 @@
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T23:04:25.571Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T23:04:25.579Z"}

@@ -206,3 +206,65 @@
 {"level":"info","message":"📊 Payment status updated in Order: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T20:41:21.982Z"}
 {"level":"info","message":"📊 Payment status updated in Order: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T20:41:38.154Z"}
 {"level":"info","message":"📊 Payment status updated: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T20:41:38.156Z"}
+{"level":"info","message":"🔌 Client disconnected: qGO7QyBdncmR3vJ8AAAB","timestamp":"2025-08-03T20:54:08.089Z"}
+{"level":"info","message":"🔌 Client disconnected: 7zYQ6MjsSTTR-UnUAAAH","timestamp":"2025-08-03T20:54:08.090Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-03T21:21:07.116Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-03T21:21:14.320Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-03T21:21:43.562Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: BmrGmqKdgIm0qSr2AAAE","timestamp":"2025-08-03T22:38:52.499Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: xmHFaBQ8OwyKJ32vAAAF","timestamp":"2025-08-03T22:38:52.503Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:39:29.196Z"}
+{"level":"info","message":"📊 Payment status updated: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:39:29.201Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:39:31.879Z"}
+{"level":"info","message":"📊 Payment status updated: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:39:31.880Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:39:38.098Z"}
+{"level":"info","message":"📊 Payment status updated: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:39:38.100Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:39:40.008Z"}
+{"level":"info","message":"📊 Payment status updated: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:39:40.008Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:39:41.826Z"}
+{"level":"info","message":"📊 Payment status updated: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:39:41.826Z"}
+{"level":"info","message":"🔌 Client disconnected: BmrGmqKdgIm0qSr2AAAE","timestamp":"2025-08-03T22:40:40.092Z"}
+{"level":"info","message":"🔌 Client disconnected: xmHFaBQ8OwyKJ32vAAAF","timestamp":"2025-08-03T22:40:40.095Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: Trig-eOYgpTsuPXHAAAK","timestamp":"2025-08-03T22:40:42.272Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: 1HqyxdUva5X7f0riAAAL","timestamp":"2025-08-03T22:40:42.282Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:40:56.043Z"}
+{"level":"info","message":"📊 Payment status updated: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:40:56.044Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:40:57.929Z"}
+{"level":"info","message":"📊 Payment status updated: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:40:57.931Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:41:01.063Z"}
+{"level":"info","message":"📊 Payment status updated: 0354ab0c-8f11-47d1-9655-3ede64996136 -> SUCCESSFUL","timestamp":"2025-08-03T22:41:01.064Z"}
+{"level":"info","message":"🔌 Client disconnected: Trig-eOYgpTsuPXHAAAK","timestamp":"2025-08-03T22:41:23.573Z"}
+{"level":"info","message":"🔌 Client disconnected: 1HqyxdUva5X7f0riAAAL","timestamp":"2025-08-03T22:41:23.576Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: vGT5uvPhX55Gh02SAAAO","timestamp":"2025-08-03T22:41:25.666Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: onqsYbMxIfYVIAaiAAAR","timestamp":"2025-08-03T22:45:41.871Z"}
+{"level":"info","message":"👤 Client onqsYbMxIfYVIAaiAAAR tracking payment: [object Object]","timestamp":"2025-08-03T22:46:29.242Z"}
+{"level":"info","message":"🔌 Client disconnected: onqsYbMxIfYVIAaiAAAR","timestamp":"2025-08-03T22:46:29.351Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: _GHIcsWoxUVyTPkuAAAU","timestamp":"2025-08-03T22:46:29.407Z"}
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T22:46:30.656Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T22:46:30.658Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> PENDING","timestamp":"2025-08-03T22:46:34.683Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> PENDING","timestamp":"2025-08-03T22:46:45.015Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> PENDING","timestamp":"2025-08-03T22:46:55.454Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> PENDING","timestamp":"2025-08-03T22:47:06.993Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> PENDING","timestamp":"2025-08-03T22:47:17.773Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> PENDING","timestamp":"2025-08-03T22:47:29.219Z"}
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T22:47:29.873Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T22:47:29.876Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> PENDING","timestamp":"2025-08-03T22:47:39.998Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> SUCCESSFUL","timestamp":"2025-08-03T22:47:47.052Z"}
+{"level":"info","message":"📊 Payment status updated: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> SUCCESSFUL","timestamp":"2025-08-03T22:47:47.052Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> PENDING","timestamp":"2025-08-03T22:47:50.374Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> SUCCESSFUL","timestamp":"2025-08-03T22:48:01.777Z"}
+{"level":"info","message":"🔌 Client disconnected: _GHIcsWoxUVyTPkuAAAU","timestamp":"2025-08-03T22:52:22.209Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: Wp3kVaSZO4ESPScvAAAX","timestamp":"2025-08-03T22:52:22.270Z"}
+{"level":"info","message":"🔌 Client disconnected: Wp3kVaSZO4ESPScvAAAX","timestamp":"2025-08-03T22:52:22.301Z"}
+{"level":"info","message":"🔌 Client disconnected: vGT5uvPhX55Gh02SAAAO","timestamp":"2025-08-03T22:52:22.302Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: fG53STMzP0SUZCDvAAAc","timestamp":"2025-08-03T22:52:26.911Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: k61IyZ_58cjKRGZ-AAAd","timestamp":"2025-08-03T22:52:26.912Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> SUCCESSFUL","timestamp":"2025-08-03T22:52:30.893Z"}
+{"level":"info","message":"📊 Payment status updated: 38f8e5c2-c2d6-40f8-b568-174a1be3ffa7 -> SUCCESSFUL","timestamp":"2025-08-03T22:52:30.895Z"}
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T22:52:31.500Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T22:52:31.502Z"}
+{"level":"info","message":"🔌 Client disconnected: fG53STMzP0SUZCDvAAAc","timestamp":"2025-08-03T22:55:58.182Z"}
+{"level":"info","message":"🔌 Client disconnected: k61IyZ_58cjKRGZ-AAAd","timestamp":"2025-08-03T22:55:58.184Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: QDCFlUszmYzHyd-mAAAg","timestamp":"2025-08-03T22:56:00.078Z"}

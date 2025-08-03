@@ -10,6 +10,29 @@ import { downloadBraidSterInvoice } from '../utils/pdfGenerator';
 const OrderConfirmation = () => {
   const location = useLocation();
   const { user } = useAuth();
+  
+  // Get order data from location state or sessionStorage
+  const getOrderData = () => {
+    if (location.state) {
+      return location.state;
+    }
+    
+    // Try to get from sessionStorage if accessed directly
+    const storedData = sessionStorage.getItem('orderConfirmationData');
+    if (storedData) {
+      try {
+        const parsedData = JSON.parse(storedData);
+        // Clear the stored data after retrieving it
+        sessionStorage.removeItem('orderConfirmationData');
+        return parsedData;
+      } catch (error) {
+        console.error('Error parsing stored order data:', error);
+      }
+    }
+    
+    return {};
+  };
+  
   const { 
     orderNumber, 
     customerInfo, 
@@ -20,7 +43,7 @@ const OrderConfirmation = () => {
     cartItems = [],
     paymentReference,
     orderId
-  } = location.state || {};
+  } = getOrderData();
 
   const handleDownloadPDF = () => {
     const orderData = {

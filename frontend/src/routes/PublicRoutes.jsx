@@ -21,7 +21,7 @@ export const publicRoutes = [
     <Route key="login" path="/login" element={<Login />} />
     <Route key="register" path="/register" element={<Register />} />
     <Route key="forgot-password" path="/forgot-password" element={<ForgotPassword />} />
+    <Route key="verify-account" path="/verify-account" element={<VerifyAccount />} />
     <Route key="reset-password" path="/reset-password" element={<ResetPassword />} />
   </Route>,
-  <Route key="verify-account" path="/verify-account" element={<VerifyAccount />} />
 ];

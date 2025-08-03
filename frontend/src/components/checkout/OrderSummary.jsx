@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatPrice } from '../../utils/priceUtils';
+import { useCurrency } from '../../hooks/useCurrency';
 import { calculateShipping } from '../../services/shippingService';
 
 const OrderSummary = ({ 
@@ -8,6 +8,7 @@ const OrderSummary = ({
   shippingAddress,
   selectedPaymentMethod 
 }) => {
+  const { formatPrice } = useCurrency();
   const shippingInfo = calculateShipping(shippingAddress.city, cartTotal);
   const tax = cartTotal * 0.195; // 19.5% VAT
   const processingFee = selectedPaymentMethod?.fees ? (cartTotal * selectedPaymentMethod.fees) / 100 : 0;
@@ -34,7 +35,7 @@ const OrderSummary = ({
                 <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
               </div>
               <p className="font-medium text-sm">
-                {formatPrice(item.price * item.quantity, item.currency)}
+                {formatPrice(item.price * item.quantity)}
               </p>
             </div>
           ))}
@@ -45,21 +46,21 @@ const OrderSummary = ({
           <div className="flex justify-between">
             <span className="text-gray-600">Subtotal</span>
             <span className="font-medium">
-              {formatPrice(cartTotal, cartItems[0]?.currency)}
+              {formatPrice(cartTotal)}
             </span>
           </div>
           
           <div className="flex justify-between">
             <span className="text-gray-600">Shipping</span>
             <span className={`font-medium ${shippingInfo.isFree ? 'text-green-600' : ''}`}>
-              {shippingInfo.isFree ? 'Free' : formatPrice(shippingInfo.cost, cartItems[0]?.currency)}
+              {shippingInfo.isFree ? 'Free' : formatPrice(shippingInfo.cost)}
             </span>
           </div>
           
           <div className="flex justify-between">
             <span className="text-gray-600">Tax (VAT)</span>
             <span className="font-medium">
-              {formatPrice(tax, cartItems[0]?.currency)}
+              {formatPrice(tax)}
             </span>
           </div>
           
@@ -67,7 +68,7 @@ const OrderSummary = ({
             <div className="flex justify-between">
               <span className="text-gray-600">Processing Fee</span>
               <span className="font-medium">
-                {formatPrice(processingFee, cartItems[0]?.currency)}
+                {formatPrice(processingFee)}
               </span>
             </div>
           )}
@@ -76,7 +77,7 @@ const OrderSummary = ({
             <div className="flex justify-between">
               <span className="text-lg font-bold">Total</span>
               <span className="text-lg font-bold text-primary">
-                {formatPrice(total, cartItems[0]?.currency)}
+                {formatPrice(total)}
               </span>
             </div>
           </div>

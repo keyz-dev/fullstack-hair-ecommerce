@@ -1,7 +1,10 @@
 import React from 'react';
 import { ShoppingCart, Heart, Star, Tag, Check } from 'lucide-react';
+import { useCurrency } from '../../hooks/useCurrency';
 
 const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist, viewMode = 'grid', isInCart = false }) => {
+  const { convertPrice, formatPrice } = useCurrency();
+  
   const { 
     name, 
     price, 
@@ -17,15 +20,13 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist, vie
     specifications = {}
   } = product;
   
-  // Format price with currency
-  const formatPrice = (priceValue) => {
-    if (currency && currency.symbol) {
-      return currency.position === 'after' 
-        ? `${priceValue} ${currency.symbol}`
-        : `${currency.symbol} ${priceValue}`;
-    }
-    return `${priceValue}`;
-  };
+  // Convert price to user's preferred currency
+  const convertedPrice = convertPrice(price, currency);
+  const formattedPrice = formatPrice(convertedPrice);
+  
+  // Calculate discounted price
+  const discountedPrice = discount > 0 ? convertedPrice * (1 - discount / 100) : convertedPrice;
+  const formattedDiscountedPrice = formatPrice(discountedPrice);
 
   // Get first image or placeholder
   const productImage = images && images.length > 0 ? images[0] : '/placeholder-product.jpg';
@@ -190,8 +191,6 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist, vie
           </div>
         )}
 
-
-
         {/* Key Specifications */}
         {specifications && Object.keys(specifications).length > 0 && (
           <div className="mb-2">
@@ -230,13 +229,21 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist, vie
 
         {/* Price */}
         <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-primary">
-            {formatPrice(price)}
-          </span>
-          
-          {isOnSale && (
-            <span className="text-sm text-green-600 font-medium">
-              {discountPercentage}% OFF
+          {isOnSale ? (
+            <>
+              <span className="text-lg font-bold text-primary">
+                {formattedDiscountedPrice}
+              </span>
+              <span className="text-sm text-gray-500 line-through">
+                {formattedPrice}
+              </span>
+              <span className="text-sm text-green-600 font-medium">
+                {discountPercentage}% OFF
+              </span>
+            </>
+          ) : (
+            <span className="text-lg font-bold text-primary">
+              {formattedPrice}
             </span>
           )}
         </div>

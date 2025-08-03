@@ -188,7 +188,8 @@ exports.handleWebhook = async (req, res, next) => {
       message: status === 'SUCCESSFUL' 
         ? 'Payment completed successfully!' 
         : 'Payment failed or was cancelled',
-      shouldStopPolling: status === 'SUCCESSFUL' || status === 'FAILED' || status === 'CANCELLED'
+      shouldStopPolling: status === 'SUCCESSFUL' || status === 'FAILED' || status === 'CANCELLED',
+      orderId: external_reference // Include orderId for frontend navigation
     };
 
     paymentSession.set(ourReference, notificationData);
@@ -274,7 +275,8 @@ try {
         operatorReference: paymentStatus.operator_reference,
         timestamp: new Date(),
         message: `Payment ${paymentStatus.status.toLowerCase()}`,
-        shouldStopPolling: shouldStopPolling
+        shouldStopPolling: shouldStopPolling,
+        orderId: order._id.toString() // Include orderId for frontend navigation
       };
       
       notifyPaymentUpdate(global.io, order.paymentReference, notificationData);

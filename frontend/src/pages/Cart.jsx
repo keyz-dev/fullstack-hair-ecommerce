@@ -1,19 +1,22 @@
 import React from 'react';
 import { useCart } from '../hooks/useCart';
 import useCoupon from '../hooks/useCoupon';
-import { formatPrice } from '../utils/priceUtils';
+import { useCurrency } from '../hooks/useCurrency';
 import { EmptyCart, CartItemsList, OrderSummary } from '../components/cart';
 
 const Cart = () => {
   const { 
     cartItems, 
     cartTotal, 
-    cartItemCount, 
+    cartItemCount,
     removeFromCart, 
     updateQuantity, 
-    clearCart 
+    clearCart,
+    formatCartTotal
   } = useCart();
-
+  
+  const { formatPrice } = useCurrency();
+  
   const {
     couponCode,
     setCouponCode,
@@ -22,13 +25,13 @@ const Cart = () => {
     couponError,
     isCouponExpanded,
     setIsCouponExpanded,
-    handleApplyCoupon,
+    applyCoupon,
     removeCoupon,
     discountAmount,
     finalTotal
   } = useCoupon(cartTotal);
 
-  if (cartItemCount === 0) {
+  if (cartItems.length === 0) {
     return <EmptyCart />;
   }
 
@@ -37,12 +40,12 @@ const Cart = () => {
       <div className="flex flex-col lg:flex-row gap-8">
         <CartItemsList
           cartItems={cartItems}
+          cartItemCount={cartItemCount}
           onUpdateQuantity={updateQuantity}
           onRemove={removeFromCart}
           onClearCart={clearCart}
-          cartItemCount={cartItemCount}
         />
-
+        
         <OrderSummary
           cartItems={cartItems}
           cartTotal={cartTotal}
@@ -55,9 +58,8 @@ const Cart = () => {
           couponError={couponError}
           isCouponExpanded={isCouponExpanded}
           setIsCouponExpanded={setIsCouponExpanded}
-          onApplyCoupon={handleApplyCoupon}
+          onApplyCoupon={applyCoupon}
           onRemoveCoupon={removeCoupon}
-          formatPrice={formatPrice}
         />
       </div>
     </div>

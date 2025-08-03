@@ -1,15 +1,9 @@
 import React from 'react';
 import { Trash2, Minus, Plus } from 'lucide-react';
+import { useCurrency } from '../../hooks/useCurrency';
 
 const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
-  const formatPrice = (price, currency) => {
-    if (currency && currency.symbol) {
-      return currency.position === 'after' 
-        ? `${price} ${currency.symbol}`
-        : `${currency.symbol} ${price}`;
-    }
-    return `$${price}`;
-  };
+  const { formatPrice } = useCurrency();
 
   return (
     <div className="flex items-center gap-4 p-4 bg-white rounded-sm border border-gray-200">
@@ -29,7 +23,10 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
       <div className="flex-1 min-w-0">
         <h3 className="font-medium text-primary truncate">{item.name}</h3>
         <p className="text-lg font-bold text-accent mt-1">
-          {formatPrice(item.price, item.currency)}
+          {formatPrice(item.price)}
+        </p>
+        <p className="text-sm text-gray-500 mt-1">
+          Quantity: {item.quantity}
         </p>
       </div>
 

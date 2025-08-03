@@ -4,7 +4,6 @@ import { toast } from 'react-toastify';
 import { API_BASE_URL } from '../api';
 import { paymentApi } from '../api/payment';
 
-
 const usePaymentTracker = () => {
   const socketRef = useRef(null);
   const pollingRefs = useRef(new Map()); // Map of paymentReference -> interval
@@ -13,6 +12,7 @@ const usePaymentTracker = () => {
   const [trackedPayments, setTrackedPayments] = useState(new Set());
   const [trackedPaymentUsers, setTrackedPaymentUsers] = useState(new Map()); // paymentReference -> userId
   const [trackedPaymentSessions, setTrackedPaymentSessions] = useState(new Map()); // paymentReference -> sessionId
+  const [completedPayments, setCompletedPayments] = useState(new Set()); // Track completed payments to prevent double stops
 
   // Initialize socket connection
   useEffect(() => {
@@ -102,6 +102,13 @@ const usePaymentTracker = () => {
 
     socketRef.current.on('payment-success', (data) => {
       console.log('✅ Payment successful via webhook:', data);
+      
+      // Check if payment was already completed to prevent double processing
+      if (completedPayments.has(data.reference)) {
+        console.log(`🛑 Payment ${data.reference} already completed, skipping duplicate event`);
+        return;
+      }
+      
       updatePaymentStatus(data.reference, {
         status: 'SUCCESSFUL',
         message: 'Payment completed successfully!',
@@ -110,16 +117,42 @@ const usePaymentTracker = () => {
         ...data
       });
       
-      // Stop polling for this payment
+      // Mark as completed and stop polling
+      setCompletedPayments(prev => new Set([...prev, data.reference]));
       stopPolling(data.reference);
       
-      toast.success('Payment completed successfully!', {
-        autoClose: 5000
-      });
+      // Show toast with clickable link to order summary
+      const toastId = toast.success(
+        <div>
+          <div>Payment completed successfully!</div>
+          <button 
+            onClick={() => {
+              // Navigate to order summary page
+              window.location.href = `/order-confirmation?orderId=${data.orderId || 'unknown'}`;
+              toast.dismiss(toastId);
+            }}
+            className="text-sm underline mt-1 hover:no-underline"
+          >
+            View Order Summary
+          </button>
+        </div>,
+        {
+          autoClose: 8000,
+          closeOnClick: false,
+          pauseOnHover: true
+        }
+      );
     });
 
     socketRef.current.on('payment-failed', (data) => {
       console.log('❌ Payment failed via webhook:', data);
+      
+      // Check if payment was already completed to prevent double processing
+      if (completedPayments.has(data.reference)) {
+        console.log(`🛑 Payment ${data.reference} already completed, skipping duplicate event`);
+        return;
+      }
+      
       updatePaymentStatus(data.reference, {
         status: 'FAILED',
         message: 'Payment failed or was cancelled.',
@@ -128,7 +161,8 @@ const usePaymentTracker = () => {
         ...data
       });
       
-      // Stop polling for this payment
+      // Mark as completed and stop polling
+      setCompletedPayments(prev => new Set([...prev, data.reference]));
       stopPolling(data.reference);
       
       toast.error('Payment failed or was cancelled.', {
@@ -138,6 +172,13 @@ const usePaymentTracker = () => {
 
     socketRef.current.on('payment-cancelled', (data) => {
       console.log('❌ Payment cancelled via webhook:', data);
+      
+      // Check if payment was already completed to prevent double processing
+      if (completedPayments.has(data.reference)) {
+        console.log(`🛑 Payment ${data.reference} already completed, skipping duplicate event`);
+        return;
+      }
+      
       updatePaymentStatus(data.reference, {
         status: 'CANCELLED',
         message: 'Payment was cancelled.',
@@ -146,7 +187,8 @@ const usePaymentTracker = () => {
         ...data
       });
       
-      // Stop polling for this payment
+      // Mark as completed and stop polling
+      setCompletedPayments(prev => new Set([...prev, data.reference]));
       stopPolling(data.reference);
       
       toast.warning('Payment was cancelled.', {
@@ -206,16 +248,45 @@ const usePaymentTracker = () => {
         campayStatus
       });
 
-      // Stop polling if payment is completed
-      if (status === 'PAID' || status === 'FAILED' || status === 'CANCELLED') {
+      // Stop polling if payment is completed (but only if not already completed)
+      if ((status === 'PAID' || status === 'FAILED' || status === 'CANCELLED') && 
+          !completedPayments.has(paymentReference)) {
+        setCompletedPayments(prev => new Set([...prev, paymentReference]));
         stopPolling(paymentReference);
         console.log(`🛑 Stopped polling for ${paymentReference} - payment ${status}`);
+        
+        // Show toast for completed payment
+        if (status === 'PAID') {
+          const toastId = toast.success(
+            <div>
+              <div>Payment completed successfully!</div>
+              <button 
+                onClick={() => {
+                  window.location.href = `/order-confirmation?orderId=${orderId}`;
+                  toast.dismiss(toastId);
+                }}
+                className="text-sm underline mt-1 hover:no-underline"
+              >
+                View Order Summary
+              </button>
+            </div>,
+            {
+              autoClose: 8000,
+              closeOnClick: false,
+              pauseOnHover: true
+            }
+          );
+        } else if (status === 'FAILED' || status === 'CANCELLED') {
+          toast.error('Payment failed or was cancelled.', {
+            autoClose: 5000
+          });
+        }
       }
       
     } catch (error) {
       console.error('Polling error for', paymentReference, ':', error);
     }
-  }, [updatePaymentStatus, stopPolling]);
+  }, [updatePaymentStatus, stopPolling, completedPayments]);
 
   // Start polling for a payment
   const startPolling = useCallback((paymentReference, orderId, intervalMs = 10000) => {

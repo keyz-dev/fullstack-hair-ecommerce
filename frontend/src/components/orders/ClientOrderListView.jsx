@@ -1,6 +1,6 @@
 import React from "react";
 import { Table, StatusPill, DropdownMenu } from "../ui";
-import { Edit, Trash2, Eye, Download, Truck } from "lucide-react";
+import { Edit, Trash2, Eye, Download, Truck, FileText } from "lucide-react";
 import { OrderStatusBadge, PaymentStatusBadge } from "./";
 
 const ClientOrderListView = ({ onView, onEdit, onDelete, loading, orders }) => {
@@ -79,6 +79,34 @@ const ClientOrderListView = ({ onView, onEdit, onDelete, loading, orders }) => {
               label: "View Details",
               icon: <Eye size={16} />,
               onClick: () => onView(row),
+            },
+            {
+              label: "View Order Summary",
+              icon: <FileText size={16} />,
+              onClick: () => {
+                // Navigate to order confirmation page with order data
+                const orderData = {
+                  orderNumber: row.orderNumber,
+                  customerInfo: row.customerInfo || row.guestInfo,
+                  shippingAddress: row.shippingAddress,
+                  orderSummary: {
+                    subtotal: row.subtotal,
+                    shipping: row.shipping,
+                    tax: row.tax,
+                    total: row.totalAmount,
+                    processingFee: row.processingFee
+                  },
+                  selectedPaymentMethod: row.paymentMethod,
+                  paymentInfo: row.paymentInfo,
+                  cartItems: row.orderItems,
+                  paymentReference: row.paymentReference,
+                  orderId: row._id
+                };
+                
+                // Store order data in sessionStorage for the order confirmation page
+                sessionStorage.setItem('orderConfirmationData', JSON.stringify(orderData));
+                window.location.href = '/order-confirmation';
+              },
             },
             {
               label: "Download Invoice",

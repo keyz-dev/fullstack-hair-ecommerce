@@ -1,0 +1,25 @@
+{"level":"info","message":"🔌 Client connected to the main socket service: 9iwIIju3OeNlXN4PAAAj","timestamp":"2025-08-03T23:02:25.793Z"}
+{"level":"info","message":"👤 Client 9iwIIju3OeNlXN4PAAAj tracking payment: [object Object]","timestamp":"2025-08-03T23:04:23.454Z"}
+{"level":"info","message":"🔌 Client disconnected: 9iwIIju3OeNlXN4PAAAj","timestamp":"2025-08-03T23:04:23.574Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: 6U8qNX9qfoloziBNAAAm","timestamp":"2025-08-03T23:04:23.634Z"}
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T23:04:25.576Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T23:04:25.579Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 8aa961d7-48ae-4266-89e1-8d49c10b9039 -> PENDING","timestamp":"2025-08-03T23:04:29.142Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 8aa961d7-48ae-4266-89e1-8d49c10b9039 -> FAILED","timestamp":"2025-08-03T23:04:39.561Z"}
+{"level":"info","message":"🔌 Client disconnected: QDCFlUszmYzHyd-mAAAg","timestamp":"2025-08-03T23:10:44.949Z"}
+{"level":"info","message":"🔌 Client disconnected: 6U8qNX9qfoloziBNAAAm","timestamp":"2025-08-03T23:10:44.951Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: Ts5HWNZTuSK3MMUxAAAp","timestamp":"2025-08-03T23:10:47.242Z"}
+{"level":"info","message":"🔌 Client disconnected: Ts5HWNZTuSK3MMUxAAAp","timestamp":"2025-08-03T23:15:07.229Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: 4Lb4csbvKJrZ7bBuAAAs","timestamp":"2025-08-03T23:15:11.648Z"}
+{"level":"info","message":"🔌 Client disconnected: 4Lb4csbvKJrZ7bBuAAAs","timestamp":"2025-08-03T23:15:44.397Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: QeyCMLk7Ur2S8ED_AAAv","timestamp":"2025-08-03T23:15:47.487Z"}
+{"level":"info","message":"🔌 Client disconnected: QeyCMLk7Ur2S8ED_AAAv","timestamp":"2025-08-03T23:15:56.168Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: 390d3ieDQBoM7EmRAAAy","timestamp":"2025-08-03T23:15:56.427Z"}
+{"level":"info","message":"🔌 Client disconnected: 390d3ieDQBoM7EmRAAAy","timestamp":"2025-08-03T23:16:06.213Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: mbjV1TrsbOt14KN-AAA1","timestamp":"2025-08-03T23:16:06.281Z"}
+{"level":"info","message":"🔌 Client disconnected: mbjV1TrsbOt14KN-AAA1","timestamp":"2025-08-03T23:17:14.161Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: BoUV_8U6qKZUaRMGAAA4","timestamp":"2025-08-03T23:17:17.415Z"}
+{"level":"info","message":"🔌 Client disconnected: BoUV_8U6qKZUaRMGAAA4","timestamp":"2025-08-03T23:18:30.236Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: 2qBp1U9nSBh690jEAAA6","timestamp":"2025-08-03T23:18:30.374Z"}
+{"level":"info","message":"🔌 Client disconnected: 2qBp1U9nSBh690jEAAA6","timestamp":"2025-08-03T23:21:15.162Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: CNrSeKNFC8sipI_fAAA9","timestamp":"2025-08-03T23:23:19.557Z"}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLinks, CartButton, ProfileInfo, LanguageSelector, ThemeSelector, MobileMenu } from "../header";
+import { NavLinks, CartButton, ProfileInfo, LanguageSelector, ThemeSelector, MobileMenu, CurrencySelector } from "../header";
 import { Menu, X } from "lucide-react";
 import { Logo } from "../ui";
 import { useAuth } from "../../hooks";
@@ -25,6 +25,7 @@ const Header = () => {
         <div className="hidden lg:flex items-center gap-6 justify-between flex-1/2">
           <NavLinks />
           <div className="flex items-center gap-2">
+            <CurrencySelector />
             <LanguageSelector />
             <ThemeSelector />
             <CartButton />
@@ -32,6 +33,7 @@ const Header = () => {
           </div>
         </div>
         <div className="lg:hidden flex items-center gap-2">
+          <CurrencySelector />
           <CartButton />
         </div>
       </nav>

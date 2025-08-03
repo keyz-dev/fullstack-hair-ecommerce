@@ -7,7 +7,8 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
   const { trackPayment, getPaymentStatus, isTrackingPayment, checkPaymentStatus } = usePaymentTracker();
   const { user } = useAuth();
   const [status, setStatus] = useState(null);
-  const [isChecking, setIsChecking] = useState(false)
+  const [isChecking, setIsChecking] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   // Start tracking payment when component mounts
   useEffect(() => {
@@ -23,6 +24,14 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
       const paymentStatus = getPaymentStatus(paymentReference);
       if (paymentStatus) {
         setStatus(paymentStatus);
+        
+        // Mark as completed if payment is in final state
+        if (paymentStatus.status === 'SUCCESSFUL' || 
+            paymentStatus.status === 'PAID' ||
+            paymentStatus.status === 'FAILED' || 
+            paymentStatus.status === 'CANCELLED') {
+          setIsCompleted(true);
+        }
       }
     }
   }, [paymentReference, getPaymentStatus]);
@@ -59,10 +68,11 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
   const getStatusIcon = () => {
     switch (status?.status) {
       case 'SUCCESSFUL':
-        return <CheckCircle className="w-6 h-6 text-green-500" />;
+      case 'PAID':
+        return <CheckCircle className="w-6 h-6 text-success" />;
       case 'FAILED':
       case 'CANCELLED':
-        return <XCircle className="w-6 h-6 text-red-500" />;
+        return <XCircle className="w-6 h-6 text-error" />;
       case 'PENDING':
       default:
         return <Clock className="w-6 h-6 text-blue-500" />;
@@ -72,6 +82,7 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
   const getStatusColor = () => {
     switch (status?.status) {
       case 'SUCCESSFUL':
+      case 'PAID':
         return 'bg-green-50 border-green-200 text-green-800';
       case 'FAILED':
       case 'CANCELLED':
@@ -89,6 +100,7 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
 
     switch (status.status) {
       case 'SUCCESSFUL':
+      case 'PAID':
         return 'Payment completed successfully!';
       case 'FAILED':
         return 'Payment failed or was cancelled.';
@@ -112,7 +124,7 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
           <div className="text-sm opacity-75">
             {status?.timestamp && new Date(status.timestamp).toLocaleTimeString()}
           </div>
-          {orderId && status?.status !== 'SUCCESSFUL' && status?.status !== 'FAILED' && status?.status !== 'CANCELLED' && (
+          {orderId && !isCompleted && status?.status !== 'SUCCESSFUL' && status?.status !== 'PAID' && status?.status !== 'FAILED' && status?.status !== 'CANCELLED' && (
             <button
               onClick={handleManualCheck}
               disabled={isChecking}
@@ -161,7 +173,7 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
         <div className="space-y-2">
           <div className="flex items-center">
             <div className={`w-4 h-4 rounded-full border-2 ${
-              status?.status === 'PENDING' || status?.status === 'SUCCESSFUL' || status?.status === 'FAILED'
+              status?.status === 'PENDING' || status?.status === 'SUCCESSFUL' || status?.status === 'PAID' || status?.status === 'FAILED'
                 ? 'bg-blue-500 border-blue-500'
                 : 'border-gray-300'
             }`}></div>
@@ -169,7 +181,7 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
           </div>
           <div className="flex items-center">
             <div className={`w-4 h-4 rounded-full border-2 ${
-              status?.status === 'SUCCESSFUL' || status?.status === 'FAILED'
+              status?.status === 'SUCCESSFUL' || status?.status === 'PAID' || status?.status === 'FAILED'
                 ? 'bg-blue-500 border-blue-500'
                 : 'border-gray-300'
             }`}></div>
@@ -177,10 +189,10 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
           </div>
           <div className="flex items-center">
             <div className={`w-4 h-4 rounded-full border-2 ${
-              status?.status === 'SUCCESSFUL'
-                ? 'bg-green-500 border-green-500'
-                : status?.status === 'FAILED'
-                ? 'bg-red-500 border-red-500'
+              status?.status === 'SUCCESSFUL' || status?.status === 'PAID'
+                ? 'bg-success border-success'
+                : status?.status === 'FAILED' || status?.status === 'CANCELLED'
+                ? 'bg-error border-error'
                 : 'border-gray-300'
             }`}></div>
             <span className="ml-2 text-sm">Payment Completed</span>

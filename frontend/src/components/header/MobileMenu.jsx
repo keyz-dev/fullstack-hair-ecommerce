@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLinks, CartButton, ProfileInfo, LanguageSelector, ThemeSelector } from ".";
+import { NavLinks, CartButton, ProfileInfo, LanguageSelector, ThemeSelector, CurrencySelector } from ".";
 
 const MobileMenu = ({ open, onClose, user }) => {
   return (
@@ -19,6 +19,7 @@ const MobileMenu = ({ open, onClose, user }) => {
       >
         <NavLinks mobile={true} />
         <div className="flex flex-col gap-6 mt-0">
+          <CurrencySelector />
           <LanguageSelector />
           <ThemeSelector />
           <CartButton />
