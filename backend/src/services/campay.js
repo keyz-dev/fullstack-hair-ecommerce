@@ -1,5 +1,6 @@
 
 const axios = require('axios');
+const logger = require('../utils/logger');
 
 class CampayService {
   constructor() {
@@ -23,7 +24,7 @@ class CampayService {
       });
       return response.data.token;
     } catch (error) {
-      console.error('Error getting Campay access token:', error.response?.data || error.message);
+      logger.error('Error getting Campay access token:', error.response?.data || error.message);
       throw new Error('Failed to authenticate with Campay');
     }
   }
@@ -39,8 +40,8 @@ class CampayService {
         from: paymentData.phoneNumber,
         description: paymentData.description,
         external_reference: paymentData.orderId,
-        return_url: `${process.env.SERVER_URL}/api/payment/success`,
-        cancel_url: `${process.env.SERVER_URL}/api/payment/cancel`
+        return_url: `${process.env.SERVER_URL}/v2/api/payment/success`,
+        cancel_url: `${process.env.SERVER_URL}/v2/api/payment/cancel`
       };
 
       const response = await axios.post(
@@ -56,7 +57,7 @@ class CampayService {
       
       return response.data;
     } catch (error) {
-      console.error('Error initiating Campay payment:', error.response?.data || error.message);
+      logger.error('Error initiating Campay payment:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Payment initiation failed');
     }
   }
@@ -69,13 +70,14 @@ class CampayService {
         `${this.baseURL}/transaction/${reference}/`,
         {
           headers: {
-            'Authorization': `Token ${token}`
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
           }
         }
       );
       return response.data;
     } catch (error) {
-      console.error('Error checking payment status:', error.response?.data || error.message);
+      logger.error('Error checking payment status:', error.response?.data || error.message);
       throw new Error('Failed to check payment status');
     }
   }

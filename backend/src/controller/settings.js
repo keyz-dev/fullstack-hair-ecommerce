@@ -1,5 +1,6 @@
 const Settings = require('../models/settings');
 const { BadRequestError } = require('../utils/errors');
+const logger = require('../utils/logger');
 
 // Get all public or all settings (admin)
 const getSettings = async (req, res, next) => {

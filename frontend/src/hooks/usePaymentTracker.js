@@ -11,28 +11,62 @@ const usePaymentTracker = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [paymentStatuses, setPaymentStatuses] = useState({});
   const [trackedPayments, setTrackedPayments] = useState(new Set());
+  const [trackedPaymentUsers, setTrackedPaymentUsers] = useState(new Map()); // paymentReference -> userId
+  const [trackedPaymentSessions, setTrackedPaymentSessions] = useState(new Map()); // paymentReference -> sessionId
 
   // Initialize socket connection
   useEffect(() => {
     // Remove /v2/api from the URL for Socket.IO connection
-    const backendUrl = API_BASE_URL.replace('/v2/api', '');
-
-    console.log("backendUrl", backendUrl);
-    
+    const backendUrl = API_BASE_URL.replace('/v2/api', '');    
     socketRef.current = io(backendUrl, {
       transports: ['websocket', 'polling'],
-      timeout: 20000,
+      timeout: 20000, 
     });
 
     // Connection event handlers
     socketRef.current.on('connect', () => {
       console.log('🔌 Connected to payment socket');
       setIsConnected(true);
+      
+      // Rejoin payment rooms for tracked payments after reconnection
+      trackedPayments.forEach(paymentReference => {
+        const userId = trackedPaymentUsers.get(paymentReference);
+        const sessionId = trackedPaymentSessions.get(paymentReference);
+        
+        if (userId || sessionId) {
+          socketRef.current.emit('track-payment', {
+            paymentReference,
+            userId,
+            sessionId
+          });
+          console.log(`🔄 Rejoined payment room for ${paymentReference} after reconnection`);
+        }
+      });
     });
 
     socketRef.current.on('disconnect', () => {
       console.log('🔌 Disconnected from payment socket');
       setIsConnected(false);
+    });
+
+    socketRef.current.on('reconnect', () => {
+      console.log('🔌 Reconnected to payment socket');
+      setIsConnected(true);
+      
+      // Rejoin all payment rooms after reconnection
+      trackedPayments.forEach(paymentReference => {
+        const userId = trackedPaymentUsers.get(paymentReference);
+        const sessionId = trackedPaymentSessions.get(paymentReference);
+        
+        if ((userId || sessionId) && socketRef.current) {
+          socketRef.current.emit('track-payment', {
+            paymentReference,
+            userId,
+            sessionId
+          });
+          console.log(`🔄 Rejoined payment room for ${paymentReference} after reconnection`);
+        }
+      });
     });
 
     socketRef.current.on('connect_error', (error) => {
@@ -53,6 +87,17 @@ const usePaymentTracker = () => {
       toast.info('Payment request sent. Please check your phone for the payment prompt.', {
         autoClose: 5000
       });
+    });
+
+    socketRef.current.on('payment-status-update', (data) => {
+      console.log('Payment status updated via webhook the:', data);
+      // updatePaymentStatus(data.reference, {
+      //   status: data.status,
+      //   message: data.message,
+      //   timestamp: data.timestamp,
+      //   source: 'webhook',
+      //   ...data
+      // });
     });
 
     socketRef.current.on('payment-success', (data) => {
@@ -190,7 +235,7 @@ const usePaymentTracker = () => {
   }, [pollPaymentStatus, stopPolling]);
 
   // Track a payment (combines socket tracking + polling fallback)
-  const trackPayment = useCallback((paymentReference, orderId, userId = null) => {
+  const trackPayment = useCallback((paymentReference, orderId, userId = null, sessionId = null) => {
     if (trackedPayments.has(paymentReference)) {
       console.log(`Already tracking ${paymentReference}`);
       return true;
@@ -200,6 +245,16 @@ const usePaymentTracker = () => {
     
     // Add to tracked payments
     setTrackedPayments(prev => new Set([...prev, paymentReference]));
+    
+    // Store userId for this payment
+    if (userId) {
+      setTrackedPaymentUsers(prev => new Map(prev).set(paymentReference, userId));
+    }
+    
+    // Store sessionId for non-authenticated users
+    if (sessionId) {
+      setTrackedPaymentSessions(prev => new Map(prev).set(paymentReference, sessionId));
+    }
     
     // Initialize status
     updatePaymentStatus(paymentReference, {
@@ -213,7 +268,8 @@ const usePaymentTracker = () => {
     if (socketRef.current && isConnected) {
       socketRef.current.emit('track-payment', {
         paymentReference,
-        userId
+        userId,
+        sessionId
       });
       console.log(`🔌 Socket tracking enabled for ${paymentReference}`);
     } else {
@@ -232,8 +288,12 @@ const usePaymentTracker = () => {
     
     // Stop socket tracking
     if (socketRef.current && isConnected) {
+      const storedUserId = trackedPaymentUsers.get(paymentReference);
+      const storedSessionId = trackedPaymentSessions.get(paymentReference);
       socketRef.current.emit('stop-tracking-payment', {
-        paymentReference
+        paymentReference,
+        userId: storedUserId,
+        sessionId: storedSessionId
       });
     }
 
@@ -245,6 +305,20 @@ const usePaymentTracker = () => {
       const newSet = new Set(prev);
       newSet.delete(paymentReference);
       return newSet;
+    });
+
+    // Remove from tracked payment users
+    setTrackedPaymentUsers(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(paymentReference);
+      return newMap;
+    });
+
+    // Remove from tracked payment sessions
+    setTrackedPaymentSessions(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(paymentReference);
+      return newMap;
     });
 
     // Remove from status

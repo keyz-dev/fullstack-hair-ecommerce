@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { usePaymentTracker } from '../../hooks';
+import { usePaymentTracker, useAuth } from '../../hooks';
+import { getSessionId } from '../../utils/sessionUtils';
 import { CheckCircle, Clock, XCircle, AlertCircle, Phone, RefreshCw } from 'lucide-react';
 
 const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
   const { trackPayment, getPaymentStatus, isTrackingPayment, checkPaymentStatus } = usePaymentTracker();
+  const { user } = useAuth();
   const [status, setStatus] = useState(null);
-  const [isChecking, setIsChecking] = useState(false);
+  const [isChecking, setIsChecking] = useState(false)
 
   // Start tracking payment when component mounts
   useEffect(() => {
     if (paymentReference && orderId && !isTrackingPayment(paymentReference)) {
-      trackPayment(paymentReference, orderId);
+      const sessionId = user ? null : getSessionId(); // Use session ID for non-authenticated users
+      trackPayment(paymentReference, orderId, user?._id, sessionId);
     }
-  }, [paymentReference, orderId, trackPayment, isTrackingPayment]);
+  }, [paymentReference, orderId, trackPayment, isTrackingPayment, user?._id]);
 
   // Get payment status updates from the unified tracker
   useEffect(() => {

@@ -9,7 +9,7 @@ const Header = () => {
   const { user } = useAuth();
 
   return (
-    <header className="w-full flex flex-col fixed left-0 top-0 z-20">
+    <header className="w-full flex flex-col fixed left-0 top-0 z-40">
       <nav className="container flex items-center justify-between py-5 px-3 lg:px-2 relative z-20 bg-white dark:bg-primary">
         <button
           type="button"

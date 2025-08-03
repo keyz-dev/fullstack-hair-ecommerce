@@ -1,16 +1,17 @@
 const jwt = require("jsonwebtoken");
+const logger = require('../utils/logger');
 
 /**
  * Middleware to verify CamPay webhook signatures
  * This runs before your webhook handler and automatically rejects invalid requests
  */
 const verifyCamPayWebhook = (req, res, next) => {
-  console.log("🔐 Verifying webhook signature...");
+    logger.info("🔐 Verifying webhook signature...");
 
   const { signature } = req.body;
 
   if (!signature) {
-    console.error("❌ No signature provided in webhook");
+        logger.error("❌ No signature provided in webhook");
     return res.status(401).json({
       error: "Unauthorized",
       message: "Missing signature in webhook payload",
@@ -20,13 +21,13 @@ const verifyCamPayWebhook = (req, res, next) => {
   const CAMPAY_WEBHOOK_KEY = process.env.CAMPAY_WEBHOOK_KEY;
 
   if (!CAMPAY_WEBHOOK_KEY) {
-    console.error("❌ CAMPAY_WEBHOOK_KEY not found in environment variables");
+        logger.error("❌ CAMPAY_WEBHOOK_KEY not found in environment variables");
     process.exit(1);
   }
 
   // Check if signature exists
   if (!signature) {
-    console.error("❌ No signature provided in webhook");
+        logger.error("❌ No signature provided in webhook");
     return res.status(401).json({
       error: "Unauthorized",
       message: "Missing signature in webhook payload",
@@ -37,8 +38,8 @@ const verifyCamPayWebhook = (req, res, next) => {
     // Verify and decode the JWT token
     const decoded = jwt.verify(signature, CAMPAY_WEBHOOK_KEY);
 
-    console.log("✅ Webhook signature verified successfully");
-    console.log("🔍 Decoded token payload:", decoded);
+        logger.info("✅ Webhook signature verified successfully");
+        logger.info("🔍 Decoded token payload: %o", decoded);
 
     // Attach decoded data to request for use in handler
     req.campayVerified = {
@@ -50,15 +51,15 @@ const verifyCamPayWebhook = (req, res, next) => {
     // Continue to next middleware/handler
     next();
   } catch (error) {
-    console.error("❌ Webhook signature verification failed:", error.message);
+        logger.error("❌ Webhook signature verification failed: %s", error.message);
 
     // Log the specific error type for debugging
     if (error.name === "TokenExpiredError") {
-      console.error("Token has expired");
+            logger.error("Token has expired");
     } else if (error.name === "JsonWebTokenError") {
-      console.error("Invalid token format or signature");
+            logger.error("Invalid token format or signature");
     } else if (error.name === "NotBeforeError") {
-      console.error("Token not active yet");
+            logger.error("Token not active yet");
     }
 
     return res.status(401).json({

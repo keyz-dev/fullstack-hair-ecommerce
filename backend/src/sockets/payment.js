@@ -1,75 +1,103 @@
-const { connectedClients, paymentTrackingService } = require("./index");
+const camPayService = require('../services/campay');
+const { paymentTrackingService } = require('./index')
+const logger = require('../utils/logger');
 
-// ===================================================================
-// PAYMENT TRACKING FUNCTIONS
-// ===================================================================
+exports.startPolling = (paymentReference) => {
+  const pollInterval = 10000; // 30 seconds
+  const maxPollTime = 600000; // 10 minutes
+  const startTime = Date.now();
 
-// Add payment to active tracking (now handled by Order model)
-async function addActivePayment(paymentReference, paymentData) {
-  try {
-    // The payment is already stored in the Order model when initiated
-    // This function now just logs the tracking start
-    console.log(`💳 Payment added to tracking: ${paymentReference}`);
-    return true;
-  } catch (error) {
-    console.error('Error adding payment to tracking:', error);
-    return false;
-  }
+  // start polling after 2 minutes
+  const pollDelay = 5000;
+
+  const poll = async () => {
+
+    try {
+      const payment = paymentTrackingService.getPaymentInfo(paymentReference);
+      
+      // Stop polling if payment is completed or expired
+      if (!payment || 
+          payment.status === 'SUCCESSFUL' || 
+          payment.status === 'FAILED' || 
+          payment.status === 'CANCELLED' ||
+          Date.now() - startTime > maxPollTime) {
+        logger.info(`Stopping polling for payment ${paymentReference}`);
+        return;
+      }
+
+      const statusResponse = await camPayService.checkPaymentStatus(paymentReference);
+      
+      if (statusResponse.status) {
+        const newStatus = statusResponse.status;
+        
+        if (newStatus !== payment.status) {
+          payment.status = newStatus;
+          
+          if (newStatus === 'SUCCESSFUL' || newStatus === 'FAILED') {
+            payment.completedAt = new Date().toISOString();
+          }
+          
+          paymentTrackingService.updatePaymentStatus(paymentReference, newStatus);
+
+          // Notify clients
+          io.to(`payment-room-for-${paymentReference}`).emit('payment-status-update', {
+            paymentReference,
+            status: newStatus,
+            message: newStatus === 'SUCCESSFUL' 
+              ? 'Payment completed successfully!' 
+              : newStatus === 'FAILED' 
+                ? 'Payment failed. Please try again.' 
+                : 'Payment status updated',
+            completedAt: payment.completedAt
+          });
+        }
+      }
+
+      // Continue polling if payment is still pending
+      if (payment.status === 'PENDING') {
+        setTimeout(poll, pollInterval);
+      }
+    } catch (error) {
+      logger.error(`Polling error for payment of this order... ${paymentReference}:`, error);
+      setTimeout(poll, pollInterval); // Continue polling despite errors
+    }
+  };
+
+  // Start polling after a short delay
+  setTimeout(poll, pollDelay);
 }
 
 // Update payment status using Order model
-async function updatePaymentStatus(paymentReference, status, additionalData = {}) {
+exports.updatePaymentStatus = async (paymentReference, status, additionalData = {}) => {
   try {
     const result = await paymentTrackingService.updatePaymentStatus(paymentReference, status, additionalData);
     if (result) {
-      console.log(`📊 Payment status updated: ${paymentReference} -> ${status}`);
+      logger.info(`📊 Payment status updated: ${paymentReference} -> ${status}`);
       return result;
     }
     return null;
   } catch (error) {
-    console.error('Error updating payment status:', error);
+    logger.error('Error updating payment status:', error);
     return null;
   }
 }
 
 // Get payment info from Order model
-async function getPaymentInfo(paymentReference) {
+exports.getPaymentInfo = async (paymentReference) => {
   try {
     return await paymentTrackingService.getPaymentInfo(paymentReference);
   } catch (error) {
-    console.error('Error getting payment info:', error);
+    logger.error('Error getting payment info:', error);
     return null;
   }
 }
 
-// Remove payment from tracking (after completion)
-async function removeActivePayment(paymentReference) {
-  try {
-    // In the new system, payments are not removed from the Order model
-    // They remain as a record. This function now just logs the completion
-    console.log(`🗑️ Payment completed and removed from active tracking: ${paymentReference}`);
-    return true;
-  } catch (error) {
-    console.error('Error removing payment from tracking:', error);
-    return false;
-  }
-}
-
-// ===================================================================
-// NOTIFICATION FUNCTIONS
-// ===================================================================
-
-function notifyPaymentUpdate(io, paymentReference, notificationData) {
-  const roomName = `payment-${paymentReference}`;
-  const clientsInRoom = io.sockets.adapter.rooms.get(roomName);
-
-  console.log(`📡 Emitting to room: ${roomName}`);
-  console.log(`👥 Clients in room: ${clientsInRoom ? clientsInRoom.size : 0}`);
+exports.notifyPaymentUpdate = (io, paymentReference, notificationData) => {
+  const roomName = `payment-room-for-${paymentReference}`;
 
   if (notificationData.status === "SUCCESSFUL") {
     // Emit success event
     io.to(roomName).emit("payment-success", notificationData);
-    console.log("✅ Payment success notification sent");
 
     // Also emit general payment-completed event
     io.to(roomName).emit("payment-completed", {
@@ -79,7 +107,6 @@ function notifyPaymentUpdate(io, paymentReference, notificationData) {
   } else if (notificationData.status === "FAILED") {
     // Emit failure event
     io.to(roomName).emit("payment-failed", notificationData);
-    console.log("❌ Payment failure notification sent");
 
     // Also emit general payment-completed event
     io.to(roomName).emit("payment-completed", {
@@ -89,7 +116,6 @@ function notifyPaymentUpdate(io, paymentReference, notificationData) {
   } else if (notificationData.status === "CANCELLED") {
     // Emit cancellation event
     io.to(roomName).emit("payment-cancelled", notificationData);
-    console.log("❌ Payment cancellation notification sent");
 
     // Also emit general payment-completed event
     io.to(roomName).emit("payment-completed", {
@@ -108,52 +134,5 @@ function notifyPaymentUpdate(io, paymentReference, notificationData) {
       reason: `Payment ${notificationData.status.toLowerCase()}`,
       timestamp: new Date()
     });
-    console.log(`🛑 Emitted polling stopped event for ${paymentReference}`);
   }
-}
-
-// ===================================================================
-// DEBUG FUNCTIONS
-// ===================================================================
-
-async function getDebugInfo(io) {
-  try {
-    const connections = Array.from(connectedClients.entries()).map(
-      ([socketId, info]) => ({
-        socketId,
-        userId: info.userId,
-        connectedAt: info.connectedAt,
-        activePayments: Array.from(info.activePayments),
-      })
-    );
-
-    const payments = await paymentTrackingService.getAllActivePayments();
-
-    return {
-      connectedClients: connections.length,
-      activePayments: payments.length,
-      connections: connections,
-      payments: payments,
-      rooms: Object.keys(io.sockets.adapter.rooms),
-    };
-  } catch (error) {
-    console.error('Error getting debug info:', error);
-    return {
-      connectedClients: 0,
-      activePayments: 0,
-      connections: [],
-      payments: [],
-      rooms: [],
-      error: error.message
-    };
-  }
-}
-
-module.exports = {
-  addActivePayment,
-  updatePaymentStatus,
-  getPaymentInfo,
-  removeActivePayment,
-  notifyPaymentUpdate,
-  getDebugInfo,
-};
+} 

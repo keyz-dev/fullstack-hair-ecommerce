@@ -73,3 +73,19 @@
 {"level":"error","message":"Invalid or expired token.","timestamp":"2025-08-03T09:12:00.378Z"}
 {"level":"error","message":"Invalid or expired token.","timestamp":"2025-08-03T09:12:00.380Z"}
 {"level":"error","message":"getaddrinfo ENOTFOUND ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-03T09:12:00.717Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T18:50:44.301Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T18:50:44.794Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T19:00:59.239Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T19:03:37.474Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T19:36:35.264Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T19:36:35.825Z"}
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T20:04:47.047Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T20:04:47.054Z"}
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T20:06:57.401Z"}
+{"level":"error","message":"Polling error for payment of this order... 87c04ee6-0dfe-4bdd-8a92-43e7ef5c3bc9: Failed to check payment status","stack":"Error: Failed to check payment status\n    at CampayService.checkPaymentStatus (D:\\Projects\\braid_commerce\\backend\\src\\services\\campay.js:81:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async Timeout.poll [as _onTimeout] (D:\\Projects\\braid_commerce\\backend\\src\\sockets\\payment.js:28:30)","timestamp":"2025-08-03T20:06:57.403Z"}
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T20:08:56.568Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T20:08:56.573Z"}
+{"level":"error","message":"User not found.","timestamp":"2025-08-03T20:28:50.665Z"}
+{"level":"error","message":"User not found.","timestamp":"2025-08-03T20:28:50.816Z"}
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-03T20:40:57.338Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-03T20:40:57.347Z"}

@@ -3,6 +3,7 @@ import { useAuth } from '../hooks';
 import { orderApi } from '../api/order';
 import { usePaymentTracker } from '../hooks';
 import { toast } from 'react-toastify';
+import { getSessionId } from '../utils/sessionUtils';
 
 // Initial state
 const initialState = {
@@ -162,7 +163,8 @@ export const OrderProvider = ({ children }) => {
       // Start tracking payments for pending orders
       fetchedOrders.forEach(order => {
         if (order.paymentStatus === 'pending' && order.paymentReference && !isTrackingPayment(order.paymentReference)) {
-          trackPayment(order.paymentReference, order._id, user?._id);
+          const sessionId = user ? null : getSessionId(); // Use session ID for non-authenticated users
+          trackPayment(order.paymentReference, order._id, user?._id, sessionId);
         }
       });
       
@@ -189,7 +191,8 @@ export const OrderProvider = ({ children }) => {
       // Start tracking payments for pending orders
       fetchedOrders.forEach(order => {
         if (order.paymentStatus === 'pending' && order.paymentReference && !isTrackingPayment(order.paymentReference)) {
-          trackPayment(order.paymentReference, order._id, user?._id);
+          const sessionId = user ? null : getSessionId(); // Use session ID for non-authenticated users
+          trackPayment(order.paymentReference, order._id, user?._id, sessionId);
         }
       });
       

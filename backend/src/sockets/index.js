@@ -1,99 +1,49 @@
 const { Server } = require('socket.io');
 const Order = require('../models/order');
 require('dotenv').config();
+const logger = require('../utils/logger');
 
 // In-memory storage for connected clients (lightweight)
 const connectedClients = new Map();
+const paymentSession = new Map();
 
 // Socket.IO setup function
 function setupSocketIO(server) {
   const io = new Server(server, {
     cors: {
-      origin: process.env.FRONTEND_URL || "*", // In production, replace with your actual domain
+      origin: process.env.FRONTEND_URL || "*",
       methods: ["GET", "POST"],
     },
   });
 
-  // Store io instance for use in payment tracking service
   paymentTrackingService.io = io;
 
-  // ===================================================================
-  // SOCKET.IO CONNECTION HANDLING
-  // ===================================================================
-
   io.on('connection', (socket) => {
-    console.log(`🔌 Client connected: ${socket.id}`);
-    
-    // Store client connection
-    connectedClients.set(socket.id, {
-      connectedAt: new Date(),
-      userId: null, // Will be set when user authenticates
-      activePayments: new Set()
-    });
+        logger.info(`🔌 Client connected to the main socket service: ${socket.id}`);
 
     // Handle client joining a payment room
-    socket.on('track-payment', async (data) => {
-      const { paymentReference, userId } = data;
-      
-      console.log(`👤 Client ${socket.id} tracking payment: ${paymentReference}`);
-      
+    socket.on('track-payment', async (paymentReference) => {
+            logger.info(`👤 Client ${socket.id} tracking payment: ${paymentReference}`);            
       // Join a room specific to this payment
-      socket.join(`payment-${paymentReference}`);
-      
-      // Update client info
-      const clientInfo = connectedClients.get(socket.id);
-      if (clientInfo) {
-        clientInfo.userId = userId;
-        clientInfo.activePayments.add(paymentReference);
-      }
-      
-      try {
-        // Get payment status from Order model
-        const order = await Order.findOne({ paymentReference });
-        
-        if (order) {
-          socket.emit('payment-status', {
-            reference: paymentReference,
-            status: order.paymentStatus.toUpperCase(),
-            amount: order.totalAmount,
-            timestamp: order.updatedAt,
-            orderNumber: order.orderNumber
-          });
-        } else {
-          // Payment not found, might still be PENDING
-          socket.emit('payment-status', {
-            reference: paymentReference,
-            status: 'PENDING',
-            message: 'Payment request initiated, waiting for user response'
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching payment status:', error);
-        socket.emit('payment-status', {
-          reference: paymentReference,
-          status: 'ERROR',
-          message: 'Unable to fetch payment status'
-        });
-      }
+      socket.join(`payment-room-for-${paymentReference}`);
+      connectedClients.set(socket.id, paymentReference);
     });
 
     // Handle client stopping payment tracking
-    socket.on('stop-tracking-payment', (data) => {
-      const { paymentReference } = data;
-      console.log(`🛑 Client ${socket.id} stopped tracking payment: ${paymentReference}`);
-      
-      socket.leave(`payment-${paymentReference}`);
-      
-      const clientInfo = connectedClients.get(socket.id);
-      if (clientInfo) {
-        clientInfo.activePayments.delete(paymentReference);
-      }
+    socket.on('stop-tracking-payment', (paymentReference) => {
+            logger.info(`🛑 Client ${socket.id} stopped tracking payment: ${paymentReference}`);
+      socket.leave(`payment-room-for-${paymentReference}`);
+      connectedClients.delete(socket.id);
     });
 
     // Handle client disconnect
     socket.on('disconnect', () => {
-      console.log(`🔌 Client disconnected: ${socket.id}`);
-      connectedClients.delete(socket.id);
+      const paymentReference = connectedClients.get(socket.id);
+      if (paymentReference) {
+        socket.leave(`payment-room-for-${paymentReference}`);
+        connectedClients.delete(socket.id);
+      }
+            logger.info(`🔌 Client disconnected: ${socket.id}`);
     });
 
     // Send connection acknowledgment
@@ -107,7 +57,7 @@ function setupSocketIO(server) {
   return io;
 }
 
-  // Payment tracking methods using Order model
+// Payment tracking methods using Order model
 const paymentTrackingService = {
   // Update payment status in Order model
   async updatePaymentStatus(paymentReference, status, additionalData = {}) {
@@ -128,7 +78,7 @@ const paymentTrackingService = {
       );
 
       if (order) {
-        console.log(`📊 Payment status updated in Order: ${paymentReference} -> ${status}`);
+                logger.info(`📊 Payment status updated in Order: ${paymentReference} -> ${status}`);
         
         // Emit to all clients tracking this payment
         if (this.io) {
@@ -145,7 +95,7 @@ const paymentTrackingService = {
       }
       return null;
     } catch (error) {
-      console.error('Error updating payment status:', error);
+            logger.error('Error updating payment status:', error);
       return null;
     }
   },
@@ -166,7 +116,7 @@ const paymentTrackingService = {
       }
       return null;
     } catch (error) {
-      console.error('Error fetching payment info:', error);
+            logger.error('Error fetching payment info:', error);
       return null;
     }
   },
@@ -188,7 +138,7 @@ const paymentTrackingService = {
         lastUpdated: order.updatedAt
       }));
     } catch (error) {
-      console.error('Error fetching active payments:', error);
+            logger.error('Error fetching active payments:', error);
       return [];
     }
   },
@@ -210,6 +160,7 @@ const paymentTrackingService = {
 
 module.exports = {
   setupSocketIO,
+  paymentSession,
   connectedClients,
   paymentTrackingService
 }; 

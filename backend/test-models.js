@@ -1,6 +1,7 @@
 // Simple test file to validate our models and basic functionality
 const mongoose = require('mongoose');
 require('dotenv').config();
+const logger = require('./src/utils/logger');
 
 // Import models
 const Post = require('./src/models/post');
@@ -9,10 +10,10 @@ const User = require('./src/models/user');
 
 async function testModels() {
   try {
-    console.log('🔍 Testing model validation...');
+        logger.info('🔍 Testing model validation...');
     
     // Test Post model validation
-    console.log('\n📝 Testing Post model...');
+        logger.info('\n📝 Testing Post model...');
     
     // Test valid image post
     const imagePost = new Post({
@@ -30,9 +31,9 @@ async function testModels() {
     
     const imageValidation = imagePost.validateSync();
     if (imageValidation) {
-      console.log('❌ Image post validation failed:', imageValidation.message);
+            logger.error('❌ Image post validation failed:', imageValidation.message);
     } else {
-      console.log('✅ Image post validation passed');
+            logger.info('✅ Image post validation passed');
     }
     
     // Test valid video post
@@ -52,13 +53,13 @@ async function testModels() {
     
     const videoValidation = videoPost.validateSync();
     if (videoValidation) {
-      console.log('❌ Video post validation failed:', videoValidation.message);
+            logger.error('❌ Video post validation failed:', videoValidation.message);
     } else {
-      console.log('✅ Video post validation passed');
+            logger.info('✅ Video post validation passed');
     }
     
     // Test Comment model validation
-    console.log('\n💬 Testing Comment model...');
+        logger.info('\n💬 Testing Comment model...');
     
     const comment = new Comment({
       post: new mongoose.Types.ObjectId(),
@@ -68,9 +69,9 @@ async function testModels() {
     
     const commentValidation = comment.validateSync();
     if (commentValidation) {
-      console.log('❌ Comment validation failed:', commentValidation.message);
+            logger.error('❌ Comment validation failed:', commentValidation.message);
     } else {
-      console.log('✅ Comment validation passed');
+            logger.info('✅ Comment validation passed');
     }
     
     // Test reply comment
@@ -83,31 +84,31 @@ async function testModels() {
     
     const replyValidation = replyComment.validateSync();
     if (replyValidation) {
-      console.log('❌ Reply comment validation failed:', replyValidation.message);
+            logger.error('❌ Reply comment validation failed:', replyValidation.message);
     } else {
-      console.log('✅ Reply comment validation passed');
+            logger.info('✅ Reply comment validation passed');
     }
     
-    console.log('\n🎉 Model validation tests completed!');
+        logger.info('\n🎉 Model validation tests completed!');
     
     // Test virtual properties
-    console.log('\n🔗 Testing virtual properties...');
+        logger.info('\n🔗 Testing virtual properties...');
     
     // Add some likes to test virtuals
     imagePost.likes.push({ user: new mongoose.Types.ObjectId() });
     imagePost.likes.push({ user: new mongoose.Types.ObjectId() });
     
-    console.log(`✅ Image post like count: ${imagePost.likeCount}`);
-    console.log(`✅ Image post engagement rate: ${imagePost.engagementRate}%`);
+        logger.info(`✅ Image post like count: ${imagePost.likeCount}`);
+        logger.info(`✅ Image post engagement rate: ${imagePost.engagementRate}%`);
     
     comment.likes.push({ user: new mongoose.Types.ObjectId() });
-    console.log(`✅ Comment like count: ${comment.likeCount}`);
-    console.log(`✅ Comment is reply: ${replyComment.isReply}`);
+        logger.info(`✅ Comment like count: ${comment.likeCount}`);
+        logger.info(`✅ Comment is reply: ${replyComment.isReply}`);
     
-    console.log('\n✨ All tests completed successfully!');
+        logger.info('\n✨ All tests completed successfully!');
     
   } catch (error) {
-    console.error('❌ Test failed:', error.message);
+        logger.error('❌ Test failed:', error.message);
   }
 }
 

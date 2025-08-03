@@ -1,208 +1,378 @@
-const mongoose = require('mongoose');
+// server.js - Complete Backend Implementation
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+const cors = require('cors');
+const axios = require('axios');
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 
-// User Model - Simple with vendor focus
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true, trim: true },
-  email: { type: String, required: true, unique: true, lowercase: true },
-  password: { type: String, required: true, minlength: 6 },
-  
-  // Basic profile
-  profile: {
-    displayName: { type: String, required: true },
-    avatar: { type: String }, // Profile image URL
-    bio: { type: String, maxlength: 300 }
-  },
-  
-  // Role system
-  role: { 
-    type: String, 
-    enum: ['customer', 'admin', 'vendor'], 
-    default: 'customer' 
-  },
-  
-  // Vendor-specific info (only for vendors)
-  vendorProfile: {
-    businessName: { type: String },
-    specialties: [{ type: String }], // e.g., ['natural hair', 'color', 'braids']
-    location: { type: String },
-    isVerified: { type: Boolean, default: false }
-  },
-  
-  isActive: { type: Boolean, default: true }
-}, {
-  timestamps: true
-});
-
-// Post Model - Focused on hair industry essentials
-const postSchema = new mongoose.Schema({
-  // Who created it
-  vendor: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User', 
-    required: true 
-  },
-  
-  // Essential content
-  title: { type: String, required: true, trim: true, maxlength: 150 },
-  description: { type: String, maxlength: 1500 },
-  
-  // Post type - the key differentiator
-  postType: { 
-    type: String, 
-    enum: [
-      'work-showcase',     // Before/after client work
-      'tutorial',          // Step-by-step how-to content
-      'product-review',    // Reviewing/recommending products
-      'styling-tip',       // Quick tips and advice
-      'transformation',    // Dramatic hair changes
-      'technique-demo'     // Showing specific techniques
-    ], 
-    required: true 
-  },
-  
-  // Media type - either images or video
-  mediaType: {
-    type: String,
-    enum: ['images', 'video'],
-    required: true
-  },
-  
-  // For image posts - multiple images in carousel
-  images: [{
-    url: { type: String, required: true },
-    caption: { type: String, maxlength: 200, required: true },
-    order: { type: Number, required: true }
-  }],
-  
-  // For video posts - single video with thumbnail
-  video: {
-    url: { type: String },
-    thumbnail: { type: String, required: true },
-    caption: { type: String, maxlength: 200 }
-  },
-  
-  // Hair-specific essentials (simple version)
-  hairDetails: {
-    hairType: { 
-      type: String, 
-      enum: ['straight', 'wavy', 'curly', 'coily', 'mixed'] 
-    },
-    serviceType: { 
-      type: String, 
-      enum: ['cut', 'color', 'styling', 'treatment', 'protective-style', 'chemical-service'] 
-    },
-    difficulty: { 
-      type: String, 
-      enum: ['beginner', 'intermediate', 'advanced', 'professional'] 
-    },
-    timeRequired: { type: String } // e.g., "2 hours", "30 minutes"
-  },
-  
-  // Essential engagement
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  saves: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  views: { type: Number, default: 0 },
-  
-  // Simple tagging
-  tags: [{ type: String, lowercase: true, trim: true }], // e.g., ['natural hair', 'twist out']
-  
-  // Post status
-  status: { 
-    type: String, 
-    enum: ['draft', 'published', 'archived'], 
-    default: 'published' 
-  },
-  
-  // For admin featuring
-  isFeatured: { type: Boolean, default: false }
-}, {
-  timestamps: true,
-  toJSON: { virtuals: true }
-});
-
-// Validation middleware to enforce either/or media structure
-postSchema.pre('save', function(next) {
-  const post = this;
-  
-  if (post.mediaType === 'images') {
-    // Must have images array with at least 1 image, no video
-    if (!post.images || post.images.length === 0) {
-      return next(new Error('Image posts must have at least one image'));
-    }
-    if (post.video && post.video.url) {
-      return next(new Error('Image posts cannot have video content'));
-    }
-    // Sort images by order
-    post.images = post.images.sort((a, b) => a.order - b.order);
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: "http://localhost:3000", // React frontend URL
+    methods: ["GET", "POST"]
   }
-  
-  if (post.mediaType === 'video') {
-    // Must have video object, no images
-    if (!post.video || !post.video.url) {
-      return next(new Error('Video posts must have video content'));
+});
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// In-memory storage (use Redis or database in production)
+const paymentSessions = new Map();
+const activeConnections = new Map();
+
+const camPayService = new CamPayService();
+
+// Socket.IO Connection Management
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id);
+
+  // Client joins a payment session
+  socket.on('join-payment-session', (paymentId) => {
+    socket.join(paymentId);
+    activeConnections.set(socket.id, paymentId);
+    console.log(`Client ${socket.id} joined payment session: ${paymentId}`);
+  });
+
+  // Client leaves payment session
+  socket.on('leave-payment-session', (paymentId) => {
+    socket.leave(paymentId);
+    activeConnections.delete(socket.id);
+    console.log(`Client ${socket.id} left payment session: ${paymentId}`);
+  });
+
+  socket.on('disconnect', () => {
+    const paymentId = activeConnections.get(socket.id);
+    if (paymentId) {
+      activeConnections.delete(socket.id);
     }
-    if (post.images && post.images.length > 0) {
-      return next(new Error('Video posts cannot have image content'));
+    console.log('Client disconnected:', socket.id);
+  });
+});
+
+// API Routes
+
+// 1. Initiate Payment
+app.post('/api/payments/initiate', async (req, res) => {
+  try {
+    const { amount, phoneNumber, description, userId } = req.body;
+
+    // Validation
+    if (!amount || !phoneNumber || !description) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: amount, phoneNumber, description'
+      });
     }
+
+    // Validate phone number format (should start with country code)
+    if (!phoneNumber.match(/^237[67]\d{8}$/)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid phone number format. Should be 237XXXXXXXXX'
+      });
+    }
+
+    // Validate amount (should be integer)
+    if (!Number.isInteger(Number(amount)) || Number(amount) <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Amount must be a positive integer'
+      });
+    }
+
+    const paymentId = generatePaymentId();
+    
+    const paymentData = {
+      paymentId,
+      amount: Number(amount),
+      phoneNumber,
+      description,
+      userId,
+      status: 'INITIATING',
+      createdAt: new Date().toISOString()
+    };
+
+    // Store payment session
+    paymentSessions.set(paymentId, paymentData);
+
+    // Send request to CamPay
+    const camPayResponse = await camPayService.requestPayment(paymentData);
+
+    if (camPayResponse.success) {
+      // Update payment session with CamPay reference
+      paymentData.status = 'PENDING';
+      paymentData.campayReference = camPayResponse.reference;
+      paymentSessions.set(paymentId, paymentData);
+
+      // Notify connected clients
+      io.to(paymentId).emit('payment-status-update', {
+        paymentId,
+        status: 'PENDING',
+        message: 'Payment request sent. Please check your phone for the payment prompt.'
+      });
+
+      // Start polling for status updates (as backup to webhook)
+      startPolling(paymentId, camPayResponse.reference);
+
+      res.json({
+        success: true,
+        paymentId,
+        status: 'PENDING',
+        reference: camPayResponse.reference,
+        message: 'Payment initiated successfully. Check your phone for the payment prompt.'
+      });
+    } 
+  } catch (error) {
+    console.error('Payment initiation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
   }
-  
-  next();
 });
 
-// Virtual for like count
-postSchema.virtual('likeCount').get(function() {
-  return this.likes ? this.likes.length : 0;
+// 2. Get Payment Status
+app.get('/api/payments/:paymentId/status', (req, res) => {
+  const { paymentId } = req.params;
+  const payment = paymentSessions.get(paymentId);
+
+  if (!payment) {
+    return res.status(404).json({
+      success: false,
+      error: 'Payment not found'
+    });
+  }
+
+  res.json({
+    success: true,
+    paymentId,
+    status: payment.status,
+    amount: payment.amount,
+    phoneNumber: payment.phoneNumber,
+    description: payment.description,
+    createdAt: payment.createdAt,
+    completedAt: payment.completedAt,
+    campayReference: payment.campayReference,
+    error: payment.error,
+    errorCode: payment.errorCode
+  });
 });
 
-// Virtual for save count  
-postSchema.virtual('saveCount').get(function() {
-  return this.saves ? this.saves.length : 0;
+// 3. Webhook Handler - Primary method for receiving status updates
+app.post('/api/webhooks/campay', (req, res) => {
+  try {
+    console.log('Webhook received:', req.body);
+
+    // Validate webhook signature (optional but recommended)
+    const signature = req.headers['x-campay-signature'] || req.body.signature;
+    if (signature && CAMPAY_CONFIG.webhookSecret) {
+      if (!validateWebhookSignature(req.body, signature)) {
+        console.log('Invalid webhook signature');
+        return res.status(401).json({ error: 'Invalid signature' });
+      }
+    }
+
+    const {
+      status,
+      reference,
+      amount,
+      currency,
+      operator,
+      code,
+      operator_reference,
+      external_reference,
+      external_user,
+      phone_number,
+      endpoint
+    } = req.body;
+
+    // Find payment by external_reference (our paymentId)
+    const paymentId = external_reference;
+    const payment = paymentSessions.get(paymentId);
+
+    if (!payment) {
+      console.log('Payment not found for webhook:', paymentId);
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    // Update payment status
+    payment.status = status;
+    payment.completedAt = new Date().toISOString();
+    payment.operatorReference = operator_reference;
+    payment.campayCode = code;
+    payment.operator = operator;
+
+    if (status === 'FAILED') {
+      payment.error = 'Payment failed';
+    }
+
+    paymentSessions.set(paymentId, payment);
+
+    // Notify connected clients via Socket.IO
+    const updateData = {
+      paymentId,
+      status,
+      amount,
+      currency,
+      operator,
+      completedAt: payment.completedAt
+    };
+
+    if (status === 'SUCCESSFUL') {
+      updateData.message = 'Payment completed successfully!';
+    } else if (status === 'FAILED') {
+      updateData.message = 'Payment failed. Please try again.';
+      updateData.error = payment.error;
+    }
+
+    io.to(paymentId).emit('payment-status-update', updateData);
+
+    console.log(`Payment ${paymentId} status updated to: ${status}`);
+
+    res.json({ success: true, message: 'Webhook processed successfully' });
+  } catch (error) {
+    console.error('Webhook processing error:', error);
+    res.status(500).json({ error: 'Webhook processing failed' });
+  }
 });
 
-// Comment Model - Keep it simple
-const commentSchema = new mongoose.Schema({
-  post: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Post', 
-    required: true 
-  },
-  author: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User', 
-    required: true 
-  },
-  content: { type: String, required: true, maxlength: 500 },
-  
-  // Simple reply system
-  parentComment: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Comment',
-    default: null 
-  },
-  
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  
-  isDeleted: { type: Boolean, default: false }
-}, {
-  timestamps: true,
-  toJSON: { virtuals: true }
+// 4. Manual Status Check (for debugging)
+app.post('/api/payments/:paymentId/check-status', async (req, res) => {
+  const { paymentId } = req.params;
+  const payment = paymentSessions.get(paymentId);
+
+  if (!payment || !payment.campayReference) {
+    return res.status(404).json({
+      success: false,
+      error: 'Payment not found or no CamPay reference'
+    });
+  }
+
+  const statusResponse = await camPayService.checkTransactionStatus(payment.campayReference);
+
+  if (statusResponse.success) {
+    // Update local payment data
+    const campayData = statusResponse.data;
+    payment.status = campayData.status || payment.status;
+    
+    if (campayData.status === 'SUCCESSFUL' || campayData.status === 'FAILED') {
+      payment.completedAt = new Date().toISOString();
+    }
+
+    paymentSessions.set(paymentId, payment);
+
+    // Notify clients
+    io.to(paymentId).emit('payment-status-update', {
+      paymentId,
+      status: payment.status,
+      data: campayData
+    });
+
+    res.json({
+      success: true,
+      status: payment.status,
+      campayData
+    });
+  } else {
+    res.status(500).json({
+      success: false,
+      error: statusResponse.error
+    });
+  }
 });
 
-commentSchema.virtual('likeCount').get(function() {
-  return this.likes ? this.likes.length : 0;
+// Polling Service - Backup method for status checking
+function startPolling(paymentId, campayReference) {
+  const pollInterval = 5000; // 5 seconds
+  const maxPollTime = 300000; // 5 minutes
+  const startTime = Date.now();
+
+  const poll = async () => {
+    try {
+      const payment = paymentSessions.get(paymentId);
+      
+      // Stop polling if payment is completed or expired
+      if (!payment || 
+          payment.status === 'SUCCESSFUL' || 
+          payment.status === 'FAILED' ||
+          Date.now() - startTime > maxPollTime) {
+        console.log(`Stopping polling for payment ${paymentId}`);
+        return;
+      }
+
+      const statusResponse = await camPayService.checkTransactionStatus(campayReference);
+      
+      if (statusResponse.success && statusResponse.data.status) {
+        const newStatus = statusResponse.data.status;
+        
+        if (newStatus !== payment.status) {
+          payment.status = newStatus;
+          
+          if (newStatus === 'SUCCESSFUL' || newStatus === 'FAILED') {
+            payment.completedAt = new Date().toISOString();
+          }
+          
+          paymentSessions.set(paymentId, payment);
+
+          // Notify clients
+          io.to(paymentId).emit('payment-status-update', {
+            paymentId,
+            status: newStatus,
+            message: newStatus === 'SUCCESSFUL' 
+              ? 'Payment completed successfully!' 
+              : newStatus === 'FAILED' 
+                ? 'Payment failed. Please try again.' 
+                : 'Payment status updated',
+            completedAt: payment.completedAt
+          });
+
+          console.log(`Polling: Payment ${paymentId} status updated to: ${newStatus}`);
+        }
+      }
+
+      // Continue polling if payment is still pending
+      if (payment.status === 'PENDING') {
+        setTimeout(poll, pollInterval);
+      }
+    } catch (error) {
+      console.error(`Polling error for payment ${paymentId}:`, error);
+      setTimeout(poll, pollInterval); // Continue polling despite errors
+    }
+  };
+
+  // Start polling after a short delay
+  setTimeout(poll, 2000);
+}
+
+// Webhook signature validation (optional security measure)
+function validateWebhookSignature(payload, signature) {
+  try {
+    // CamPay sends JWT signatures
+    const decoded = jwt.verify(signature, CAMPAY_CONFIG.webhookSecret);
+    return true;
+  } catch (error) {
+    console.error('Webhook signature validation failed:', error);
+    return false;
+  }
+}
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'CamPay Payment Service is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
-// Indexes for performance
-postSchema.index({ vendor: 1, createdAt: -1 });
-postSchema.index({ postType: 1, status: 1 });
-postSchema.index({ tags: 1 });
-postSchema.index({ status: 1, isFeatured: -1, createdAt: -1 });
-
-commentSchema.index({ post: 1, createdAt: -1 });
-userSchema.index({ role: 1 });
-
-const User = mongoose.model('User', userSchema);
-const Post = mongoose.model('Post', postSchema);
-const Comment = mongoose.model('Comment', commentSchema);
-
-module.exports = { User, Post, Comment };
+// Start server
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Webhook URL: http://localhost:${PORT}/api/webhooks/campay`);
+});

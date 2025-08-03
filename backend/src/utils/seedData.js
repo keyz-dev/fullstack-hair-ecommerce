@@ -1,6 +1,7 @@
 const Currency = require('../models/currency');
 const PaymentMethod = require('../models/paymentMethod');
 const Settings = require('../models/settings');
+const logger = require('./logger');
 
 const defaultCurrencies = [
   {
@@ -154,64 +155,64 @@ const defaultSettings = [
 
 const seedCurrencies = async () => {
   try {
-    console.log('Seeding currencies...');
+        logger.info('Seeding currencies...');
     for (const currency of defaultCurrencies) {
       const exists = await Currency.findOne({ code: currency.code });
       if (!exists) {
         await Currency.create(currency);
-        console.log(`Created currency: ${currency.code}`);
+                logger.info(`Created currency: ${currency.code}`);
       } else {
-        console.log(`Currency ${currency.code} already exists`);
+                logger.info(`Currency ${currency.code} already exists`);
       }
     }
-    console.log('Currency seeding completed');
+        logger.info('Currency seeding completed');
   } catch (error) {
-    console.error('Error seeding currencies:', error);
+        logger.error('Error seeding currencies:', error);
   }
 };
 
 const seedPaymentMethods = async () => {
   try {
-    console.log('Seeding payment methods...');
+        logger.info('Seeding payment methods...');
     for (const method of defaultPaymentMethods) {
       const exists = await PaymentMethod.findOne({ code: method.code });
       if (!exists) {
         await PaymentMethod.create(method);
-        console.log(`Created payment method: ${method.name}`);
+                logger.info(`Created payment method: ${method.name}`);
       } else {
-        console.log(`Payment method ${method.name} already exists`);
+                logger.info(`Payment method ${method.name} already exists`);
       }
     }
-    console.log('Payment method seeding completed');
+        logger.info('Payment method seeding completed');
   } catch (error) {
-    console.error('Error seeding payment methods:', error);
+        logger.error('Error seeding payment methods:', error);
   }
 };
 
 const seedSettings = async () => {
   try {
-    console.log('Seeding settings...');
+        logger.info('Seeding settings...');
     for (const setting of defaultSettings) {
       const exists = await Settings.findOne({ key: setting.key });
       if (!exists) {
         await Settings.create(setting);
-        console.log(`Created setting: ${setting.key}`);
+                logger.info(`Created setting: ${setting.key}`);
       } else {
-        console.log(`Setting ${setting.key} already exists`);
+                logger.info(`Setting ${setting.key} already exists`);
       }
     }
-    console.log('Settings seeding completed');
+        logger.info('Settings seeding completed');
   } catch (error) {
-    console.error('Error seeding settings:', error);
+        logger.error('Error seeding settings:', error);
   }
 };
 
 const seedAll = async () => {
-  console.log('Starting data seeding...');
+    logger.info('Starting data seeding...');
   await seedCurrencies();
   await seedPaymentMethods();
   await seedSettings();
-  console.log('Data seeding completed');
+    logger.info('Data seeding completed');
 };
 
 module.exports = {

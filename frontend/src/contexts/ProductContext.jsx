@@ -129,8 +129,6 @@ const ProductProvider = ({ children }) => {
 
   // Calculate product statistics
   const calculateStats = useCallback((products) => {
-    console.log('Calculating stats for products:', products.map(p => ({ name: p.name, stock: p.stock })));
-    
     const stats = {
       total: products.length,
       active: products.filter(p => p.isActive === true).length,
@@ -143,7 +141,6 @@ const ProductProvider = ({ children }) => {
         .reduce((sum, p) => sum + (p.price * (p.soldQuantity || 0)), 0)
     };
     
-    console.log('Calculated stats:', stats);
     return stats;
   }, []);
 

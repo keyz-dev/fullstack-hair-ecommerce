@@ -180,6 +180,8 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
       // Get phone number from payment info (could be named differently)
       const phoneNumber = paymentInfo.mobileNumber || paymentInfo.phoneNumber || paymentInfo.phone;
 
+      let paymentReference = null;
+
       if (isMobileMoney && phoneNumber) {
         try {
           const paymentResponse = await paymentApi.initiatePayment({
@@ -188,14 +190,13 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
           });
 
           if (paymentResponse.success) {
-            const paymentReference = paymentResponse.paymentReference;
+            paymentReference = paymentResponse.paymentReference;
             setCurrentPaymentReference(paymentReference);
             
-                         // Start tracking the payment for real-time updates
-             trackPayment(paymentReference, createdOrder._id, user?._id);
+            // Start tracking the payment for real-time updates
+            trackPayment(paymentReference, createdOrder._id, user?._id);
             
             toast.success( paymentResponse.message || 'Payment initiated successfully. You will receive real-time updates.');
-            console.log('Payment initiated:', paymentResponse);
           }
         } catch (paymentError) {
           console.error('Payment initiation failed:', paymentError);
@@ -221,7 +222,7 @@ const useCheckout = (cartItems, cartTotal, user, clearCart) => {
           paymentInfo,
           cartItems: orderCartItems,
           paymentStatus: createdOrder.paymentStatus,
-          paymentReference: currentPaymentReference
+          paymentReference: paymentReference
         }
       });
       

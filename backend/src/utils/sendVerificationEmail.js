@@ -1,5 +1,6 @@
 const emailService = require('../services/emailService');
 const crypto = require('crypto');
+const logger = require('./logger');
 
 /**
  * Generates a verification code, updates the user, and sends a verification email.
@@ -27,7 +28,7 @@ async function sendVerificationEmail(user, email, name, template='emailVerificat
       },
     });
   } catch (err) {
-    console.log('Error sending verification email:', err);
+        logger.error('Error sending verification email:', err);
     throw new Error('Failed to send verification email. Please try again later.');
   }
 }

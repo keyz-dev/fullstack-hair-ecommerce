@@ -1,5 +1,6 @@
 const Redis = require('ioredis');
 require('dotenv').config();
+const logger = require('../utils/logger');
 
 class RedisService {
   constructor() {
@@ -13,15 +14,15 @@ class RedisService {
     });
 
     this.redis.on('connect', () => {
-      console.log('🔗 Connected to Redis');
+            logger.info('🔗 Connected to Redis');
     });
 
     this.redis.on('error', (error) => {
-      console.error('❌ Redis connection error:', error);
+            logger.error('❌ Redis connection error:', error);
     });
 
     this.redis.on('close', () => {
-      console.log('🔌 Redis connection closed');
+            logger.info('🔌 Redis connection closed');
     });
   }
 
@@ -36,7 +37,7 @@ class RedisService {
     };
 
     await this.redis.setex(key, 3600, JSON.stringify(data)); // Expire in 1 hour
-    console.log(`💳 Payment added to Redis: ${paymentReference}`);
+        logger.info(`💳 Payment added to Redis: ${paymentReference}`);
     return data;
   }
 
@@ -54,7 +55,7 @@ class RedisService {
       };
 
       await this.redis.setex(key, 3600, JSON.stringify(updatedData));
-      console.log(`📊 Payment status updated in Redis: ${paymentReference} -> ${status}`);
+            logger.info(`📊 Payment status updated in Redis: ${paymentReference} -> ${status}`);
       return updatedData;
     }
     return null;
@@ -70,7 +71,7 @@ class RedisService {
     const key = `payment:${paymentReference}`;
     const removed = await this.redis.del(key);
     if (removed) {
-      console.log(`🗑️ Payment removed from Redis: ${paymentReference}`);
+            logger.info(`🗑️ Payment removed from Redis: ${paymentReference}`);
     }
     return removed > 0;
   }
@@ -103,7 +104,7 @@ class RedisService {
     };
 
     await this.redis.setex(key, 86400, JSON.stringify(data)); // Expire in 24 hours
-    console.log(`👤 Client added to Redis: ${socketId}`);
+        logger.info(`👤 Client added to Redis: ${socketId}`);
     return data;
   }
 
@@ -134,7 +135,7 @@ class RedisService {
     const key = `client:${socketId}`;
     const removed = await this.redis.del(key);
     if (removed) {
-      console.log(`🔌 Client removed from Redis: ${socketId}`);
+            logger.info(`🔌 Client removed from Redis: ${socketId}`);
     }
     return removed > 0;
   }
@@ -187,11 +188,12 @@ class RedisService {
   // Close connection
   async close() {
     await this.redis.quit();
-    console.log('🔌 Redis connection closed');
+    logger.info('🔌 Redis connection closed');
   }
 }
 
 // Create singleton instance
 const redisService = new RedisService();
 
+module.exports = redisService;
 module.exports = redisService; 

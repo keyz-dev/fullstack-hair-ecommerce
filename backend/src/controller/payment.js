@@ -1,15 +1,10 @@
 const Order = require('../models/order');
 const { BadRequestError, NotFoundError } = require('../utils/errors');
-const campayService = require('../utils/campay');
+const campayService = require('../services/campay');
 const { validatePhoneNumber, normalizePhoneNumber } = require('../utils/phoneValidation');
 const { initiatePaymentSchema } = require('../schema/paymentSchema');
-const { 
-  addActivePayment, 
-  updatePaymentStatus, 
-  notifyPaymentUpdate, 
-  getPaymentInfo,
-  removeActivePayment 
-} = require('../sockets/payment');
+const { startPolling, updatePaymentStatus, getPaymentInfo, notifyPaymentUpdate, getDebugInfo } = require('../sockets/payment');
+const { paymentSession } = require('../sockets/index')
 
 // Initiate payment for an order
 exports.initiatePayment = async (req, res, next) => {
@@ -44,25 +39,14 @@ exports.initiatePayment = async (req, res, next) => {
     };
 
     const paymentResponse = await campayService.initiatePayment(paymentData);
-    
     // Update order with payment details (don't override paymentMethod)
     order.paymentStatus = 'pending';
     order.paymentReference = paymentResponse.reference;
     await order.save();
 
-    // Add payment to active tracking for real-time updates
-    await addActivePayment(paymentResponse.reference, {
-      orderId: orderId,
-      amount: paymentData.amount,
-      phoneNumber: normalizedPhone,
-      description: paymentData.description,
-      userId: req.authUser?.id || null,
-      campayReference: paymentResponse.reference
-    });
-
     // Notify connected clients that payment was initiated
     if (global.io) {
-      global.io.to(`payment-${paymentResponse.reference}`).emit('payment-initiated', {
+      global.io.to(`payment-room-for-${paymentResponse.reference}`).emit('payment-initiated', {
         reference: paymentResponse.reference,
         campayReference: paymentResponse.reference,
         amount: paymentData.amount,
@@ -73,6 +57,8 @@ exports.initiatePayment = async (req, res, next) => {
         timestamp: new Date()
       });
     }
+
+    startPolling(paymentResponse.reference)
 
     res.status(200).json({
       success: true,
@@ -93,10 +79,6 @@ exports.initiatePayment = async (req, res, next) => {
 // Campay webhook with Socket.IO integration
 exports.handleWebhook = async (req, res, next) => {
   try {
-    console.log("\n======================")
-    console.log('🎯 Webhook received and verified', req.body);
-    console.log("\n======================")
-    
     const {
       status,
       reference,
@@ -136,8 +118,6 @@ exports.handleWebhook = async (req, res, next) => {
     }
 
     if (!paymentInfo) {
-      console.warn(`⚠️  Payment not found in active payments: ${reference}`);
-      // Still process and emit, might be a delayed webhook
       ourReference = reference;
       paymentInfo = {
         reference: reference,
@@ -189,14 +169,8 @@ exports.handleWebhook = async (req, res, next) => {
       order.paymentStatus = paymentStatus;
       order.status = orderStatus;
       order.paymentReference = reference;
-      
-      // Verify amount matches
-      if (amount && parseFloat(amount) !== order.totalAmount) {
-        console.warn(`Amount mismatch: webhook ${amount}, order ${order.totalAmount}`);
-      }
 
       await order.save();
-      console.log(`Order ${external_reference} updated with status: ${order.paymentStatus}`);
     }
 
     // Prepare notification data
@@ -217,29 +191,18 @@ exports.handleWebhook = async (req, res, next) => {
       shouldStopPolling: status === 'SUCCESSFUL' || status === 'FAILED' || status === 'CANCELLED'
     };
 
+    paymentSession.set(ourReference, notificationData);
+
     // Send real-time notifications via Socket.IO
     if (global.io) {
       notifyPaymentUpdate(global.io, ourReference, notificationData);
-    }
-
-    // Remove payment from active tracking if completed
-    if (status === 'SUCCESSFUL' || status === 'FAILED') {
-      await removeActivePayment(ourReference);
-    }
-
-    // Log active connections for debugging
-    if (global.io) {
-      const roomName = `payment-${ourReference}`;
-      const clientsInRoom = global.io.sockets.adapter.rooms.get(roomName);
-      console.log(`🔍 Debug info:`);
-      console.log(`   Clients in room ${roomName}: ${clientsInRoom ? clientsInRoom.size : 0}`);
     }
     
     res.status(200).json({
       received: true,
       verified: true,
       reference: ourReference,
-      processedAt: new Date()
+      processedAt: new Date(),
     });
   } catch (error) {
     console.error('Webhook processing error:', error);
@@ -249,92 +212,92 @@ exports.handleWebhook = async (req, res, next) => {
 
 // Check payment status manually
 exports.checkPaymentStatus = async (req, res, next) => {
-  try {
-    const { orderId } = req.params;
-    
-    const order = await Order.findById(orderId);
-    if (!order) {
-      return next(new NotFoundError('Order not found'));
-    }
+try {
+  const { orderId } = req.params;
+  
+  const order = await Order.findById(orderId);
+  if (!order) {
+    return next(new NotFoundError('Order not found'));
+  }
 
-    if (!order.paymentReference) {
-      return next(new BadRequestError('No payment reference found'));
-    }
+  if (!order.paymentReference) {
+    return next(new BadRequestError('No payment reference found'));
+  }
 
-    // Get latest status from Campay
-    const paymentStatus = await campayService.checkPaymentStatus(order.paymentReference);
-    
-    // Update order based on current status if it has changed
-    let orderUpdated = false;
-    let shouldStopPolling = false;
-    
-    if (paymentStatus.status === 'SUCCESSFUL' && order.paymentStatus !== 'paid') {
-      order.paymentStatus = 'paid';
-      order.paymentTime = new Date();
-      order.status = 'accepted';
-      orderUpdated = true;
-      shouldStopPolling = true;
-    } else if (paymentStatus.status === 'FAILED' && order.paymentStatus !== 'failed') {
-      order.paymentStatus = 'failed';
-      order.status = 'cancelled';
-      orderUpdated = true;
-      shouldStopPolling = true;
-    } else if (paymentStatus.status === 'CANCELLED' && order.paymentStatus !== 'failed') {
-      order.paymentStatus = 'failed';
-      order.status = 'cancelled';
-      orderUpdated = true;
-      shouldStopPolling = true;
-    }
+  // Get latest status from Campay
+  const paymentStatus = await campayService.checkPaymentStatus(order.paymentReference);
 
-    if (orderUpdated) {
-      await order.save();
-      console.log(`Order ${orderId} updated via status check: ${order.paymentStatus}`);
-      
-      // Update payment tracking service and notify frontend
-      await updatePaymentStatus(order.paymentReference, paymentStatus.status, {
+  // Update order based on current status if it has changed
+  let orderUpdated = false;
+  let shouldStopPolling = false;
+  
+  if (paymentStatus.status === 'SUCCESSFUL' && order.paymentStatus !== 'paid') {
+    order.paymentStatus = 'paid';
+    order.paymentTime = new Date();
+    order.status = 'accepted';
+    orderUpdated = true;
+    shouldStopPolling = true;
+  } else if (paymentStatus.status === 'FAILED' && order.paymentStatus !== 'failed') {
+    order.paymentStatus = 'failed';
+    order.status = 'cancelled';
+    orderUpdated = true;
+    shouldStopPolling = true;
+  } else if (paymentStatus.status === 'CANCELLED' && order.paymentStatus !== 'failed') {
+    order.paymentStatus = 'failed';
+    order.status = 'cancelled';
+    orderUpdated = true;
+    shouldStopPolling = true;
+  }
+
+  if (orderUpdated) {
+    await order.save();
+    console.log(`Order ${orderId} updated via status check: ${order.paymentStatus}`);
+    
+    // Update payment tracking service and notify frontend
+    await updatePaymentStatus(order.paymentReference, paymentStatus.status, {
+      operator: paymentStatus.operator || 'Unknown',
+      campayCode: paymentStatus.code,
+      operatorReference: paymentStatus.operator_reference
+    });
+    
+    // Send real-time notification to frontend
+    if (global.io) {
+      const notificationData = {
+        reference: order.paymentReference,
+        campayReference: order.paymentReference,
+        status: paymentStatus.status,
+        amount: order.totalAmount,
+        currency: 'XAF',
+        phoneNumber: order.guestInfo?.phone || 'Unknown',
         operator: paymentStatus.operator || 'Unknown',
         campayCode: paymentStatus.code,
-        operatorReference: paymentStatus.operator_reference
-      });
+        operatorReference: paymentStatus.operator_reference,
+        timestamp: new Date(),
+        message: `Payment ${paymentStatus.status.toLowerCase()}`,
+        shouldStopPolling: shouldStopPolling
+      };
       
-      // Send real-time notification to frontend
-      if (global.io) {
-        const notificationData = {
-          reference: order.paymentReference,
-          campayReference: order.paymentReference,
-          status: paymentStatus.status,
-          amount: order.totalAmount,
-          currency: 'XAF',
-          phoneNumber: order.guestInfo?.phone || 'Unknown',
-          operator: paymentStatus.operator || 'Unknown',
-          campayCode: paymentStatus.code,
-          operatorReference: paymentStatus.operator_reference,
-          timestamp: new Date(),
-          message: `Payment ${paymentStatus.status.toLowerCase()}`,
-          shouldStopPolling: shouldStopPolling
-        };
-        
-        notifyPaymentUpdate(global.io, order.paymentReference, notificationData);
-      }
+      notifyPaymentUpdate(global.io, order.paymentReference, notificationData);
     }
-
-    res.status(200).json({
-      success: true,
-      order: {
-        id: order._id,
-        orderNumber: order.orderNumber,
-        paymentStatus: order.paymentStatus,
-        status: order.status,
-        paymentTime: order.paymentTime
-      },
-      campayStatus: paymentStatus,
-      updated: orderUpdated,
-      shouldStopPolling: shouldStopPolling
-    });
-  } catch (error) {
-    console.error('Payment status check error:', error);
-    next(new BadRequestError('Failed to check payment status: ' + error.message));
   }
+
+  res.status(200).json({
+    success: true,
+    order: {
+      id: order._id,
+      orderNumber: order.orderNumber,
+      paymentStatus: order.paymentStatus,
+      status: order.status,
+      paymentTime: order.paymentTime
+    },
+    campayStatus: paymentStatus,
+    updated: orderUpdated,
+    shouldStopPolling: shouldStopPolling
+  });
+} catch (error) {
+  console.error('Payment status check error:', error);
+  next(new BadRequestError('Failed to check payment status: ' + error.message));
+}
 };
 
 // Get payment status from active tracking
@@ -365,23 +328,6 @@ exports.getPaymentStatus = async (req, res, next) => {
   } catch (error) {
     console.error('Get payment status error:', error);
     next(new BadRequestError('Failed to get payment status: ' + error.message));
-  }
-};
-
-// Debug endpoint - see active connections
-exports.getDebugInfo = async (req, res, next) => {
-  try {
-    if (!global.io) {
-      return res.status(503).json({ error: 'Socket.IO not available' });
-    }
-
-    const { getDebugInfo } = require('../sockets/payment');
-    const debugInfo = await getDebugInfo(global.io);
-
-    res.json(debugInfo);
-  } catch (error) {
-    console.error('Debug info error:', error);
-    next(new BadRequestError('Failed to get debug info: ' + error.message));
   }
 };
 
