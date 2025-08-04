@@ -22,3 +22,4 @@ export { useShop } from './useShop';
 export { useProductDetails } from './useProductDetails';
 export { default as usePaymentTracker } from './usePaymentTracker';
 export { useClientAnalytics } from './useClientAnalytics';
+export { useAdminAnalytics } from './useAdminAnalytics';

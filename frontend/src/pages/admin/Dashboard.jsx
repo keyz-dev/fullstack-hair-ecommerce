@@ -1,20 +1,168 @@
-import React from 'react';
-import { Upcoming } from '../../components/ui';
+import React, { useState } from 'react';
+import { 
+  AdminOverviewStats, 
+  RevenueChart, 
+  UserGrowthChart, 
+  ProductPerformanceChart, 
+  AdminActivityTimeline, 
+  DateRangePicker 
+} from '../../components/dashboard/analytics';
+import DashboardErrorBoundary from '../../components/dashboard/analytics/DashboardErrorBoundary';
+import DashboardLoadingState from '../../components/dashboard/analytics/DashboardLoadingState';
+import { useAdminAnalytics } from '../../hooks/useAdminAnalytics';
+import { useAuth } from '../../hooks';
+import { RefreshCw, TrendingUp, BarChart3, Settings, Users, Package } from 'lucide-react';
+import { Button } from '../../components/ui';
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const [dateRange, setDateRange] = useState('30d');
+  const { analytics, loading, error, refreshAnalytics } = useAdminAnalytics(dateRange);
+
+  const handleDateRangeChange = (newRange) => {
+    setDateRange(newRange);
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <DashboardLoadingState />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <DashboardErrorBoundary 
+          error={error} 
+          onRetry={refreshAnalytics} 
+          loading={loading} 
+        />
+      </div>
+    );
+  }
+
   return (
-    <Upcoming 
-      title="Admin Dashboard Coming Soon"
-      description="Our comprehensive admin dashboard is being developed to provide powerful tools for managing your e-commerce platform."
-      expectedDate="August 2025"
-      features={[
-        "Sales analytics",
-        "Inventory management",
-        "Customer insights",
-        "Order processing"
-      ]}
-      colorTheme="blue"
-    />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-end gap-2">
+          <p className="text-gray-600">Welcome back, </p>
+          <h1 className="text-2xl font-bold text-gray-900">{user?.name?.split(' ')[0] || 'Admin'}!</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <DateRangePicker 
+            onRangeChange={handleDateRangeChange} 
+            currentRange={dateRange} 
+          />
+          <Button
+            onClickHandler={refreshAnalytics}
+            isDisabled={loading}
+            additionalClasses="primarybtn min-h-fit"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Overview Stats */}
+      <AdminOverviewStats 
+        stats={analytics.overview} 
+        loading={loading} 
+      />
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <RevenueChart 
+          data={analytics.revenue?.chartData} 
+          loading={loading} 
+        />
+        <UserGrowthChart 
+          data={analytics.users?.growthData} 
+          loading={loading} 
+        />
+      </div>
+
+      {/* Additional Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ProductPerformanceChart 
+          data={analytics.products?.statusDistribution} 
+          loading={loading} 
+        />
+        <AdminActivityTimeline 
+          activities={analytics.activity} 
+          loading={loading} 
+        />
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <BarChart3 className="w-6 h-6 text-blue-600" />
+          <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
+            <Package className="w-5 h-5 text-blue-600" />
+            <div className="text-left">
+              <p className="font-medium text-gray-900">Manage Products</p>
+              <p className="text-sm text-gray-500">Add or edit products</p>
+            </div>
+          </button>
+          <button className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
+            <Users className="w-5 h-5 text-purple-600" />
+            <div className="text-left">
+              <p className="font-medium text-gray-900">Manage Users</p>
+              <p className="text-sm text-gray-500">View user accounts</p>
+            </div>
+          </button>
+          <button className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
+            <TrendingUp className="w-5 h-5 text-green-600" />
+            <div className="text-left">
+              <p className="font-medium text-gray-900">View Orders</p>
+              <p className="text-sm text-gray-500">Process orders</p>
+            </div>
+          </button>
+          <button className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
+            <Settings className="w-5 h-5 text-orange-600" />
+            <div className="text-left">
+              <p className="font-medium text-gray-900">Settings</p>
+              <p className="text-sm text-gray-500">Configure system</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* System Health */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">System Health</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <div>
+              <p className="font-medium text-gray-900">Database</p>
+              <p className="text-sm text-gray-500">All systems operational</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <div>
+              <p className="font-medium text-gray-900">API Services</p>
+              <p className="text-sm text-gray-500">Running smoothly</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <div>
+              <p className="font-medium text-gray-900">Payment Gateway</p>
+              <p className="text-sm text-gray-500">Connected and ready</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
