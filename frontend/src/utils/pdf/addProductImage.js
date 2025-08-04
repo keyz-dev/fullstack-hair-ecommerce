@@ -2,7 +2,7 @@ import { processImageSafely } from './processImageSafely';
 import { imageToBase64 } from './imageToBase64';
 import { convertToJPEG } from './convertToJPEG';
   
-  // Helper function to load and add product images
+  // Helper function to load and add product images with object-cover behavior
   export const addProductImage = async (doc, imageUrl, x, y, width = 25, height = 25) => {
     if (!imageUrl) {
       // Create placeholder if no image URL
@@ -36,10 +36,42 @@ import { convertToJPEG } from './convertToJPEG';
         }
         
         try {
-          // Add the actual product image
-          doc.addImage(imageBase64, format, x, y, width, height);
+          // Get image dimensions to calculate aspect ratio
+          const img = new Image();
+          img.src = imageBase64;
           
-          // Add subtle border around image
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+          });
+          
+          const imgWidth = img.naturalWidth;
+          const imgHeight = img.naturalHeight;
+          
+          // Calculate aspect ratios
+          const containerAspectRatio = width / height;
+          const imageAspectRatio = imgWidth / imgHeight;
+          
+          let finalWidth, finalHeight, finalX, finalY;
+          
+          if (imageAspectRatio > containerAspectRatio) {
+            // Image is wider than container - fit to height, center horizontally
+            finalHeight = height;
+            finalWidth = height * imageAspectRatio;
+            finalX = x + (width - finalWidth) / 2;
+            finalY = y;
+          } else {
+            // Image is taller than container - fit to width, center vertically
+            finalWidth = width;
+            finalHeight = width / imageAspectRatio;
+            finalX = x;
+            finalY = y + (height - finalHeight) / 2;
+          }
+          
+          // Add the actual product image with calculated dimensions and position
+          doc.addImage(imageBase64, format, finalX, finalY, finalWidth, finalHeight);
+          
+          // Add subtle border around the container (not the image)
           doc.setDrawColor(220, 220, 220);
           doc.setLineWidth(0.2);
           doc.rect(x, y, width, height);
@@ -53,9 +85,41 @@ import { convertToJPEG } from './convertToJPEG';
             try {
               const jpegBase64 = await convertToJPEG(imageBase64);
               if (jpegBase64) {
-                doc.addImage(jpegBase64, 'JPEG', x, y, width, height);
+                // Get image dimensions for JPEG as well
+                const img = new Image();
+                img.src = jpegBase64;
                 
-                // Add subtle border around image
+                await new Promise((resolve, reject) => {
+                  img.onload = resolve;
+                  img.onerror = reject;
+                });
+                
+                const imgWidth = img.naturalWidth;
+                const imgHeight = img.naturalHeight;
+                
+                // Calculate aspect ratios
+                const containerAspectRatio = width / height;
+                const imageAspectRatio = imgWidth / imgHeight;
+                
+                let finalWidth, finalHeight, finalX, finalY;
+                
+                if (imageAspectRatio > containerAspectRatio) {
+                  // Image is wider than container - fit to height, center horizontally
+                  finalHeight = height;
+                  finalWidth = height * imageAspectRatio;
+                  finalX = x + (width - finalWidth) / 2;
+                  finalY = y;
+                } else {
+                  // Image is taller than container - fit to width, center vertically
+                  finalWidth = width;
+                  finalHeight = width / imageAspectRatio;
+                  finalX = x;
+                  finalY = y + (height - finalHeight) / 2;
+                }
+                
+                doc.addImage(jpegBase64, 'JPEG', finalX, finalY, finalWidth, finalHeight);
+                
+                // Add subtle border around the container
                 doc.setDrawColor(220, 220, 220);
                 doc.setLineWidth(0.2);
                 doc.rect(x, y, width, height);

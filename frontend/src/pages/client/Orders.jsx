@@ -31,12 +31,6 @@ const Orders = () => {
     }
   }, [user, fetchMyOrders]);
 
-  // Handle order view (open modal)
-  const handleOrderView = (order) => {
-    actions.setSelectedOrder(order);
-    actions.setShowDetailsModal(true);
-  };
-
   // Handle order edit
   const handleOrderEdit = (order, action) => {
     if (action === 'download') {
@@ -134,14 +128,12 @@ const Orders = () => {
         />
 
       {/* Order List */}
-      <div className="">
-        <ClientOrderListView
-          orders={filteredOrders}
-          onEdit={handleOrderEdit}
-          onDelete={handleOrderDelete}
-          loading={loading}
-        />
-      </div>
+      <ClientOrderListView
+        orders={filteredOrders}
+        onEdit={handleOrderEdit}
+        onDelete={handleOrderDelete}
+        loading={loading}
+      />
 
       {/* Order Details Modal */}
       <OrderDetailsModal

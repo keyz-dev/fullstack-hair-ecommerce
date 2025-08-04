@@ -46,9 +46,7 @@ const OrderConfirmation = () => {
     setError(null);
     
     try {
-      console.log('Fetching order data for orderId:', orderId);
       const response = await orderApi.getOrderById(orderId);
-      console.log('API response:', response);
       
       // The backend returns { success: true, order }
       const order = response.order || response.data;
@@ -56,9 +54,6 @@ const OrderConfirmation = () => {
       if (!order) {
         throw new Error('Order data not found in response');
       }
-      
-      console.log('Order data from API:', order);
-      console.log('Order items structure:', order.orderItems);
       
       // Transform order items to match the expected cart format
       const transformedCartItems = (order.orderItems || []).map(item => {
@@ -97,7 +92,6 @@ const OrderConfirmation = () => {
         isNewOrder: false
       };
       
-      console.log('Transformed order data:', transformedData);
       setOrderData(transformedData);
     } catch (error) {
       console.error('Error fetching order data:', error);
@@ -112,18 +106,13 @@ const OrderConfirmation = () => {
     const initialData = getOrderData();
     
     if (initialData) {
-      console.log('Order data received from navigation state:', initialData);
       setOrderData(initialData);
     } else {
       // Try to get orderId from URL params
       const orderId = searchParams.get('orderId');
       if (orderId) {
-        console.log('No state data, fetching order by ID:', orderId);
         fetchOrderData(orderId);
       } else {
-        console.log('No order information available');
-        console.log('Location state:', location.state);
-        console.log('Search params:', searchParams.toString());
         setError('No order information available');
       }
     }

@@ -61,7 +61,7 @@ const Table = ({ columns, data, emptyStateMessage, onRowClick, clickableRows = f
   }
 
   return (
-    <div className="overflow-hidden">
+    <div className="">
       <table className="w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>

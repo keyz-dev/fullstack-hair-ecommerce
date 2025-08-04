@@ -2,7 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Table, StatusPill, DropdownMenu } from "../ui";
 import { Edit, Trash2, Eye, Download, Truck, FileText } from "lucide-react";
-import { OrderStatusBadge, PaymentStatusBadge } from "./";
 import { downloadBraidSterInvoice } from "../../utils/pdfGenerator";
 
 const ClientOrderListView = ({ onEdit, onDelete, loading, orders }) => {
