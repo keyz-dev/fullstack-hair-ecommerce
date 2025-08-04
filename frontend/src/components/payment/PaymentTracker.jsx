@@ -12,6 +12,7 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
 
   // Start tracking payment when component mounts
   useEffect(() => {
+    // Only start tracking if we have all required data and it's a pending payment
     if (paymentReference && orderId && !isTrackingPayment(paymentReference)) {
       const sessionId = user ? null : getSessionId(); // Use session ID for non-authenticated users
       trackPayment(paymentReference, orderId, user?._id, sessionId);
@@ -54,15 +55,17 @@ const PaymentTracker = ({ paymentReference, orderId, amount, phoneNumber }) => {
     }
   };
 
+  // Don't render if no payment reference (payment already completed or not applicable)
   if (!paymentReference) {
-    return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div className="flex items-center">
-          <AlertCircle className="w-5 h-5 text-yellow-600 mr-2" />
-          <span className="text-yellow-800">No payment reference available</span>
-        </div>
-      </div>
-    );
+    return null;
+  }
+
+  // Don't render if payment is already completed (successful, failed, or cancelled)
+  if (status?.status === 'SUCCESSFUL' || 
+      status?.status === 'PAID' || 
+      status?.status === 'FAILED' || 
+      status?.status === 'CANCELLED') {
+    return null;
   }
 
   const getStatusIcon = () => {

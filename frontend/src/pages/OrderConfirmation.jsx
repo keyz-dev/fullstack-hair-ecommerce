@@ -1,17 +1,22 @@
-import React from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Package, Mail, Phone, ArrowLeft, Download } from 'lucide-react';
 import { Button } from '../components/ui';
 import { PaymentTracker } from '../components/payment';
 import { formatPrice } from '../utils/priceUtils';
 import { useAuth } from '../hooks';
 import { downloadBraidSterInvoice } from '../utils/pdfGenerator';
+import { orderApi } from '../api/order';
 
 const OrderConfirmation = () => {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const [orderData, setOrderData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   
-  // Get order data from location state or sessionStorage
+  // Get order data from location state, sessionStorage, or fetch by orderId
   const getOrderData = () => {
     if (location.state) {
       return location.state;
@@ -30,8 +35,102 @@ const OrderConfirmation = () => {
       }
     }
     
-    return {};
+    return null;
   };
+
+  // Fetch order data by orderId if not available in state
+  const fetchOrderData = async (orderId) => {
+    if (!orderId) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      console.log('Fetching order data for orderId:', orderId);
+      const response = await orderApi.getOrderById(orderId);
+      console.log('API response:', response);
+      
+      // The backend returns { success: true, order }
+      const order = response.order || response.data;
+      
+      if (!order) {
+        throw new Error('Order data not found in response');
+      }
+      
+      console.log('Order data from API:', order);
+      console.log('Order items structure:', order.orderItems);
+      
+      // Transform order items to match the expected cart format
+      const transformedCartItems = (order.orderItems || []).map(item => {
+        // Handle both old format (direct product data) and new format (nested product)
+        const product = item.product && typeof item.product === 'object' ? item.product : item;
+        return {
+          _id: item._id,
+          name: product.name,
+          price: item.unitPrice || product.price,
+          quantity: item.quantity,
+          images: product.images || [],
+          currency: product.currency || 'XAF',
+          variant: item.variant
+        };
+      });
+
+      // Transform the order data to match the expected format
+      const transformedData = {
+        orderNumber: order.orderNumber,
+        customerInfo: order.customerInfo || order.guestInfo,
+        shippingAddress: order.shippingAddress,
+        orderSummary: {
+          subtotal: order.subtotal || 0,
+          shipping: order.shipping || 0,
+          tax: order.tax || 0,
+          total: order.totalAmount || 0,
+          processingFee: order.processingFee || 0
+        },
+        selectedPaymentMethod: order.paymentMethod,
+        paymentInfo: order.paymentInfo || {},
+        cartItems: transformedCartItems,
+        paymentReference: order.paymentReference,
+        orderId: order._id,
+        paymentStatus: order.paymentStatus,
+        status: order.status,
+        isNewOrder: false
+      };
+      
+      console.log('Transformed order data:', transformedData);
+      setOrderData(transformedData);
+    } catch (error) {
+      console.error('Error fetching order data:', error);
+      setError(error.message || 'Failed to load order information');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initialize order data
+  useEffect(() => {
+    const initialData = getOrderData();
+    
+    if (initialData) {
+      console.log('Order data received from navigation state:', initialData);
+      setOrderData(initialData);
+    } else {
+      // Try to get orderId from URL params
+      const orderId = searchParams.get('orderId');
+      if (orderId) {
+        console.log('No state data, fetching order by ID:', orderId);
+        fetchOrderData(orderId);
+      } else {
+        console.log('No order information available');
+        console.log('Location state:', location.state);
+        console.log('Search params:', searchParams.toString());
+        setError('No order information available');
+      }
+    }
+  }, [location.state, searchParams]);
+
+  // Check if this is a newly placed order (has thank you message) or existing order
+  const isNewOrder = orderData?.isNewOrder || false;
   
   const { 
     orderNumber, 
@@ -43,10 +142,12 @@ const OrderConfirmation = () => {
     cartItems = [],
     paymentReference,
     orderId
-  } = getOrderData();
+  } = orderData || {};
 
   const handleDownloadPDF = () => {
-    const orderData = {
+    if (!orderData) return;
+    
+    const pdfData = {
       orderNumber,
       customerInfo,
       shippingAddress,
@@ -55,26 +156,63 @@ const OrderConfirmation = () => {
       paymentInfo,
       cartItems
     };
-    downloadBraidSterInvoice(orderData);
+    downloadBraidSterInvoice(pdfData);
   };
 
   // Check if this is a mobile money payment that needs tracking
+  // Show payment tracker for new orders OR existing orders with pending payments
   const isMobileMoneyPayment = selectedPaymentMethod?.type === 'MOBILE_MONEY' || 
                               selectedPaymentMethod?.code === 'MOBILE_MONEY' ||
                               selectedPaymentMethod?.code?.toLowerCase().includes('mobile');
+  
+  const shouldShowPaymentTracker = isMobileMoneyPayment && 
+                                  paymentReference && 
+                                  orderSummary?.total > 0 &&
+                                  (isNewOrder || orderData?.paymentStatus === 'pending');
 
-  if (!orderNumber) {
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading order information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error || !orderNumber) {
+    console.error('Order data not found:', { 
+      location: location.state, 
+      sessionStorage: sessionStorage.getItem('orderConfirmationData'),
+      error,
+      orderData 
+    });
     return (
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-primary mb-4">Order Not Found</h1>
-          <p className="text-gray-500 mb-8">Unable to retrieve order information.</p>
-          <Link
-            to="/shop"
-            className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-xs font-medium hover:bg-accent/90 transition-colors"
-          >
-            Continue Shopping
-          </Link>
+          <p className="text-gray-500 mb-8">
+            {error || "Unable to retrieve order information."}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/shop"
+              className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-xs font-medium hover:bg-accent/90 transition-colors"
+            >
+              Continue Shopping
+            </Link>
+            {user && (
+              <Link
+                to="/client/orders"
+                className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 px-6 py-3 rounded-xs font-medium hover:bg-gray-50 transition-colors"
+              >
+                View My Orders
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -93,14 +231,22 @@ const OrderConfirmation = () => {
         </Link>
       </div>
 
-      <div className="text-center mb-8">
-        <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-        <h1 className="text-3xl font-bold text-primary mb-2">Thank You!</h1>
-        <p className="text-gray-600">Your order has been placed successfully</p>
-      </div>
+      {isNewOrder ? (
+        <div className="text-center mb-8">
+          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-primary mb-2">Thank You!</h1>
+          <p className="text-gray-600">Your order has been placed successfully</p>
+        </div>
+      ) : (
+        <div className="text-center mb-8">
+          <CheckCircle className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-primary mb-2">Order Summary</h1>
+          <p className="text-gray-600">Order details and information</p>
+        </div>
+      )}
 
-      {/* Payment Tracker for Mobile Money Payments */}
-      {isMobileMoneyPayment && paymentReference && (
+      {/* Payment Tracker for Mobile Money Payments - Only show for new orders */}
+      {shouldShowPaymentTracker && (
         <div className="mb-8">
           <PaymentTracker 
             paymentReference={paymentReference}
@@ -151,6 +297,9 @@ const OrderConfirmation = () => {
                       src={item.images?.[0] || '/placeholder-product.jpg'}
                       alt={item.name}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = '/placeholder-product.jpg';
+                      }}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -158,7 +307,7 @@ const OrderConfirmation = () => {
                     <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                   </div>
                   <p className="font-medium text-sm">
-                    {formatPrice(item.price * item.quantity, item.currency)}
+                    {formatPrice((item.price || 0) * (item.quantity || 1), item.currency)}
                   </p>
                 </div>
               ))}
@@ -227,36 +376,38 @@ const OrderConfirmation = () => {
         )}
       </div>
 
-      {/* Next Steps */}
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-6 mb-8">
-        <h3 className="font-semibold text-blue-800 mb-4">What's Next?</h3>
-        <div className="space-y-3">
-          <div className="flex items-start gap-3">
-            <Mail className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="font-medium text-blue-800">Order Confirmation Email</p>
-              <p className="text-sm text-blue-700">We've sent a confirmation email to {customerInfo?.email}</p>
+      {/* Next Steps - Only show for new orders */}
+      {isNewOrder && (
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-6 mb-8">
+          <h3 className="font-semibold text-blue-800 mb-4">What's Next?</h3>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <Mail className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-blue-800">Order Confirmation Email</p>
+                <p className="text-sm text-blue-700">We've sent a confirmation email to {customerInfo?.email}</p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Package className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="font-medium text-blue-800">Order Processing</p>
-              <p className="text-sm text-blue-700">Your order will be processed within 24-48 hours</p>
+            <div className="flex items-start gap-3">
+              <Package className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-blue-800">Order Processing</p>
+                <p className="text-sm text-blue-700">Your order will be processed within 24-48 hours</p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Phone className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="font-medium text-blue-800">Customer Support</p>
-              <p className="text-sm text-blue-700">Need help? Contact us at support@braidcommerce.com</p>
+            <div className="flex items-start gap-3">
+              <Phone className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-blue-800">Customer Support</p>
+                <p className="text-sm text-blue-700">Need help? Contact us at support@braidcommerce.com</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Guest User Notice */}
-      {!user && (
+      {/* Guest User Notice - Only show for new orders */}
+      {isNewOrder && !user && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-md p-6 mb-8">
           <h3 className="font-semibold text-yellow-800 mb-4">Important for Guest Users</h3>
           <div className="space-y-3">
@@ -289,7 +440,7 @@ const OrderConfirmation = () => {
           to="/shop"
           className="inline-flex items-center justify-center gap-2 bg-accent text-white px-6 py-3 rounded-xs font-medium hover:bg-accent/90 transition-colors"
         >
-          Continue Shopping
+          {isNewOrder ? 'Continue Shopping' : 'Back to Shop'}
         </Link>
         
         <Button
@@ -302,10 +453,10 @@ const OrderConfirmation = () => {
         
         {user ? (
           <Link
-            to="/client/orders"
+            to={isNewOrder ? "/client/orders" : "/client/orders"}
             className="inline-flex items-center justify-center gap-2 border border-gray-300 text-gray-700 px-6 py-3 rounded-xs font-medium hover:bg-gray-50 transition-colors"
           >
-            View My Orders
+            {isNewOrder ? 'View My Orders' : 'Back to Orders'}
           </Link>
         ) : (
           <div className="text-center space-y-2">

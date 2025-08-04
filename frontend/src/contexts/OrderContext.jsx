@@ -4,6 +4,7 @@ import { orderApi } from '../api/order';
 import { usePaymentTracker } from '../hooks';
 import { toast } from 'react-toastify';
 import { getSessionId } from '../utils/sessionUtils';
+import { downloadBraidSterInvoice } from '../utils/pdfGenerator';
 
 // Initial state
 const initialState = {
@@ -161,12 +162,18 @@ export const OrderProvider = ({ children }) => {
       });
       
       // Start tracking payments for pending orders
-      fetchedOrders.forEach(order => {
-        if (order.paymentStatus === 'pending' && order.paymentReference && !isTrackingPayment(order.paymentReference)) {
-          const sessionId = user ? null : getSessionId(); // Use session ID for non-authenticated users
-          trackPayment(order.paymentReference, order._id, user?._id, sessionId);
-        }
-      });
+      const pendingOrders = fetchedOrders.filter(order => 
+        order.paymentStatus === 'pending' && order.paymentReference
+      );
+      
+      if (pendingOrders.length > 0) {
+        pendingOrders.forEach(order => {
+          if (!isTrackingPayment(order.paymentReference)) {
+            const sessionId = user ? null : getSessionId(); // Use session ID for non-authenticated users
+            trackPayment(order.paymentReference, order._id, user?._id, sessionId);
+          }
+        });
+      }
       
     } catch (err) {
       console.error('Error fetching orders:', err);
@@ -189,12 +196,18 @@ export const OrderProvider = ({ children }) => {
       });
       
       // Start tracking payments for pending orders
-      fetchedOrders.forEach(order => {
-        if (order.paymentStatus === 'pending' && order.paymentReference && !isTrackingPayment(order.paymentReference)) {
-          const sessionId = user ? null : getSessionId(); // Use session ID for non-authenticated users
-          trackPayment(order.paymentReference, order._id, user?._id, sessionId);
-        }
-      });
+      const pendingOrders = fetchedOrders.filter(order => 
+        order.paymentStatus === 'pending' && order.paymentReference
+      );
+      
+      if (pendingOrders.length > 0) {
+        pendingOrders.forEach(order => {
+          if (!isTrackingPayment(order.paymentReference)) {
+            const sessionId = user ? null : getSessionId(); // Use session ID for non-authenticated users
+            trackPayment(order.paymentReference, order._id, user?._id, sessionId);
+          }
+        });
+      }
       
     } catch (err) {
       console.error('Error fetching orders:', err);
@@ -287,6 +300,12 @@ export const OrderProvider = ({ children }) => {
     // Order actions
     handleOrderAction: async (orderId, action) => {
       try {
+        const order = state.orders.find(o => o._id === orderId);
+        if (!order) {
+          toast.error('Order not found');
+          return;
+        }
+
         switch (action) {
           case 'accept':
             toast.info('Accept order functionality coming soon');
@@ -304,7 +323,31 @@ export const OrderProvider = ({ children }) => {
             toast.info('Cancel order functionality coming soon');
             break;
           case 'download':
-            toast.info('Download invoice functionality coming soon');
+            try {
+                             const orderData = {
+                 orderNumber: order.orderNumber,
+                 customerInfo: order.customerInfo || order.guestInfo,
+                 shippingAddress: order.shippingAddress,
+                 orderSummary: {
+                   subtotal: order.subtotal || 0,
+                   shipping: order.shipping || 0,
+                   tax: order.tax || 0,
+                   total: order.totalAmount || 0,
+                   processingFee: order.processingFee || 0
+                 },
+                 selectedPaymentMethod: order.paymentMethod,
+                 paymentInfo: order.paymentInfo,
+                 cartItems: order.orderItems || [],
+                 paymentReference: order.paymentReference,
+                 orderId: order._id
+               };
+              
+              await downloadBraidSterInvoice(orderData);
+              toast.success('Invoice downloaded successfully');
+            } catch (error) {
+              console.error('Error downloading invoice:', error);
+              toast.error('Failed to download invoice');
+            }
             break;
           case 'track':
             toast.info('Order tracking functionality coming soon');

@@ -16,6 +16,12 @@ const usePaymentTracker = () => {
 
   // Initialize socket connection
   useEffect(() => {
+    // Only initialize socket if we have tracked payments or expect to have them
+    if (trackedPayments.size === 0) {
+      console.log('No payments to track, skipping socket initialization');
+      return;
+    }
+
     // Remove /v2/api from the URL for Socket.IO connection
     const backendUrl = API_BASE_URL.replace('/v2/api', '');    
     socketRef.current = io(backendUrl, {
@@ -205,7 +211,16 @@ const usePaymentTracker = () => {
       pollingRefs.current.forEach((interval) => clearInterval(interval));
       pollingRefs.current.clear();
     };
-  }, []);
+  }, [trackedPayments.size]); // Add trackedPayments.size as dependency
+
+  // Cleanup socket when no payments are being tracked
+  useEffect(() => {
+    if (trackedPayments.size === 0 && socketRef.current && isConnected) {
+      console.log('No payments to track, disconnecting socket');
+      socketRef.current.disconnect();
+      setIsConnected(false);
+    }
+  }, [trackedPayments.size, isConnected]);
 
   // Update payment status helper
   const updatePaymentStatus = useCallback((reference, statusData) => {

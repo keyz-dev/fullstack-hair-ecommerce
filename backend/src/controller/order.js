@@ -3,6 +3,7 @@ const Product = require('../models/product');
 const PaymentMethod = require('../models/paymentMethod');
 const { BadRequestError, NotFoundError, UnauthorizedError } = require('../utils/errors');
 const { normalizePhoneNumber } = require('../utils/phoneValidation');
+const { formatOrderData } = require('../utils/returnFormats/orderData');
 
 // Place a new order
 const newOrder = async (req, res, next) => {
@@ -114,14 +115,35 @@ const newOrder = async (req, res, next) => {
 
 // Get all orders (admin)
 const getAdminOrders = async (req, res, next) => {
-  const orders = await Order.find({}).populate('user').populate('paymentMethod');
-  res.status(200).json({ success: true, orders });
+  const orders = await Order.find({})
+    .populate('user')
+    .populate('paymentMethod')
+    .populate('orderItems.product');
+  
+  // Format all orders with proper product images and details
+  const formattedOrders = [];
+  for (const order of orders) {
+    const formattedOrder = await formatOrderData(order);
+    formattedOrders.push(formattedOrder);
+  }
+  
+  res.status(200).json({ success: true, orders: formattedOrders });
 };
 
 // Get my orders
 const getMyOrders = async (req, res, next) => {
-  const orders = await Order.find({ user: req.authUser._id }).populate('paymentMethod');
-  res.status(200).json({ success: true, orders });
+  const orders = await Order.find({ user: req.authUser._id })
+    .populate('paymentMethod')
+    .populate('orderItems.product');
+  
+  // Format all orders with proper product images and details
+  const formattedOrders = [];
+  for (const order of orders) {
+    const formattedOrder = await formatOrderData(order);
+    formattedOrders.push(formattedOrder);
+  }
+  
+  res.status(200).json({ success: true, orders: formattedOrders });
 };
 
 // Get single order
@@ -138,7 +160,10 @@ const getSingleOrder = async (req, res, next) => {
     return next(new UnauthorizedError('You are not authorized to view this order'));
   }
   
-  res.status(200).json({ success: true, order });
+  // Format order data with proper product images and details
+  const formattedOrder = await formatOrderData(order);
+  
+  res.status(200).json({ success: true, order: formattedOrder });
 };
 
 module.exports = {

@@ -9,6 +9,8 @@ const StatusPill = ({ status }) => {
       case "completed":
       case "delivered":
       case "paid":
+      case "successful":
+      case "success":
       case "confirmed":
       case "accepted":  
         return {
@@ -50,7 +52,31 @@ const StatusPill = ({ status }) => {
     }
   };
 
-  const text = status.charAt(0).toUpperCase() + status.slice(1);
+  // Normalize status text for display
+  const getDisplayText = (status) => {
+    switch (status.toLowerCase()) {
+      case "successful":
+        return "Paid";
+      case "paid":
+        return "Paid";
+      case "failed":
+        return "Failed";
+      case "pending":
+        return "Pending";
+      case "cancelled":
+        return "Cancelled";
+      case "accepted":
+        return "Accepted";
+      case "ready":
+        return "Ready";
+      case "delivered":
+        return "Delivered";
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+  };
+
+  const text = getDisplayText(status);
 
   return (
     <span

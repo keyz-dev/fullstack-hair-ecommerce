@@ -1,9 +1,13 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Table, StatusPill, DropdownMenu } from "../ui";
 import { Edit, Trash2, Eye, Download, Truck, FileText } from "lucide-react";
 import { OrderStatusBadge, PaymentStatusBadge } from "./";
+import { downloadBraidSterInvoice } from "../../utils/pdfGenerator";
 
-const ClientOrderListView = ({ onView, onEdit, onDelete, loading, orders }) => {
+const ClientOrderListView = ({ onEdit, onDelete, loading, orders }) => {
+  const navigate = useNavigate();
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -18,6 +22,96 @@ const ClientOrderListView = ({ onView, onEdit, onDelete, loading, orders }) => {
       currency: 'XAF',
       minimumFractionDigits: 0
     }).format(amount);
+  };
+
+  const handleViewDetails = (order) => {
+    console.log('Order data being passed to order confirmation:', order);
+    console.log('Order items structure:', order.orderItems);
+    
+    // Transform order items to match the expected cart format
+    const transformedCartItems = (order.orderItems || []).map(item => {
+      // Handle both old format (direct product data) and new format (nested product)
+      const product = item.product && typeof item.product === 'object' ? item.product : item;
+      return {
+        _id: item._id,
+        name: product.name,
+        price: item.unitPrice || product.price,
+        quantity: item.quantity,
+        images: product.images || [],
+        currency: product.currency || 'XAF',
+        variant: item.variant
+      };
+    });
+    
+    // Prepare order data for the order confirmation page
+    const orderData = {
+      orderNumber: order.orderNumber,
+      customerInfo: order.customerInfo || order.guestInfo,
+      shippingAddress: order.shippingAddress,
+      orderSummary: {
+        subtotal: order.subtotal || 0,
+        shipping: order.shipping || 0,
+        tax: order.tax || 0,
+        total: order.totalAmount || 0,
+        processingFee: order.processingFee || 0
+      },
+      selectedPaymentMethod: order.paymentMethod,
+      paymentInfo: order.paymentInfo,
+      cartItems: transformedCartItems,
+      paymentReference: order.paymentReference,
+      orderId: order._id,
+      paymentStatus: order.paymentStatus,
+      status: order.status,
+      isNewOrder: false // This indicates it's an existing order, not a newly placed one
+    };
+    
+    console.log('Processed order data:', orderData);
+    
+    // Navigate to order confirmation page with order data using React Router
+    navigate('/order-confirmation', { 
+      state: orderData 
+    });
+  };
+
+  const handleDownloadInvoice = async (order) => {
+    try {
+      // Transform order items to match the expected cart format
+      const transformedCartItems = (order.orderItems || []).map(item => {
+        // Handle both old format (direct product data) and new format (nested product)
+        const product = item.product && typeof item.product === 'object' ? item.product : item;
+        return {
+          _id: item._id,
+          name: product.name,
+          price: item.unitPrice || product.price,
+          quantity: item.quantity,
+          images: product.images || [],
+          currency: product.currency || 'XAF',
+          variant: item.variant
+        };
+      });
+
+      const orderData = {
+        orderNumber: order.orderNumber,
+        customerInfo: order.customerInfo || order.guestInfo,
+        shippingAddress: order.shippingAddress,
+        orderSummary: {
+          subtotal: order.subtotal || 0,
+          shipping: order.shipping || 0,
+          tax: order.tax || 0,
+          total: order.totalAmount || 0,
+          processingFee: order.processingFee || 0
+        },
+        selectedPaymentMethod: order.paymentMethod,
+        paymentInfo: order.paymentInfo,
+        cartItems: transformedCartItems,
+        paymentReference: order.paymentReference,
+        orderId: order._id
+      };
+      
+      await downloadBraidSterInvoice(orderData);
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+    }
   };
 
   const columns = React.useMemo(
@@ -76,52 +170,24 @@ const ClientOrderListView = ({ onView, onEdit, onDelete, loading, orders }) => {
         Cell: ({ row }) => {
           const menuItems = [
             {
-              label: "View Details",
+              label: "View Summary",
               icon: <Eye size={16} />,
-              onClick: () => onView(row),
+              onClick: () => handleViewDetails(row),
             },
             {
-              label: "View Order Summary",
-              icon: <FileText size={16} />,
-              onClick: () => {
-                // Navigate to order confirmation page with order data
-                const orderData = {
-                  orderNumber: row.orderNumber,
-                  customerInfo: row.customerInfo || row.guestInfo,
-                  shippingAddress: row.shippingAddress,
-                  orderSummary: {
-                    subtotal: row.subtotal,
-                    shipping: row.shipping,
-                    tax: row.tax,
-                    total: row.totalAmount,
-                    processingFee: row.processingFee
-                  },
-                  selectedPaymentMethod: row.paymentMethod,
-                  paymentInfo: row.paymentInfo,
-                  cartItems: row.orderItems,
-                  paymentReference: row.paymentReference,
-                  orderId: row._id
-                };
-                
-                // Store order data in sessionStorage for the order confirmation page
-                sessionStorage.setItem('orderConfirmationData', JSON.stringify(orderData));
-                window.location.href = '/order-confirmation';
-              },
-            },
-            {
-              label: "Download Invoice",
+              label: "Get Invoice",
               icon: <Download size={16} />,
-              onClick: () => onEdit(row, 'download'),
+              onClick: () => handleDownloadInvoice(row),
               disabled: row.paymentStatus !== 'paid',
             },
             {
-              label: "Track Order",
+              label: "Track",
               icon: <Truck size={16} />,
               onClick: () => onEdit(row, 'track'),
               disabled: row.status !== 'accepted',
             },
             {
-              label: "Cancel Order",
+              label: "Cancel",
               icon: <Trash2 size={16} />,
               onClick: () => onDelete(row),
               disabled: row.status !== 'pending',
@@ -136,7 +202,7 @@ const ClientOrderListView = ({ onView, onEdit, onDelete, loading, orders }) => {
         },
       },
     ],
-    [onView, onEdit, onDelete]
+    [onEdit, onDelete]
   );
 
   return (
@@ -145,7 +211,7 @@ const ClientOrderListView = ({ onView, onEdit, onDelete, loading, orders }) => {
       data={orders}
       isLoading={loading}
       emptyStateMessage="No orders found. Start shopping to see your orders here."
-      onRowClick={onView}
+      onRowClick={handleViewDetails}
       clickableRows={true}
     />
   );

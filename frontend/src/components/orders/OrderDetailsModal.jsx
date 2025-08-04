@@ -1,7 +1,8 @@
 import React from 'react';
-import { X, MapPin, Phone, Mail, Calendar, Package } from 'lucide-react';
+import { X, MapPin, Phone, Mail, Calendar, Package, Download } from 'lucide-react';
 import { OrderStatusBadge, PaymentStatusBadge } from './';
-import { ModalWrapper } from '../ui';
+import { ModalWrapper, Button } from '../ui';
+import { downloadBraidSterInvoice } from '../../utils/pdfGenerator';
 
 const OrderDetailsModal = ({ isOpen, onClose, order, onAction }) => {
   const formatDate = (dateString) => {
@@ -12,6 +13,32 @@ const OrderDetailsModal = ({ isOpen, onClose, order, onAction }) => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleDownloadInvoice = async () => {
+    try {
+      const orderData = {
+        orderNumber: order.orderNumber,
+        customerInfo: order.customerInfo || order.guestInfo,
+        shippingAddress: order.shippingAddress,
+        orderSummary: {
+          subtotal: order.subtotal || 0,
+          shipping: order.shipping || 0,
+          tax: order.tax || 0,
+          total: order.totalAmount || 0,
+          processingFee: order.processingFee || 0
+        },
+        selectedPaymentMethod: order.paymentMethod,
+        paymentInfo: order.paymentInfo,
+        cartItems: order.orderItems || [],
+        paymentReference: order.paymentReference,
+        orderId: order._id
+      };
+      
+      await downloadBraidSterInvoice(orderData);
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+    }
   };
 
   const formatCurrency = (amount) => {
@@ -181,6 +208,21 @@ const OrderDetailsModal = ({ isOpen, onClose, order, onAction }) => {
               </p>
             </div>
           )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            {order.paymentStatus === 'paid' && (
+              <Button
+                onClick={handleDownloadInvoice}
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download Invoice</span>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </ModalWrapper>

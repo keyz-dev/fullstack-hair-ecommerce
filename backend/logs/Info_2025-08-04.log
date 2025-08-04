@@ -123,3 +123,58 @@
 {"level":"info","message":"🔌 Client connected to the main socket service: q8YKl1OrKAJZ0gthAAA3","timestamp":"2025-08-04T17:05:03.758Z"}
 {"level":"info","message":"🔌 Client disconnected: q8YKl1OrKAJZ0gthAAA3","timestamp":"2025-08-04T17:06:05.575Z"}
 {"level":"info","message":"🔌 Client connected to the main socket service: 04x6H9Q0wg-WvBr2AAA6","timestamp":"2025-08-04T17:06:09.962Z"}
+{"level":"info","message":"🔌 Client disconnected: 04x6H9Q0wg-WvBr2AAA6","timestamp":"2025-08-04T17:14:40.975Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: Eczgm0mWxQ0XPycEAAA9","timestamp":"2025-08-04T17:14:44.732Z"}
+{"level":"info","message":"🔌 Client disconnected: Eczgm0mWxQ0XPycEAAA9","timestamp":"2025-08-04T17:15:13.552Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: QQC8veOlcvIaSXmJAABA","timestamp":"2025-08-04T17:15:15.137Z"}
+{"level":"info","message":"🔌 Client disconnected: QQC8veOlcvIaSXmJAABA","timestamp":"2025-08-04T17:15:23.160Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: Gud8p8V7fr5Bj-DpAABD","timestamp":"2025-08-04T17:15:24.383Z"}
+{"level":"info","message":"🔌 Client disconnected: Gud8p8V7fr5Bj-DpAABD","timestamp":"2025-08-04T17:16:13.103Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: lfYaQCuWFBoyXYYzAABG","timestamp":"2025-08-04T17:16:14.443Z"}
+{"level":"info","message":"🔌 Client disconnected: lfYaQCuWFBoyXYYzAABG","timestamp":"2025-08-04T17:16:44.502Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: UOPbPiMHLvbReJpUAABJ","timestamp":"2025-08-04T17:16:46.392Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: BxfTXQcUkx8EEeKgAABM","timestamp":"2025-08-04T17:21:58.898Z"}
+{"level":"info","message":"🔌 Client disconnected: BxfTXQcUkx8EEeKgAABM","timestamp":"2025-08-04T17:22:01.796Z"}
+{"level":"info","message":"🔌 Client disconnected: UOPbPiMHLvbReJpUAABJ","timestamp":"2025-08-04T17:22:01.809Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: MQLhd6g2XeSsFgryAABP","timestamp":"2025-08-04T17:22:03.367Z"}
+{"level":"info","message":"🔌 Client disconnected: MQLhd6g2XeSsFgryAABP","timestamp":"2025-08-04T17:28:01.307Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: KKbZeVYDegHl6cLXAABS","timestamp":"2025-08-04T17:28:03.297Z"}
+{"level":"info","message":"🔌 Client disconnected: KKbZeVYDegHl6cLXAABS","timestamp":"2025-08-04T17:29:43.656Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: mSoS_H8Ze0bqr_vZAABV","timestamp":"2025-08-04T17:29:47.273Z"}
+{"level":"info","message":"🔌 Client disconnected: mSoS_H8Ze0bqr_vZAABV","timestamp":"2025-08-04T17:29:51.196Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: Hs7r9mAjgR8yR7ZdAABY","timestamp":"2025-08-04T17:29:53.257Z"}
+{"level":"info","message":"🔌 Client disconnected: Hs7r9mAjgR8yR7ZdAABY","timestamp":"2025-08-04T17:31:27.399Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: p-y8IK_I1jVEYBFqAABb","timestamp":"2025-08-04T17:31:31.932Z"}
+{"level":"info","message":"🔌 Client disconnected: p-y8IK_I1jVEYBFqAABb","timestamp":"2025-08-04T17:31:46.047Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: FILNAvkZdU7OE3ONAABe","timestamp":"2025-08-04T17:31:48.485Z"}
+{"level":"info","message":"🔌 Client disconnected: FILNAvkZdU7OE3ONAABe","timestamp":"2025-08-04T17:47:39.290Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: i-RmMBnfBT3ufTtsAABh","timestamp":"2025-08-04T17:47:43.357Z"}
+{"level":"info","message":"🔌 Client disconnected: i-RmMBnfBT3ufTtsAABh","timestamp":"2025-08-04T17:47:55.301Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: 502B0zzWBW_B6vhqAABk","timestamp":"2025-08-04T17:47:58.731Z"}
+{"level":"info","message":"🔌 Client disconnected: 502B0zzWBW_B6vhqAABk","timestamp":"2025-08-04T17:48:06.310Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: 1sAmJd7xpW5EVVb3AABn","timestamp":"2025-08-04T17:51:51.232Z"}
+{"level":"info","message":"🔌 Client disconnected: 1sAmJd7xpW5EVVb3AABn","timestamp":"2025-08-04T17:52:02.631Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: awhH0BqZZbzMXvJYAABq","timestamp":"2025-08-04T17:52:04.157Z"}
+{"level":"info","message":"🔌 Client disconnected: awhH0BqZZbzMXvJYAABq","timestamp":"2025-08-04T17:56:33.274Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: zjIuYZty55jqNgBJAABt","timestamp":"2025-08-04T17:56:37.484Z"}
+{"level":"info","message":"🔌 Client disconnected: zjIuYZty55jqNgBJAABt","timestamp":"2025-08-04T17:57:28.264Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: 4W3-s7ETGOTe-fvKAABw","timestamp":"2025-08-04T17:57:31.773Z"}
+{"level":"info","message":"🔌 Client disconnected: 4W3-s7ETGOTe-fvKAABw","timestamp":"2025-08-04T18:01:58.349Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: efzHgl2uOB08Zl8EAABz","timestamp":"2025-08-04T18:02:02.927Z"}
+{"level":"info","message":"🔌 Client disconnected: efzHgl2uOB08Zl8EAABz","timestamp":"2025-08-04T18:02:25.936Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: eJSgBQ8wTFy1H55eAAB2","timestamp":"2025-08-04T18:02:28.147Z"}
+{"level":"info","message":"🔌 Client disconnected: eJSgBQ8wTFy1H55eAAB2","timestamp":"2025-08-04T18:14:08.821Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: cBSzXhYqgnou9yBUAAB5","timestamp":"2025-08-04T18:14:10.949Z"}
+{"level":"info","message":"🔌 Client disconnected: cBSzXhYqgnou9yBUAAB5","timestamp":"2025-08-04T18:14:22.070Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: IQTbDStxQO9uCzguAAB8","timestamp":"2025-08-04T18:14:23.803Z"}
+{"level":"info","message":"🔌 Client disconnected: IQTbDStxQO9uCzguAAB8","timestamp":"2025-08-04T18:14:44.305Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: DOTfN2yhn770zn6iAAB_","timestamp":"2025-08-04T18:14:50.503Z"}
+{"level":"info","message":"🔌 Client disconnected: DOTfN2yhn770zn6iAAB_","timestamp":"2025-08-04T18:29:45.410Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: Sqhzi8xO60WEim85AACC","timestamp":"2025-08-04T18:35:52.718Z"}
+{"level":"info","message":"🔌 Client disconnected: Sqhzi8xO60WEim85AACC","timestamp":"2025-08-04T18:36:00.854Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: 9dElOpH_bQL82i4cAACF","timestamp":"2025-08-04T18:36:06.880Z"}
+{"level":"info","message":"🔌 Client disconnected: 9dElOpH_bQL82i4cAACF","timestamp":"2025-08-04T18:36:11.015Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-04T18:58:54.327Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-04T18:59:02.811Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-04T18:59:09.791Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-04T19:01:29.317Z"}

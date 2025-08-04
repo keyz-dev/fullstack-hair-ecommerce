@@ -137,7 +137,6 @@ const Orders = () => {
       <div className="">
         <ClientOrderListView
           orders={filteredOrders}
-          onView={handleOrderView}
           onEdit={handleOrderEdit}
           onDelete={handleOrderDelete}
           loading={loading}
