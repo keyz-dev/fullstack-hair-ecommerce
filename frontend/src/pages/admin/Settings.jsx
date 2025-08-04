@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { TabGroup } from '../../components/ui';
 import { PaymentMethodSettings } from '../../components/dashboard/settings/payment';
 import { GeneralSettings } from '../../components/dashboard/settings/general';
 
@@ -31,12 +30,24 @@ const Settings = () => {
         </p>
       </div>
 
-      <TabGroup
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        className="mb-6"
-      />
+      {/* Custom Tab Navigation */}
+      <div className="flex w-fit bg-gray-100 rounded-xs p-1 mb-2">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`
+              flex-1 px-4 py-2 text-sm font-medium rounded-xs transition-colors whitespace-nowrap
+              ${activeTab === tab.key
+                ? 'bg-accent text-white shadow-sm'
+                : 'text-gray-600 hover:text-primary hover:bg-gray-50'
+              }
+            `}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       <div className="rounded-sm p-2">
         {renderTabContent()}
