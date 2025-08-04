@@ -40,12 +40,20 @@ const RelatedProducts = ({ currentProduct, onProductClick }) => {
     }
   };
 
-  const handleAddToCart = (product) => {
-    addToCart(product, 1);
-    toast.success(`${product.name} added to cart!`, {
-      position: "top-right",
-      autoClose: 2000,
-    });
+  const handleAddToCart = async (product) => {
+    try {
+      await addToCart(product, 1);
+      toast.success(`${product.name} added to cart!`, {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add item to cart. Please try again.', {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    }
   };
 
   const handleViewDetails = (product) => {

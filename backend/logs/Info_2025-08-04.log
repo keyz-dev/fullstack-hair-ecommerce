@@ -178,3 +178,42 @@
 {"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-04T18:59:02.811Z"}
 {"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-04T18:59:09.791Z"}
 {"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-04T19:01:29.317Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-04T19:55:18.623Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-04T19:55:28.265Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-04T19:55:43.688Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-04T19:58:10.926Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-04T19:58:50.322Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:31:13.480Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:31:36.927Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:39:43.639Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:40:53.085Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:41:27.988Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:42:29.224Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:42:41.513Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:42:47.651Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:42:58.199Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:43:04.037Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:43:43.163Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:43:47.861Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:44:09.066Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:44:19.095Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:44:50.228Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:45:22.791Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-04T20:45:31.915Z"}
+{"level":"info","message":"🔌 Client connected to the main socket service: t20foVbLp8evCz_9AAAC","timestamp":"2025-08-04T21:25:12.039Z"}
+{"level":"info","message":"👤 Client t20foVbLp8evCz_9AAAC tracking payment: [object Object]","timestamp":"2025-08-04T21:25:12.057Z"}
+{"detail":"You do not have permission to perform this action.","level":"error","message":"Error checking payment status:","timestamp":"2025-08-04T21:25:14.449Z"}
+{"level":"error","message":"Failed to check payment status: Failed to check payment status","timestamp":"2025-08-04T21:25:14.461Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 5ccc3bce-9613-480e-b989-530f4cdcf33b -> PENDING","timestamp":"2025-08-04T21:25:17.511Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 5ccc3bce-9613-480e-b989-530f4cdcf33b -> PENDING","timestamp":"2025-08-04T21:25:27.854Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 5ccc3bce-9613-480e-b989-530f4cdcf33b -> PENDING","timestamp":"2025-08-04T21:25:38.909Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 5ccc3bce-9613-480e-b989-530f4cdcf33b -> SUCCESSFUL","timestamp":"2025-08-04T21:25:43.016Z"}
+{"level":"info","message":"📊 Payment status updated: 5ccc3bce-9613-480e-b989-530f4cdcf33b -> SUCCESSFUL","timestamp":"2025-08-04T21:25:43.018Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 5ccc3bce-9613-480e-b989-530f4cdcf33b -> PENDING","timestamp":"2025-08-04T21:25:50.587Z"}
+{"level":"info","message":"🔌 Client disconnected: t20foVbLp8evCz_9AAAC","timestamp":"2025-08-04T21:25:57.939Z"}
+{"level":"error","message":"You are not authorized to view this order","timestamp":"2025-08-04T21:26:00.950Z"}
+{"level":"error","message":"You are not authorized to view this order","timestamp":"2025-08-04T21:26:01.345Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 5ccc3bce-9613-480e-b989-530f4cdcf33b -> PENDING","timestamp":"2025-08-04T21:26:02.534Z"}
+{"level":"info","message":"📊 Payment status updated in Order: 5ccc3bce-9613-480e-b989-530f4cdcf33b -> SUCCESSFUL","timestamp":"2025-08-04T21:26:13.007Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-04T21:33:29.244Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-04T21:33:52.889Z"}

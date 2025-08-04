@@ -85,7 +85,7 @@ const OrderDetailsModal = ({ isOpen, onClose, order, onAction }) => {
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-3 space-y-6">
           {/* Order Number and Status */}
           <div>
             <h4 className="text-xl font-bold text-gray-900 mb-2">

@@ -114,7 +114,7 @@ const SearchAndFilters = ({
               className="min-w-[180px]"
             />
 
-            <CurrencySelector />
+            <CurrencySelector showLabel={false} />
 
             {/* View Toggle */}
             <div className="flex gap-4 border-gray-300 rounded-xs overflow-hidden">

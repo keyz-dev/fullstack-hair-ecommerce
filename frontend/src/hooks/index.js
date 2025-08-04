@@ -13,6 +13,8 @@ export { usePaymentMethods } from "./usePaymentMethods";
 export { usePublicPaymentMethods } from "./usePublicPaymentMethods";
 export { useCart } from './useCart';
 export { useOrder } from './useOrder';
+export { useProfile } from './useProfile';
+export { useVendorShipping } from './useVendorShipping';
 export { default as useImageManager } from './useImageManager';
 export { default as useCheckout } from './useCheckout';
 export { default as useCoupon } from './useCoupon';

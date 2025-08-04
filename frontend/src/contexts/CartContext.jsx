@@ -30,7 +30,7 @@ const CartProvider = ({ children }) => {
   }, [cartItems]);
 
   // Add item to cart with currency conversion
-  const addToCart = useCallback((product, quantity = 1) => {
+  const addToCart = useCallback(async (product, quantity = 1) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item._id === product._id);
       
@@ -42,19 +42,19 @@ const CartProvider = ({ children }) => {
             : item
         );
       } else {
-        // Add new item with converted price
-        const convertedPrice = convertPrice(product.price, product.currency, userCurrency);
+        // Add new item with original price and currency
+        // Price conversion will be handled by the useEffect below
         return [...prevItems, { 
           ...product, 
           quantity,
           originalPrice: product.price,
           originalCurrency: product.currency,
-          price: convertedPrice,
-          currency: userCurrency
+          price: product.price, // Keep original price initially
+          currency: product.currency // Keep original currency initially
         }];
       }
     });
-  }, [convertPrice, userCurrency]);
+  }, []);
 
   // Remove item from cart
   const removeFromCart = useCallback((productId) => {
@@ -80,21 +80,48 @@ const CartProvider = ({ children }) => {
     setCartItems([]);
   }, []);
 
-  // Update cart prices when currency changes
+  // Update cart prices when currency changes - handle async conversion
   useEffect(() => {
-    setCartItems(prevItems => 
-      prevItems.map(item => ({
-        ...item,
-        price: convertPrice(item.originalPrice || item.price, item.originalCurrency || item.currency, userCurrency),
-        currency: userCurrency
-      }))
-    );
-  }, [userCurrency, convertPrice]);
+    const updatePrices = async () => {
+      const updatedItems = await Promise.all(
+        cartItems.map(async (item) => {
+          try {
+            const convertedPrice = await convertPrice(
+              item.originalPrice || item.price, 
+              item.originalCurrency || item.currency, 
+              userCurrency
+            );
+            return {
+              ...item,
+              price: convertedPrice,
+              currency: userCurrency
+            };
+          } catch (error) {
+            console.error('Error converting price for item:', item._id, error);
+            // Fallback to original price if conversion fails
+            return {
+              ...item,
+              price: item.originalPrice || item.price,
+              currency: item.originalCurrency || item.currency
+            };
+          }
+        })
+      );
+      
+      setCartItems(updatedItems);
+    };
+
+    if (cartItems.length > 0) {
+      updatePrices();
+    }
+  }, [userCurrency, convertPrice, cartItems.length]);
 
   // Calculate cart totals in user's currency
   const cartTotal = useMemo(() => {
     return cartItems.reduce((total, item) => {
-      return total + (item.price * item.quantity);
+      // Ensure price is a number, not a Promise
+      const price = typeof item.price === 'number' ? item.price : 0;
+      return total + (price * item.quantity);
     }, 0);
   }, [cartItems]);
 

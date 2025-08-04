@@ -10,20 +10,26 @@ const { formatImageUrl } = require("../imageUtils.js");
 const formatUserData = (user) => {
   return {
     _id: user._id,
-    name: user.name,
+    firstName: user.name.split(' ')[0],
+    lastName: user.name.split(' ')[1],
+    name: user.name, 
     email: user.email,
     phone: user.phone,
-    address: user.address,
-    role: user.role,
     avatar: formatImageUrl(user.avatar),
+    dateOfBirth: user.dateOfBirth,
+    gender: user.gender,
+    bio: user.bio,
+    preferences: user.preferences,
+    emailVerified: user.emailVerified,
+    lastLogin: user.lastLogin,
+    role: user.role,
     createdAt: user.createdAt,
     bookings: user.bookings,
     orders: user.orders,
     wishlist: user.wishlist,
     isActive: user.isActive,
     isVerified: user.isVerified,
-    emailVerificationCode: user.emailVerificationCode,
-    emailVerificationCodeExpiresAt: user.emailVerificationCodeExpiresAt,
+    authProvider: user.authProvider,
   };
 };
 

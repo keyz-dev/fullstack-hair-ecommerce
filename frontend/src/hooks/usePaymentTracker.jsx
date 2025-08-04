@@ -17,10 +17,7 @@ const usePaymentTracker = () => {
   // Initialize socket connection
   useEffect(() => {
     // Only initialize socket if we have tracked payments or expect to have them
-    if (trackedPayments.size === 0) {
-      console.log('No payments to track, skipping socket initialization');
-      return;
-    }
+    if (trackedPayments.size === 0) return;
 
     // Remove /v2/api from the URL for Socket.IO connection
     const backendUrl = API_BASE_URL.replace('/v2/api', '');    
@@ -269,33 +266,47 @@ const usePaymentTracker = () => {
         setCompletedPayments(prev => new Set([...prev, paymentReference]));
         stopPolling(paymentReference);
         console.log(`🛑 Stopped polling for ${paymentReference} - payment ${status}`);
-        
-        // Show toast for completed payment
+
         if (status === 'PAID') {
-          const toastId = toast.success(
-            <div>
-              <div>Payment completed successfully!</div>
-              <button 
-                onClick={() => {
-                  window.location.href = `/order-confirmation?orderId=${orderId}`;
-                  toast.dismiss(toastId);
-                }}
-                className="text-sm underline mt-1 hover:no-underline"
-              >
-                View Order Summary
-              </button>
-            </div>,
-            {
-              autoClose: 8000,
-              closeOnClick: false,
-              pauseOnHover: true
-            }
-          );
+          toast.success('Payment completed successfully!', {
+            autoClose: 5000,
+            closeOnClick: false,
+            pauseOnHover: true
+          });
         } else if (status === 'FAILED' || status === 'CANCELLED') {
           toast.error('Payment failed or was cancelled.', {
-            autoClose: 5000
+            autoClose: 5000,
+            closeOnClick: false,
+            pauseOnHover: true
           });
         }
+        
+        // Show toast for completed payment
+        // if (status === 'PAID') {
+        //   const toastId = toast.success(
+        //     <div>
+        //       <div>Payment completed successfully!</div>
+        //       <button 
+        //         onClick={() => {
+        //           window.location.href = `/order-confirmation?orderId=${orderId}`;
+        //           toast.dismiss(toastId);
+        //         }}
+        //         className="text-sm underline mt-1 hover:no-underline"
+        //       >
+        //         View Order Summary
+        //       </button>
+        //     </div>,
+        //     {
+        //       autoClose: 8000,
+        //       closeOnClick: false,
+        //       pauseOnHover: true
+        //     }
+        //   );
+        // } else if (status === 'FAILED' || status === 'CANCELLED') {
+        //   toast.error('Payment failed or was cancelled.', {
+        //     autoClose: 5000
+        //   });
+        // }
       }
       
     } catch (error) {

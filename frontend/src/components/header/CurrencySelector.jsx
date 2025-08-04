@@ -51,14 +51,18 @@ const CurrencySelector = ({
   if (isLoading) {
     return (
       <div className={`border border-line_clr flex items-center gap-1 px-3 py-2 text-sm text-gray-500 rounded-xs ${className}`}>
-        <Globe size={16} />
         <span>Loading...</span>
       </div>
     );
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative flex items-center gap-1 ${className}`}>
+    {showLabel && (
+      <div className="flex items-center gap-1">
+        <span className="text-base text-secondary">Currency:</span>
+      </div>
+    )}
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
@@ -66,7 +70,6 @@ const CurrencySelector = ({
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
         }`}
       >
-        <Globe size={16} />
         <span className="font-medium">{currentCurrencyInfo?.symbol || currentCurrency}</span>
         <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>

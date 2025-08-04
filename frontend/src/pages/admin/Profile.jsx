@@ -1,21 +1,8 @@
 import React from 'react';
-import { Upcoming } from '../../components/ui';
+import { ProfilePage } from '../../components/dashboard/profile';
 
-const Profile = () => {
-  return (
-    <Upcoming 
-      title="Profile Management Coming Soon"
-      description="Our profile management system is being developed to provide comprehensive tools for managing user profiles and preferences."
-      expectedDate="August 2025"
-      features={[
-        "Profile customization",
-        "Security settings",
-        "Preferences management",
-        "Account verification"
-      ]}
-      colorTheme="indigo"
-    />
-  );
+const AdminProfile = () => {
+  return <ProfilePage />;
 };
 
-export default Profile;
+export default AdminProfile;

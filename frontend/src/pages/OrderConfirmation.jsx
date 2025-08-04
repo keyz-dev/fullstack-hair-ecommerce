@@ -173,12 +173,6 @@ const OrderConfirmation = () => {
 
   // Show error state
   if (error || !orderNumber) {
-    console.error('Order data not found:', { 
-      location: location.state, 
-      sessionStorage: sessionStorage.getItem('orderConfirmationData'),
-      error,
-      orderData 
-    });
     return (
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">

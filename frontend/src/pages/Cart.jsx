@@ -1,7 +1,6 @@
 import React from 'react';
 import { useCart } from '../hooks/useCart';
 import useCoupon from '../hooks/useCoupon';
-import { useCurrency } from '../hooks/useCurrency';
 import { EmptyCart, CartItemsList, OrderSummary } from '../components/cart';
 
 const Cart = () => {
@@ -11,11 +10,8 @@ const Cart = () => {
     cartItemCount,
     removeFromCart, 
     updateQuantity, 
-    clearCart,
-    formatCartTotal
+    clearCart
   } = useCart();
-  
-  const { formatPrice } = useCurrency();
   
   const {
     couponCode,

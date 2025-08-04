@@ -8,7 +8,7 @@ exports.startPolling = (paymentReference) => {
   const startTime = Date.now();
 
   // start polling after 2 minutes
-  const pollDelay = 5000;
+  const pollDelay = 120000;
 
   const poll = async () => {
 

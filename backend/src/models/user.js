@@ -28,8 +28,41 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
-  address: {
+  address:{
     type: String,
+    default: null,
+  },
+  dateOfBirth: {
+    type: Date,
+    default: null,
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other', 'prefer-not-to-say'],
+    default: null,
+  },
+  bio: {
+    type: String,
+    maxlength: 500,
+    default: null,
+  },
+  preferences: {
+    notifications: {
+      email: { type: Boolean, default: true },
+      sms: { type: Boolean, default: false },
+      push: { type: Boolean, default: true }
+    },
+    privacy: {
+      profileVisibility: { type: String, enum: ['public', 'private', 'friends'], default: 'public' },
+      showEmail: { type: Boolean, default: false },
+      showPhone: { type: Boolean, default: false }
+    },
+    theme: { type: String, enum: ['light', 'dark', 'auto'], default: 'auto' },
+    language: { type: String, default: 'en' },
+    currency: { type: String, default: 'XAF' }
+  },
+  lastLogin: {
+    type: Date,
     default: null,
   },
   role: {
@@ -71,7 +104,6 @@ const userSchema = new mongoose.Schema({
     default: null,
     select: false
   },
-
   createdAt: {
     type: Date,
     default: Date.now,

@@ -50,7 +50,44 @@ export const shippingZones = {
   }
 };
 
-export const calculateShipping = (city, subtotal) => {
+// Vendor shipping profiles - each vendor can have their own shipping rates
+export const vendorShippingProfiles = {
+  'default': {
+    name: 'Standard Shipping',
+    zones: shippingZones,
+    currency: 'XAF',
+    freeShippingThreshold: 50000,
+    processingTime: '1-2 business days'
+  },
+  'premium': {
+    name: 'Premium Vendor',
+    zones: {
+      ...shippingZones,
+      'douala': { ...shippingZones.douala, baseRate: 800, freeShippingThreshold: 40000 },
+      'yaounde': { ...shippingZones.yaounde, baseRate: 1200, freeShippingThreshold: 40000 },
+      'other': { ...shippingZones.other, baseRate: 2800, freeShippingThreshold: 120000 }
+    },
+    currency: 'XAF',
+    freeShippingThreshold: 40000,
+    processingTime: 'Same day processing'
+  },
+  'budget': {
+    name: 'Budget Vendor',
+    zones: {
+      ...shippingZones,
+      'douala': { ...shippingZones.douala, baseRate: 1200, freeShippingThreshold: 60000 },
+      'yaounde': { ...shippingZones.yaounde, baseRate: 1800, freeShippingThreshold: 60000 },
+      'other': { ...shippingZones.other, baseRate: 4200, freeShippingThreshold: 180000 }
+    },
+    currency: 'XAF',
+    freeShippingThreshold: 60000,
+    processingTime: '2-3 business days'
+  }
+};
+
+// Calculate shipping for a single vendor
+export const calculateVendorShipping = (vendorId, city, subtotal, vendorProfile = 'default') => {
+  const profile = vendorShippingProfiles[vendorProfile] || vendorShippingProfiles.default;
   const normalizedCity = city?.toLowerCase().trim();
   let zone = 'other';
 
@@ -71,7 +108,7 @@ export const calculateShipping = (city, subtotal) => {
     zone = 'maroua';
   }
 
-  const zoneData = shippingZones[zone];
+  const zoneData = profile.zones[zone];
   
   // Check if order qualifies for free shipping
   if (subtotal >= zoneData.freeShippingThreshold) {
@@ -79,7 +116,11 @@ export const calculateShipping = (city, subtotal) => {
       cost: 0,
       zone: zoneData.name,
       deliveryTime: zoneData.deliveryTime,
-      isFree: true
+      isFree: true,
+      vendorId,
+      vendorProfile: profile.name,
+      processingTime: profile.processingTime,
+      currency: profile.currency
     };
   }
 
@@ -87,8 +128,70 @@ export const calculateShipping = (city, subtotal) => {
     cost: zoneData.baseRate,
     zone: zoneData.name,
     deliveryTime: zoneData.deliveryTime,
-    isFree: false
+    isFree: false,
+    vendorId,
+    vendorProfile: profile.name,
+    processingTime: profile.processingTime,
+    currency: profile.currency
   };
+};
+
+// Calculate shipping for multiple vendors (marketplace scenario)
+export const calculateMarketplaceShipping = (cartItems, shippingAddress) => {
+  // Group items by vendor
+  const vendorGroups = {};
+  
+  cartItems.forEach(item => {
+    const vendorId = item.vendorId || 'default';
+    if (!vendorGroups[vendorId]) {
+      vendorGroups[vendorId] = {
+        items: [],
+        subtotal: 0,
+        vendorProfile: item.vendorProfile || 'default'
+      };
+    }
+    vendorGroups[vendorId].items.push(item);
+    vendorGroups[vendorId].subtotal += (item.price * item.quantity);
+  });
+
+  // Calculate shipping for each vendor
+  const vendorShipping = {};
+  let totalShippingCost = 0;
+  let estimatedDeliveryTime = '';
+
+  Object.entries(vendorGroups).forEach(([vendorId, group]) => {
+    const shipping = calculateVendorShipping(
+      vendorId, 
+      shippingAddress?.city, 
+      group.subtotal, 
+      group.vendorProfile
+    );
+    
+    vendorShipping[vendorId] = {
+      ...shipping,
+      items: group.items,
+      subtotal: group.subtotal
+    };
+    
+    totalShippingCost += shipping.cost;
+    
+    // Use the longest delivery time as estimate
+    if (!estimatedDeliveryTime || shipping.deliveryTime > estimatedDeliveryTime) {
+      estimatedDeliveryTime = shipping.deliveryTime;
+    }
+  });
+
+  return {
+    vendorShipping,
+    totalShippingCost,
+    estimatedDeliveryTime,
+    vendorCount: Object.keys(vendorGroups).length
+  };
+};
+
+// Legacy function for backward compatibility
+export const calculateShipping = (city, subtotal) => {
+  return calculateVendorShipping('default', city, subtotal, 'default');
 };
 
 export const getShippingZones = () => {
@@ -99,4 +202,26 @@ export const getShippingZones = () => {
     freeShippingThreshold: zone.freeShippingThreshold,
     deliveryTime: zone.deliveryTime
   }));
+};
+
+// Get available vendor shipping profiles
+export const getVendorShippingProfiles = () => {
+  return Object.entries(vendorShippingProfiles).map(([key, profile]) => ({
+    id: key,
+    name: profile.name,
+    currency: profile.currency,
+    freeShippingThreshold: profile.freeShippingThreshold,
+    processingTime: profile.processingTime
+  }));
+};
+
+// Calculate shipping cost in different currencies
+export const convertShippingCost = async (cost, fromCurrency, toCurrency, convertPrice) => {
+  try {
+    if (cost === 0) return 0;
+    return await convertPrice(cost, fromCurrency, toCurrency);
+  } catch (error) {
+    console.error('Error converting shipping cost:', error);
+    return cost; // Fallback to original cost
+  }
 }; 
