@@ -43,3 +43,4 @@ export { default as ImageUpload } from './ImageUpload';
 export { default as VideoUpload } from './VideoUpload';
 export { default as AdvancedFilters } from './AdvancedFilters';
 export { default as StatRenderer } from './StatRenderer';
+export { default as AnimatedStatCard } from './AnimatedStatCard';
