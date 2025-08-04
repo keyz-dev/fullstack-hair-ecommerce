@@ -2,7 +2,6 @@ const Service = require('../models/service');
 const Category = require('../models/category');
 const User = require('../models/user');
 const { BadRequestError, NotFoundError } = require('../utils/errors');
-const { convertCurrency } = require('../utils/currencyUtils');
 const { formatImageUrl } = require('../utils/imageUtils');
 const { cleanUpFileImages, cleanUpInstanceImages } = require('../utils/imageCleanup');
 

@@ -38,14 +38,14 @@ const Button = ({
     >
       {leadingIcon && (
         <span className="inlinebox">
-          <i className={leadingIcon}></i>
+          {leadingIcon}
         </span>
       )}
       {children}
       {text}
       {trailingIcon && (
         <span className="inlinebox">
-          <i className={trailingIcon}></i>
+          {trailingIcon}
         </span>
       )}
       {isLoading && <Loader />}

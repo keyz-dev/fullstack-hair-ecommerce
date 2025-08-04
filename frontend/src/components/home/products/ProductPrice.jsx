@@ -6,9 +6,18 @@ const ProductPrice = ({ price, originalPrice, currency, isOnSale }) => {
         ? priceValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
         : priceValue;
       
-      return currency.position === 'after' 
-        ? `${formattedPrice} ${currency.symbol}`
-        : `${currency.symbol} ${formattedPrice}`;
+      // Handle both currency objects and currency codes
+      if (typeof currency === 'object' && currency.position && currency.symbol) {
+        return currency.position === 'after' 
+          ? `${formattedPrice} ${currency.symbol}`
+          : `${currency.symbol} ${formattedPrice}`;
+      } else if (typeof currency === 'string') {
+        // Handle currency code string
+        return `${formattedPrice} ${currency}`;
+      } else {
+        // Fallback
+        return `${formattedPrice}`;
+      }
     };
   
     return (

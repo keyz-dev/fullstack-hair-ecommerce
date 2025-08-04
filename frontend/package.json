@@ -10,13 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@formatjs/intl-locale": "^4.2.11",
     "@headlessui/react": "^2.2.6",
     "@react-google-maps/api": "^2.20.7",
     "@react-oauth/google": "^0.12.2",
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.10.0",
     "classnames": "^2.5.1",
+    "currency.js": "^2.0.4",
     "date-fns": "^4.1.0",
+    "exchange-rates-api": "^1.1.0",
     "framer-motion": "^12.23.6",
     "html2canvas": "^1.4.1",
     "i18next": "^25.3.2",

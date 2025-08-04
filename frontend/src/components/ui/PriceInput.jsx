@@ -1,6 +1,7 @@
-import React from 'react';
-import CurrencySelector from './CurrencySelector';
+import React, { useState, useEffect } from 'react';
+import CurrencySelector from '../header/CurrencySelector';
 import { Input } from '.';
+import { useCurrency } from '../../hooks/useCurrency';
 
 const PriceInput = ({
   price,
@@ -13,8 +14,47 @@ const PriceInput = ({
   label = 'Price',
   error = null,
   required = false,
-  placeholder = 'Enter price'
+  placeholder = 'Enter price',
+  showCurrencySelector = true,
+  allowCurrencyChange = true
 }) => {
+  const { getCurrencyInfo, formatPrice } = useCurrency();
+  const [displayPrice, setDisplayPrice] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Format price for display when currency changes
+  useEffect(() => {
+    if (price && currency) {
+      setIsLoading(true);
+      try {
+        const formatted = formatPrice(price, currency);
+        setDisplayPrice(formatted);
+      } catch (error) {
+        console.error('Error formatting price:', error);
+        setDisplayPrice(`${price} ${currency}`);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      setDisplayPrice('');
+    }
+  }, [price, currency, formatPrice]);
+
+  const handlePriceChange = (e) => {
+    const value = e.target.value;
+    // Remove currency symbols and formatting for input
+    const numericValue = value.replace(/[^\d.]/g, '');
+    onPriceChange(numericValue);
+  };
+
+  const handleCurrencyChange = async (newCurrency) => {
+    if (onCurrencyChange) {
+      onCurrencyChange(newCurrency);
+    }
+  };
+
+  const currentCurrencyInfo = getCurrencyInfo(currency);
+
   return (
     <div className={className}>
       {showLabel && (
@@ -25,26 +65,28 @@ const PriceInput = ({
       
       <div className="flex">
         {/* Currency Selector */}
-        <div className="flex-shrink-0">
-          <CurrencySelector
-            value={currency}
-            onChange={onCurrencyChange}
-            showLabel={false}
-            disabled={disabled}
-            className="w-25"
-          />
-        </div>
+        {showCurrencySelector && (
+          <div className="flex-shrink-0">
+            <CurrencySelector
+              value={currency}
+              onChange={handleCurrencyChange}
+              showLabel={false}
+              disabled={disabled || !allowCurrencyChange}
+              className="w-32"
+            />
+          </div>
+        )}
         
         {/* Price Input */}
         <div className="flex-1 ml-0">
           <Input
             name="price"
             type="number"
-            value={price}
-            onChangeHandler={onPriceChange}
+            value={price || ''}
+            onChangeHandler={handlePriceChange}
             error={error}
             disabled={disabled}
-            required
+            required={required}
             additionalClasses="border-line_clr"
             placeholder={placeholder}
             step="0.01"
@@ -52,6 +94,19 @@ const PriceInput = ({
           />
         </div>
       </div>
+
+      {/* Display formatted price */}
+      {displayPrice && !isLoading && (
+        <div className="mt-1 text-xs text-gray-500">
+          Display: {displayPrice}
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="mt-1 text-xs text-gray-400">
+          Formatting price...
+        </div>
+      )}
 
       {error && (
         <p className="mt-1 text-sm text-red-600">{error}</p>

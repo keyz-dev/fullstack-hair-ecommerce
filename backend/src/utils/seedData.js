@@ -1,46 +1,6 @@
-const Currency = require('../models/currency');
 const PaymentMethod = require('../models/paymentMethod');
 const Settings = require('../models/settings');
 const logger = require('./logger');
-
-const defaultCurrencies = [
-  {
-    code: 'XAF',
-    name: 'Central African CFA Franc',
-    symbol: 'FCFA',
-    exchangeRate: 1.0,
-    isBase: true,
-    isActive: true,
-    position: 'before',
-  },
-  {
-    code: 'USD',
-    name: 'US Dollar',
-    symbol: '$',
-    exchangeRate: 0.0016, // Approximate rate to XAF
-    isBase: false,
-    isActive: true,
-    position: 'before',
-  },
-  {
-    code: 'EUR',
-    name: 'Euro',
-    symbol: '€',
-    exchangeRate: 0.0015, // Approximate rate to XAF
-    isBase: false,
-    isActive: true,
-    position: 'before',
-  },
-  {
-    code: 'GBP',
-    name: 'British Pound',
-    symbol: '£',
-    exchangeRate: 0.0013, // Approximate rate to XAF
-    isBase: false,
-    isActive: true,
-    position: 'before',
-  },
-];
 
 const defaultPaymentMethods = [
   {
@@ -103,121 +63,128 @@ const defaultPaymentMethods = [
 
 const defaultSettings = [
   {
+    key: 'site_name',
+    value: 'BraidSter',
+    description: 'Website name',
+    category: 'general',
+  },
+  {
+    key: 'site_description',
+    value: 'Your premier destination for quality hair products and beauty services',
+    description: 'Website description',
+    category: 'general',
+  },
+  {
+    key: 'contact_email',
+    value: 'info@braidster.com',
+    description: 'Contact email address',
+    category: 'contact',
+  },
+  {
+    key: 'contact_phone',
+    value: '+237 6XX XXX XXX',
+    description: 'Contact phone number',
+    category: 'contact',
+  },
+  {
     key: 'default_currency',
     value: 'XAF',
     description: 'Default currency for the application',
     category: 'currency',
-    isPublic: true,
   },
   {
-    key: 'default_language',
-    value: 'en',
-    description: 'Default language for the application',
-    category: 'general',
-    isPublic: true,
+    key: 'currency_symbol_position',
+    value: 'before',
+    description: 'Position of currency symbol relative to amount',
+    category: 'currency',
   },
   {
-    key: 'order_auto_approval',
-    value: false,
-    description: 'Whether orders are automatically approved',
-    category: 'general',
-    isPublic: false,
+    key: 'currency_decimal_places',
+    value: '2',
+    description: 'Number of decimal places for currency display',
+    category: 'currency',
   },
   {
-    key: 'email_notifications',
-    value: true,
-    description: 'Send email notifications for new orders',
-    category: 'notification',
-    isPublic: false,
+    key: 'currency_thousand_separator',
+    value: ',',
+    description: 'Thousand separator for currency display',
+    category: 'currency',
   },
   {
-    key: 'stock_management',
-    value: true,
-    description: 'Enable automatic stock management',
-    category: 'general',
-    isPublic: false,
+    key: 'currency_decimal_separator',
+    value: '.',
+    description: 'Decimal separator for currency display',
+    category: 'currency',
   },
   {
     key: 'currency_update_frequency',
     value: 'daily',
     description: 'How often to update exchange rates',
     category: 'currency',
-    isPublic: false,
   },
   {
-    key: 'payment_gateway_enabled',
-    value: true,
-    description: 'Whether payment gateway is enabled',
+    key: 'payment_gateway',
+    value: 'stripe',
+    description: 'Default payment gateway',
     category: 'payment',
-    isPublic: false,
+  },
+  {
+    key: 'shipping_fee',
+    value: '1000',
+    description: 'Default shipping fee in XAF',
+    category: 'shipping',
+  },
+  {
+    key: 'free_shipping_threshold',
+    value: '50000',
+    description: 'Minimum order amount for free shipping in XAF',
+    category: 'shipping',
   },
 ];
 
-const seedCurrencies = async () => {
-  try {
-        logger.info('Seeding currencies...');
-    for (const currency of defaultCurrencies) {
-      const exists = await Currency.findOne({ code: currency.code });
-      if (!exists) {
-        await Currency.create(currency);
-                logger.info(`Created currency: ${currency.code}`);
-      } else {
-                logger.info(`Currency ${currency.code} already exists`);
-      }
-    }
-        logger.info('Currency seeding completed');
-  } catch (error) {
-        logger.error('Error seeding currencies:', error);
-  }
-};
-
 const seedPaymentMethods = async () => {
   try {
-        logger.info('Seeding payment methods...');
-    for (const method of defaultPaymentMethods) {
-      const exists = await PaymentMethod.findOne({ code: method.code });
+    for (const paymentMethod of defaultPaymentMethods) {
+      const exists = await PaymentMethod.findOne({ code: paymentMethod.code });
       if (!exists) {
-        await PaymentMethod.create(method);
-                logger.info(`Created payment method: ${method.name}`);
-      } else {
-                logger.info(`Payment method ${method.name} already exists`);
+        await PaymentMethod.create(paymentMethod);
+        logger.info(`Created payment method: ${paymentMethod.name}`);
       }
     }
-        logger.info('Payment method seeding completed');
   } catch (error) {
-        logger.error('Error seeding payment methods:', error);
+    logger.error('Error seeding payment methods:', error);
   }
 };
 
 const seedSettings = async () => {
   try {
-        logger.info('Seeding settings...');
     for (const setting of defaultSettings) {
       const exists = await Settings.findOne({ key: setting.key });
       if (!exists) {
         await Settings.create(setting);
-                logger.info(`Created setting: ${setting.key}`);
-      } else {
-                logger.info(`Setting ${setting.key} already exists`);
+        logger.info(`Created setting: ${setting.key}`);
       }
     }
-        logger.info('Settings seeding completed');
   } catch (error) {
-        logger.error('Error seeding settings:', error);
+    logger.error('Error seeding settings:', error);
   }
 };
 
 const seedAll = async () => {
-    logger.info('Starting data seeding...');
-  await seedCurrencies();
-  await seedPaymentMethods();
-  await seedSettings();
-    logger.info('Data seeding completed');
+  try {
+    logger.info('Starting database seeding...');
+    
+    await seedPaymentMethods();
+    await seedSettings();
+    
+    logger.info('Database seeding completed successfully!');
+  } catch (error) {
+    logger.error('Error during database seeding:', error);
+  }
 };
 
 module.exports = {
-  seedCurrencies,
+  seedAll,
   seedPaymentMethods,
   seedSettings,
-  seedAll,
 }; 

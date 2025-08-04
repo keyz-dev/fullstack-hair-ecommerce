@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Package } from 'lucide-react';
-import { ProductCard } from '../ui';
+import { ProductCard, Button } from '../ui';
 import { useProducts } from '../../hooks/useProducts';
 import { useCart } from '../../hooks/useCart';
 import { useProductDetails } from '../../hooks/useProductDetails';
 import { ProductDetailsModal } from '../product-details';
 import { toast } from 'react-toastify';
+import { CurrencySelector } from '../header';
 
 const Products = () => {
   const navigate = useNavigate();
@@ -94,6 +95,17 @@ const Products = () => {
           <p className="text-lg text-secondary/70 max-w-2xl mx-auto mb-8">
             Discover our carefully curated collection of premium products, designed to enhance your lifestyle and meet your needs.
           </p>
+        </div>
+
+        <div className="flex justify-end gap-2 mb-4 items-center">
+          <CurrencySelector />
+          {/* View all products button */}
+          <Button
+            onClickHandler={handleViewAll}
+            text="View All Products"
+            additionalClasses="border border-line_clr text-secondary min-h-fit min-w-fit px-4 py-[5px]"
+            trailingIcon={<ArrowRight size={16} />}
+          />
         </div>
 
         {/* Products Grid */}

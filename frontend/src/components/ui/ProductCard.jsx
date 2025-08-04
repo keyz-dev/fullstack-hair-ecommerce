@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Heart, Star, Tag, Check } from 'lucide-react';
 import { useCurrency } from '../../hooks/useCurrency';
 
 const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist, viewMode = 'grid', isInCart = false }) => {
-  const { convertPrice, formatPrice } = useCurrency();
+  const { convertPrice, formatPrice, userCurrency } = useCurrency();
+  const [displayPrice, setDisplayPrice] = useState('');
+  const [displayDiscountedPrice, setDisplayDiscountedPrice] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   
   const { 
     name, 
@@ -20,13 +23,48 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist, vie
     specifications = {}
   } = product;
   
-  // Convert price to user's preferred currency
-  const convertedPrice = convertPrice(price, currency);
-  const formattedPrice = formatPrice(convertedPrice);
-  
-  // Calculate discounted price
-  const discountedPrice = discount > 0 ? convertedPrice * (1 - discount / 100) : convertedPrice;
-  const formattedDiscountedPrice = formatPrice(discountedPrice);
+  // Convert and format prices
+  useEffect(() => {
+    const loadPrices = async () => {
+      if (!price) {
+        setDisplayPrice('');
+        setDisplayDiscountedPrice('');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Ensure currency is valid, default to XAF if not
+      const validCurrency = currency || 'XAF';
+
+      try {
+        setIsLoading(true);
+        
+        // Convert price to user's currency
+        const convertedPrice = await convertPrice(price, validCurrency, userCurrency);
+        const formattedPrice = formatPrice(convertedPrice, userCurrency);
+        setDisplayPrice(formattedPrice);
+        
+        // Calculate and format discounted price
+        if (discount > 0) {
+          const discountedPrice = convertedPrice * (1 - discount / 100);
+          const formattedDiscountedPrice = formatPrice(discountedPrice, userCurrency);
+          setDisplayDiscountedPrice(formattedDiscountedPrice);
+        } else {
+          setDisplayDiscountedPrice('');
+        }
+      } catch (error) {
+        console.error('Error converting price:', error);
+        // Fallback to original price with proper currency handling
+        const fallbackCurrency = currency || 'XAF';
+        setDisplayPrice(`${price} ${fallbackCurrency}`);
+        setDisplayDiscountedPrice('');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPrices();
+  }, [price, currency, discount, userCurrency, convertPrice, formatPrice]);
 
   // Get first image or placeholder
   const productImage = images && images.length > 0 ? images[0] : '/placeholder-product.jpg';
@@ -229,13 +267,17 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist, vie
 
         {/* Price */}
         <div className="flex items-center gap-2">
-          {isOnSale ? (
+          {isLoading ? (
+            <div className="text-lg font-bold text-gray-400 animate-pulse">
+              Loading...
+            </div>
+          ) : isOnSale ? (
             <>
               <span className="text-lg font-bold text-primary">
-                {formattedDiscountedPrice}
+                {displayDiscountedPrice}
               </span>
               <span className="text-sm text-gray-500 line-through">
-                {formattedPrice}
+                {displayPrice}
               </span>
               <span className="text-sm text-green-600 font-medium">
                 {discountPercentage}% OFF
@@ -243,7 +285,7 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onAddToWishlist, vie
             </>
           ) : (
             <span className="text-lg font-bold text-primary">
-              {formattedPrice}
+              {displayPrice}
             </span>
           )}
         </div>

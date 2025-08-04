@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { TabGroup } from '../../components/ui';
-import { CurrencySettings } from '../../components/dashboard/settings/currency';
 import { PaymentMethodSettings } from '../../components/dashboard/settings/payment';
 import { GeneralSettings } from '../../components/dashboard/settings/general';
 
@@ -9,7 +8,6 @@ const Settings = () => {
 
   const tabs = [
     { key: 'general', label: 'General' },
-    { key: 'currencies', label: 'Currencies' },
     { key: 'payment-methods', label: 'Payment Methods' },
   ];
 
@@ -17,8 +15,6 @@ const Settings = () => {
     switch (activeTab) {
       case 'general':
         return <GeneralSettings />;
-      case 'currencies':
-        return <CurrencySettings />;
       case 'payment-methods':
         return <PaymentMethodSettings />;
       default:
@@ -31,7 +27,7 @@ const Settings = () => {
       <div>
         <h1 className="text-2xl font-bold text-primary">Settings</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Manage your application settings, currencies, and payment methods.
+          Manage your application settings and payment methods.
         </p>
       </div>
 

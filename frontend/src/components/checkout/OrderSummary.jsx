@@ -8,7 +8,7 @@ const OrderSummary = ({
   shippingAddress,
   selectedPaymentMethod 
 }) => {
-  const { formatPrice } = useCurrency();
+  const { convertPrice, formatPrice } = useCurrency();
   const shippingInfo = calculateShipping(shippingAddress.city, cartTotal);
   const tax = cartTotal * 0.195; // 19.5% VAT
   const processingFee = selectedPaymentMethod?.fees ? (cartTotal * selectedPaymentMethod.fees) / 100 : 0;
@@ -21,24 +21,30 @@ const OrderSummary = ({
         
         {/* Cart Items */}
         <div className="space-y-3 mb-4">
-          {cartItems.map((item) => (
-            <div key={item._id} className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gray-100 rounded-sm overflow-hidden flex-shrink-0">
-                <img
-                  src={item.images?.[0] || '/placeholder-product.jpg'}
-                  alt={item.name}
-                  className="w-full h-full object-cover"
-                />
+          {cartItems.map((item) => {
+            // Convert item price to user's preferred currency
+            const convertedItemPrice = convertPrice(item.price, item.currency);
+            const formattedItemPrice = formatPrice(convertedItemPrice * item.quantity);
+            
+            return (
+              <div key={item._id} className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gray-100 rounded-sm overflow-hidden flex-shrink-0">
+                  <img
+                    src={item.images?.[0] || '/placeholder-product.jpg'}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-sm text-primary truncate">{item.name}</h4>
+                  <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                </div>
+                <p className="font-medium text-sm">
+                  {formattedItemPrice}
+                </p>
               </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-sm text-primary truncate">{item.name}</h4>
-                <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-              </div>
-              <p className="font-medium text-sm">
-                {formatPrice(item.price * item.quantity)}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Order Totals */}

@@ -1,95 +1,184 @@
-const Currency = require('../models/currency');
+// Currency utilities - using external currency data instead of database model
+
+// Common currencies with their symbols and positions
+const SUPPORTED_CURRENCIES = {
+  XAF: { symbol: 'XAF', name: 'Central African CFA Franc', position: 'after' },
+  USD: { symbol: '$', name: 'US Dollar', position: 'before' },
+  EUR: { symbol: '€', name: 'Euro', position: 'before' },
+  GBP: { symbol: '£', name: 'British Pound', position: 'before' },
+  NGN: { symbol: '₦', name: 'Nigerian Naira', position: 'before' },
+  GHS: { symbol: '₵', name: 'Ghanaian Cedi', position: 'before' },
+  KES: { symbol: 'KSh', name: 'Kenyan Shilling', position: 'before' },
+  ZAR: { symbol: 'R', name: 'South African Rand', position: 'before' },
+  EGP: { symbol: 'E£', name: 'Egyptian Pound', position: 'before' },
+  MAD: { symbol: 'MAD', name: 'Moroccan Dirham', position: 'after' },
+  TND: { symbol: 'TND', name: 'Tunisian Dinar', position: 'after' },
+  DZD: { symbol: 'DZD', name: 'Algerian Dinar', position: 'after' },
+  CAD: { symbol: 'C$', name: 'Canadian Dollar', position: 'before' },
+  AUD: { symbol: 'A$', name: 'Australian Dollar', position: 'before' }
+};
+
+// Exchange rates: 1 unit of currency = X XAF
+// These should be updated regularly with real-time rates
+const EXCHANGE_RATES = {
+  XAF: 1,
+  USD: 625,    // 1 USD = 625 XAF
+  EUR: 680,    // 1 EUR = 680 XAF
+  GBP: 790,    // 1 GBP = 790 XAF
+  NGN: 1.37,   // 1 NGN = 1.37 XAF
+  GHS: 52.6,   // 1 GHS = 52.6 XAF
+  KES: 4.17,   // 1 KES = 4.17 XAF
+  ZAR: 34.5,   // 1 ZAR = 34.5 XAF
+  EGP: 20.4,   // 1 EGP = 20.4 XAF
+  MAD: 62.5,   // 1 MAD = 62.5 XAF
+  TND: 200,    // 1 TND = 200 XAF
+  DZD: 4.55,   // 1 DZD = 4.55 XAF
+  CAD: 460,    // 1 CAD = 460 XAF
+  AUD: 410,    // 1 AUD = 410 XAF
+};
+
+// Cache for exchange rates
+let exchangeRatesCache = {};
+let lastCacheUpdate = 0;
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
 /**
- * Convert amount from one currency to another
- * @param {number} amount - Amount to convert
- * @param {string} fromCurrency - Source currency code
- * @param {string} toCurrency - Target currency code
- * @returns {number} - Converted amount
+ * Get all supported currencies
  */
-const convertCurrency = async (amount, fromCurrency, toCurrency) => {
-  if (fromCurrency === toCurrency) {
-    return amount;
+const getSupportedCurrencies = () => {
+  return Object.keys(SUPPORTED_CURRENCIES).map(code => ({
+    code,
+    ...SUPPORTED_CURRENCIES[code],
+    isActive: true
+  }));
+};
+
+/**
+ * Get currency info by code
+ */
+const getCurrencyInfo = (currencyCode) => {
+  if (!currencyCode) return null;
+  const code = currencyCode.toUpperCase();
+  return SUPPORTED_CURRENCIES[code] ? { code, ...SUPPORTED_CURRENCIES[code] } : null;
+};
+
+/**
+ * Load exchange rates from external API (placeholder for real implementation)
+ */
+const loadExchangeRates = async () => {
+  const now = Date.now();
+  
+  // Use cached rates if still valid
+  if (exchangeRatesCache && Object.keys(exchangeRatesCache).length > 0 && (now - lastCacheUpdate) < CACHE_DURATION) {
+    return exchangeRatesCache;
   }
 
-  const fromCurrencyData = await Currency.findOne({ code: fromCurrency.toUpperCase() });
-  const toCurrencyData = await Currency.findOne({ code: toCurrency.toUpperCase() });
-
-  if (!fromCurrencyData || !toCurrencyData) {
-    throw new Error('Currency not found');
+  try {
+    // TODO: Replace with actual exchange rate API call
+    // Example: const response = await fetch('https://api.exchangerate-api.com/v4/latest/XAF');
+    // const data = await response.json();
+    // exchangeRatesCache = data.rates;
+    
+    // For now, use predefined rates
+    exchangeRatesCache = { ...EXCHANGE_RATES };
+    lastCacheUpdate = now;
+    return exchangeRatesCache;
+  } catch (error) {
+    console.error('Error loading exchange rates:', error);
+    // Use fallback rates
+    return EXCHANGE_RATES;
   }
+};
 
-  // Convert to base currency first, then to target currency
-  const baseAmount = amount / fromCurrencyData.exchangeRate;
-  const convertedAmount = baseAmount * toCurrencyData.exchangeRate;
-
-  return Math.round(convertedAmount * 100) / 100; // Round to 2 decimal places
+/**
+ * Convert price from one currency to another
+ */
+const convertPrice = async (price, fromCurrency, toCurrency) => {
+  if (!price || !fromCurrency || !toCurrency) return price;
+  
+  // If same currency, return original price
+  if (fromCurrency.toUpperCase() === toCurrency.toUpperCase()) return price;
+  
+  try {
+    const rates = await loadExchangeRates();
+    
+    // Convert to XAF first (base currency)
+    const rateToXAF = rates[fromCurrency.toUpperCase()] || 1;
+    const priceInXAF = price * rateToXAF;
+    
+    // Convert from XAF to target currency
+    const rateFromXAF = rates[toCurrency.toUpperCase()] || 1;
+    const convertedPrice = priceInXAF / rateFromXAF;
+    
+    return Math.round(convertedPrice * 100) / 100; // Round to 2 decimal places
+  } catch (error) {
+    console.error('Error converting price:', error);
+    return price;
+  }
 };
 
 /**
  * Format price with currency symbol
- * @param {number} amount - Amount to format
- * @param {string} currencyCode - Currency code
- * @param {Object} currencyData - Currency data object (optional, will fetch if not provided)
- * @returns {string} - Formatted price string
  */
-const formatPrice = async (amount, currencyCode, currencyData = null) => {
-  let currency = currencyData;
+const formatPrice = (price, currencyCode) => {
+  if (!price) return '0';
   
-  if (!currency) {
-    currency = await Currency.findOne({ code: currencyCode.toUpperCase() });
-    if (!currency) {
-      throw new Error('Currency not found');
-    }
-  }
-
-  const formattedAmount = new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-
-  return currency.position === 'before' 
-    ? `${currency.symbol}${formattedAmount}`
-    : `${formattedAmount}${currency.symbol}`;
+  const currencyInfo = getCurrencyInfo(currencyCode);
+  if (!currencyInfo) return `${price} ${currencyCode}`;
+  
+  const symbol = currencyInfo.symbol || currencyCode;
+  const position = currencyInfo.position || 'before';
+  
+  // Format number with appropriate decimal places
+  const formattedPrice = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(price);
+  
+  return position === 'before' 
+    ? `${symbol} ${formattedPrice}`
+    : `${formattedPrice} ${symbol}`;
 };
 
 /**
- * Get base currency
- * @returns {Object} - Base currency object
+ * Convert and format price for display
  */
-const getBaseCurrency = async () => {
-  const baseCurrency = await Currency.findOne({ isBase: true });
-  if (!baseCurrency) {
-    throw new Error('Base currency not found');
-  }
-  return baseCurrency;
-};
-
-/**
- * Get all active currencies
- * @returns {Array} - Array of active currency objects
- */
-const getActiveCurrencies = async () => {
-  return await Currency.find({ isActive: true }).sort({ isBase: -1, code: 1 });
+const convertAndFormatPrice = async (price, fromCurrency, toCurrency) => {
+  const convertedPrice = await convertPrice(price, fromCurrency, toCurrency);
+  return formatPrice(convertedPrice, toCurrency);
 };
 
 /**
  * Validate currency code
- * @param {string} currencyCode - Currency code to validate
- * @returns {boolean} - Whether currency code is valid
  */
-const isValidCurrency = async (currencyCode) => {
-  const currency = await Currency.findOne({ 
-    code: currencyCode.toUpperCase(),
-    isActive: true 
-  });
-  return !!currency;
+const isValidCurrency = (currencyCode) => {
+  return currencyCode && SUPPORTED_CURRENCIES[currencyCode.toUpperCase()];
+};
+
+/**
+ * Get exchange rates
+ */
+const getExchangeRates = async () => {
+  return await loadExchangeRates();
+};
+
+/**
+ * Refresh exchange rates cache
+ */
+const refreshExchangeRates = async () => {
+  lastCacheUpdate = 0; // Force refresh
+  return await loadExchangeRates();
 };
 
 module.exports = {
-  convertCurrency,
+  getSupportedCurrencies,
+  getCurrencyInfo,
+  convertPrice,
   formatPrice,
-  getBaseCurrency,
-  getActiveCurrencies,
+  convertAndFormatPrice,
   isValidCurrency,
+  getExchangeRates,
+  refreshExchangeRates,
+  SUPPORTED_CURRENCIES,
+  EXCHANGE_RATES
 }; 

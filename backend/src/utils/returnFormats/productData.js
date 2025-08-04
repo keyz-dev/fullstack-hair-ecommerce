@@ -1,5 +1,5 @@
 const { formatImageUrl } = require('../imageUtils.js');
-const Currency = require('../../models/currency.js');
+const { getCurrencyInfo } = require('../currencyUtils.js');
 
 /**
  * Formats a product object for API response, including formatted image URLs.
@@ -7,36 +7,18 @@ const Currency = require('../../models/currency.js');
  * @returns {Object} - Formatted product data
  */
 const formatProductData = async (prod) => {
-  // Get currency information
-  let currencyInfo = { code: prod.currency || 'XAF', symbol: prod.currency || 'XAF', position: 'before' };
-  try {
-    const currency = await Currency.findOne({ code: prod.currency, isActive: true });
-    if (currency) {
-      currencyInfo = {
-        code: currency.code,
-        symbol: currency.symbol,
-        position: currency.position
-      };
-    }
-  } catch (error) {
-    console.error('Error fetching currency info:', error);
-  }
-
   return {
     _id: prod._id,
     name: prod.name,
     description: prod.description,
     price: prod.price,
-    discount: prod.discount || 0,
-    currency: currencyInfo,
+    discount: prod.discount,
+    currency: prod.currency || 'XAF', // Return as string code
+    images: prod.images ? prod.images.map(img => formatImageUrl(img)) : [],
     category: prod.category,
     stock: prod.stock,
-    service: prod.service,
-    isActive: prod.isActive,
-    isFeatured: prod.isFeatured,
-    isOnSale: prod.isOnSale,
-    rating: prod.rating || 0,
-    reviewCount: prod.reviewCount || 0,
+    rating: prod.rating,
+    reviewCount: prod.reviewCount,
     variants: prod.variants || [],
     specifications: prod.specifications || {},
     features: prod.features || [],
@@ -44,14 +26,12 @@ const formatProductData = async (prod) => {
     metaTitle: prod.metaTitle,
     metaDescription: prod.metaDescription,
     slug: prod.slug,
+    isActive: prod.isActive,
+    isFeatured: prod.isFeatured,
+    isOnSale: prod.isOnSale,
     createdAt: prod.createdAt,
-    updatedAt: prod.updatedAt,
-    images: Array.isArray(prod.images) && prod.images.length > 0
-      ? prod.images.map(img => formatImageUrl(img))
-      : [],
+    updatedAt: prod.updatedAt
   };
-}
-
-module.exports = {
-  formatProductData,
 };
+
+module.exports = { formatProductData };

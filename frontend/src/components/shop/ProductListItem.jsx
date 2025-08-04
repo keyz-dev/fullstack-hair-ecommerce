@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Heart, Eye, Star, Check } from 'lucide-react';
+import { useCurrency } from '../../hooks/useCurrency';
 
 const ProductListItem = ({ 
   product, 
@@ -24,15 +25,53 @@ const ProductListItem = ({
     specifications = {}
   } = product;
   
-  // Format price with currency
-  const formatPrice = (priceValue) => {
-    if (currency && currency.symbol) {
-      return currency.position === 'after' 
-        ? `${priceValue} ${currency.symbol}`
-        : `${currency.symbol} ${priceValue}`;
-    }
-    return `${priceValue}`;
-  };
+  const { convertPrice, formatPrice, userCurrency } = useCurrency();
+  const [displayPrice, setDisplayPrice] = useState('');
+  const [displayDiscountedPrice, setDisplayDiscountedPrice] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Convert and format prices
+  useEffect(() => {
+    const loadPrices = async () => {
+      if (!price) {
+        setDisplayPrice('');
+        setDisplayDiscountedPrice('');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Ensure currency is valid, default to XAF if not
+      const validCurrency = currency || 'XAF';
+
+      try {
+        setIsLoading(true);
+        
+        // Convert price to user's currency
+        const convertedPrice = await convertPrice(price, validCurrency, userCurrency);
+        const formattedPrice = formatPrice(convertedPrice, userCurrency);
+        setDisplayPrice(formattedPrice);
+        
+        // Calculate and format discounted price
+        if (discount > 0) {
+          const discountedPrice = convertedPrice * (1 - discount / 100);
+          const formattedDiscountedPrice = formatPrice(discountedPrice, userCurrency);
+          setDisplayDiscountedPrice(formattedDiscountedPrice);
+        } else {
+          setDisplayDiscountedPrice('');
+        }
+      } catch (error) {
+        console.error('Error converting price:', error);
+        // Fallback to original price with proper currency handling
+        const fallbackCurrency = currency || 'XAF';
+        setDisplayPrice(`${price} ${fallbackCurrency}`);
+        setDisplayDiscountedPrice('');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPrices();
+  }, [price, currency, discount, userCurrency, convertPrice, formatPrice]);
 
   // Get first image or placeholder
   const productImage = images && images.length > 0 ? images[0] : '/placeholder-product.jpg';
@@ -103,93 +142,88 @@ const ProductListItem = ({
         />
         
         {/* Badges */}
-        {isFeatured && (
-          <div className="absolute top-3 left-3 bg-yellow-500 text-white text-xs px-2 py-1 rounded-sm font-medium z-10">
+        {isOnSale && (
+          <div className="absolute top-3 left-3 bg-green-500 text-white text-xs px-2 py-1 rounded font-medium z-10">
+            {discount}% OFF
+          </div>
+        )}
+
+        {isFeatured && !isOnSale && (
+          <div className="absolute top-3 left-3 bg-blue-500 text-white text-xs px-2 py-1 rounded font-medium z-10">
             Featured
           </div>
         )}
 
-        {isOnSale && !isFeatured && (
-          <div className="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-sm font-medium z-10">
-            Sale
-          </div>
-        )}
-
         {!isInStock && (
-          <div className="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-sm font-medium z-10">
+          <div className="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded font-medium z-10">
             Out of Stock
           </div>
         )}
         
         {isLowStock && isInStock && !isOnSale && !isFeatured && (
-          <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-sm font-medium z-10">
+          <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs px-2 py-1 rounded font-medium z-10">
             Low Stock
           </div>
         )}
 
-        {/* Quick action buttons - centered on image */}
-        <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/10">
+        {/* In Cart Badge */}
+        {isInCart && (
+          <div className="absolute top-3 left-3 z-20 bg-green-500 text-white rounded-full p-1 shadow-lg">
+            <Check size={16} />
+          </div>
+        )}
+
+        {/* Quick action buttons */}
+        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
           <button
             onClick={handleViewDetails}
-            className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm"
+            className="w-8 h-8 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm"
             title="View Details"
           >
-            <Eye size={16} className="text-gray-700" />
-          </button>
-          <button
-            onClick={handleAddToCart}
-            className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm"
-            title="Add to Cart"
-          >
-            <ShoppingCart size={16} className="text-gray-700" />
+            <Eye size={14} className="text-gray-700" />
           </button>
           <button
             onClick={handleAddToWishlist}
-            className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm"
+            className="w-8 h-8 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm"
             title="Add to Wishlist"
           >
-            <Heart size={16} className="text-gray-700" />
+            <Heart size={14} className="text-gray-700" />
+          </button>
+          <button
+            onClick={handleAddToCart}
+            className="w-8 h-8 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm"
+            title="Quick Add to Cart"
+          >
+            <ShoppingCart size={14} className="text-gray-700" />
           </button>
         </div>
       </div>
 
       {/* Product Info */}
       <div className="flex-1 p-6 flex flex-col justify-between">
-        <div className="flex-1">
-          {/* Category */}
-          {category && (
-            <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-              {category.name}
-            </div>
-          )}
-
+        <div>
           {/* Product Name */}
-          <h3 className="font-semibold text-lg text-primary mb-3 hover:text-accent transition-colors line-clamp-1">
+          <h3 className="font-semibold text-lg text-primary mb-2 hover:text-accent transition-colors line-clamp-2">
             {name}
           </h3>
 
+          {/* Category */}
+          {category && (
+            <p className="text-sm text-gray-600 mb-2">
+              {category.name}
+            </p>
+          )}
+
           {/* Description */}
           {description && (
-            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+            <p className="text-sm text-gray-700 mb-3 line-clamp-2">
               {description}
             </p>
           )}
 
-          {/* Specifications */}
-          {keySpecs.length > 0 && (
-            <div className="space-y-1 flex flex-wrap gap-2">
-              {keySpecs.map((spec, index) => (
-                <div key={index} className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md">
-                  <span className="text-gray-500 font-medium">{spec.label}:</span>
-                  <span className="text-gray-700 ml-1">{spec.value}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
           {/* Rating */}
           {rating > 0 && (
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-1 mb-3">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
                   <Star
@@ -208,44 +242,77 @@ const ProductListItem = ({
               </span>
             </div>
           )}
+
+          {/* Key Specifications */}
+          {keySpecs.length > 0 && (
+            <div className="mb-3">
+              <div className="flex flex-wrap gap-2">
+                {keySpecs.map((spec, index) => (
+                  <span key={index} className="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                    {spec.label}: {spec.value}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Stock Status */}
+          {isLowStock && isInStock && (
+            <p className="text-sm text-orange-600 mb-2">
+              Only {stock} left in stock
+            </p>
+          )}
         </div>
 
-        {/* Bottom Section */}
+        {/* Price and Actions */}
         <div className="flex items-center justify-between">
           {/* Price */}
-          <div className="flex items-center gap-3">
-            <span className="font-bold text-xl text-primary">
-              {formatPrice(price)}
-            </span>
-            {isOnSale && originalPrice && (
-              <span className="text-sm text-gray-500 line-through">
-                {formatPrice(originalPrice)}
+          <div className="flex items-center gap-2">
+            {isLoading ? (
+              <div className="text-lg font-bold text-gray-400 animate-pulse">
+                Loading...
+              </div>
+            ) : isOnSale ? (
+              <>
+                <span className="text-xl font-bold text-primary">
+                  {displayDiscountedPrice}
+                </span>
+                <span className="text-sm text-gray-500 line-through">
+                  {displayPrice}
+                </span>
+                <span className="text-sm text-green-600 font-medium">
+                  {discount}% OFF
+                </span>
+              </>
+            ) : (
+              <span className="text-xl font-bold text-primary">
+                {displayPrice}
               </span>
             )}
           </div>
 
-          {/* Add to Cart Button */}
-          <button
-            onClick={handleAddToCart}
-            disabled={!isInStock}
-            className={`flex items-center gap-2 px-6 py-3 rounded-sm font-medium transition-all duration-200 ${
-              isInCart
-                ? 'bg-green-500 text-white hover:bg-green-600'
-                : isInStock
-                ? 'bg-primary text-white hover:bg-primary/90'
-                : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-            }`}
-          >
-            {isInCart ? (
-              <>
-                <Check size={18} />
-              </>
-            ) : (
-              <>
-                <ShoppingCart size={18} />
-              </>
-            )}
-          </button>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleViewDetails}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+            >
+              View Details
+            </button>
+            <button
+              onClick={handleAddToCart}
+              disabled={!isInStock}
+              className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
+                isInCart
+                  ? 'bg-green-500 text-white hover:bg-green-600'
+                  : isInStock
+                  ? 'bg-accent text-white hover:bg-accent/90'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              {isInCart ? 'Added' : isInStock ? 'Add to Cart' : 'Out of Stock'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

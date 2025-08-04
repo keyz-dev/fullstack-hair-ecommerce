@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, X, ChevronDown, Grid3X3, List } from 'lucide-react';
 import { Button, Input, Select } from '../ui';
+import { CurrencySelector } from '../header';
 
 const SearchAndFilters = ({ 
   onSearch, 
@@ -112,6 +113,8 @@ const SearchAndFilters = ({
               options={sortOptions}
               className="min-w-[180px]"
             />
+
+            <CurrencySelector />
 
             {/* View Toggle */}
             <div className="flex gap-4 border-gray-300 rounded-xs overflow-hidden">
