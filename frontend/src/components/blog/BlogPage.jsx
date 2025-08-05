@@ -5,7 +5,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'react-toastify';
 import BlogFilters from './BlogFilters';
 import PostCard from './PostCard';
-import BlogPostDetail from './BlogPostDetail';
 import { EmptyState, Pagination } from '../ui';
 import blogHeroBg from '../../assets/images/blog_bg.jpg';
 
@@ -30,8 +29,6 @@ const BlogPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [viewMode, setViewMode] = useState('grid');
-  const [selectedPost, setSelectedPost] = useState(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Initialize posts on mount
   useEffect(() => {
@@ -71,18 +68,6 @@ const BlogPage = () => {
       console.error('Error liking post:', error); 
       toast.error('Failed to like post');
     }
-  };
-
-  // Handle post view
-  const handlePostView = (post) => {
-    setSelectedPost(post);
-    setIsDetailModalOpen(true);
-  };
-
-  // Handle modal close
-  const handleModalClose = () => {
-    setIsDetailModalOpen(false);
-    setSelectedPost(null);
   };
 
   // Loading skeleton
@@ -229,7 +214,6 @@ const BlogPage = () => {
                   key={post._id}
                   post={post}
                   onLike={handleLikeToggle}
-                  onView={handlePostView}
                   isLiked={likedPosts.has(post._id)}
                   simplified={true}
                   viewMode={viewMode}
@@ -250,17 +234,6 @@ const BlogPage = () => {
           </>
         )}
       </section>
-
-      {/* Blog Post Detail Modal */}
-      {selectedPost && (
-        <BlogPostDetail
-          post={selectedPost}
-          isOpen={isDetailModalOpen}
-          onClose={handleModalClose}
-          onLike={handleLikeToggle}
-          isLiked={likedPosts.has(selectedPost._id)}
-        />
-      )}
     </div>
   );
 };

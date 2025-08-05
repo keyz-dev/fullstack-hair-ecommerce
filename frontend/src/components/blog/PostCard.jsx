@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { Heart, Eye, Play, Calendar, User, Tag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Heart, Eye, Play, Calendar, User, Tag, ArrowRight } from 'lucide-react';
 import { Button } from '../ui';
 import { format } from 'date-fns';
 
 const PostCard = ({ 
   post, 
   onLike, 
-  onView,
   isLiked = false,
   simplified = false,
   viewMode = 'grid'
 }) => {
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   const getMediaType = () => {
     if (post.video) return 'video';
@@ -42,7 +42,8 @@ const PostCard = ({
     if (e.target.closest('button') || e.target.closest('a')) {
       return;
     }
-    onView(post);
+    // Navigate to the blog post detail page
+    navigate(`/blog/${post.slug || post._id}`);
   };
 
   const handleLikeClick = (e) => {
@@ -72,7 +73,6 @@ const PostCard = ({
                     className={`w-full h-full object-cover transition-transform duration-300 ${
                       isHovered ? 'scale-105' : 'scale-100'
                     }`}
-                    onLoad={() => setImageLoaded(true)}
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
@@ -92,7 +92,6 @@ const PostCard = ({
                 className={`w-full h-full object-cover transition-transform duration-300 ${
                   isHovered ? 'scale-105' : 'scale-100'
                 }`}
-                onLoad={() => setImageLoaded(true)}
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-accent/10 to-purple-100 flex items-center justify-center">
@@ -122,8 +121,8 @@ const PostCard = ({
           </div>
 
           {/* Content Section */}
-          <div className="flex-1 p-4 flex flex-col justify-between">
-            <div>
+          <div className="flex-1 p-4 flex flex-col">
+            <div className="flex-grow">
               {/* Title */}
               <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-accent transition-colors line-clamp-1">
                 {post.title}
@@ -166,15 +165,11 @@ const PostCard = ({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between">
-              <Button
-                onClickHandler={(e) => {
-                  e.stopPropagation();
-                  onView(post);
-                }}
-                text="Read More"
-                additionalClasses="text-sm bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-md"
-              />
+            <div className="flex items-center justify-between mt-auto">
+              <div className="flex items-center gap-2 text-sm text-accent group-hover:text-accent/80 transition-colors">
+                <span>Read more</span>
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </div>
               
               {!simplified && (
                 <button
@@ -217,7 +212,6 @@ const PostCard = ({
                 className={`w-full h-full object-cover transition-transform duration-300 ${
                   isHovered ? 'scale-105' : 'scale-100'
                 }`}
-                onLoad={() => setImageLoaded(true)}
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
@@ -237,7 +231,6 @@ const PostCard = ({
             className={`w-full h-full object-cover transition-transform duration-300 ${
               isHovered ? 'scale-105' : 'scale-100'
             }`}
-            onLoad={() => setImageLoaded(true)}
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-accent/10 to-purple-100 flex items-center justify-center">
@@ -267,14 +260,14 @@ const PostCard = ({
       </div>
 
       {/* Content Section */}
-      <div className="p-4 flex flex-col h-full">
+      <div className="p-4">
         {/* Title */}
         <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-accent transition-colors">
           {post.title}
         </h3>
 
         {/* Description */}
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2 flex-grow">
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
           {post.description || post.content?.substring(0, 120)}
         </p>
 
@@ -308,16 +301,12 @@ const PostCard = ({
           </div>
         )}
 
-        {/* Actions - Fixed at bottom */}
-        <div className="flex items-center justify-between mt-auto">
-          <Button
-            onClickHandler={(e) => {
-              e.stopPropagation();
-              onView(post);
-            }}
-            text="Read More"
-            additionalClasses="text-sm bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-md"
-          />
+        {/* Actions */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-accent group-hover:text-accent/80 transition-colors">
+            <span>Read more</span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </div>
           
           {!simplified && (
             <button
