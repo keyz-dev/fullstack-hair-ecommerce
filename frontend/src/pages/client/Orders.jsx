@@ -6,7 +6,7 @@ import {
   OrderFilters, 
   OrderStats, 
 } from '../../components/orders';
-import { Button, LoadingSpinner, EmptyState } from '../../components/ui';
+import { Button, LoadingSpinner, EmptyState, FadeInContainer } from '../../components/ui';
 import { Download, RefreshCw } from 'lucide-react';
 
 const Orders = () => {
@@ -95,45 +95,53 @@ const Orders = () => {
   return (
     <div className="lg:px-3">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4">
-        <div className="flex items-center space-x-3">
-          <Button
-            onClick={handleRefresh}
-            variant="outline"
-            size="sm"
-            className="flex items-center space-x-2"
-          >
-            <RefreshCw className="w-4 h-4" />
-            <span>Refresh</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center space-x-2"
-          >
-            <Download className="w-4 h-4" />
-            <span>Export</span>
-          </Button>
+      <FadeInContainer delay={200} duration={600}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4">
+          <div className="flex items-center space-x-3">
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Refresh</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export</span>
+            </Button>
+          </div>
         </div>
-      </div>
+      </FadeInContainer>
 
       {/* Order Statistics */}
-      <OrderStats stats={orderStats} />
+      <FadeInContainer delay={400} duration={600}>
+        <OrderStats stats={orderStats} />
+      </FadeInContainer>
 
       {/* Filters and Search */}
+      <FadeInContainer delay={600} duration={600}>
         <OrderFilters
           filters={filters}
           onFilterChange={handleFilterChange}
           onSearch={handleSearch}
         />
+      </FadeInContainer>
 
       {/* Order List */}
-      <ClientOrderListView
-        orders={filteredOrders}
-        onEdit={handleOrderEdit}
-        onDelete={handleOrderDelete}
-        loading={loading}
-      />
+      <FadeInContainer delay={800} duration={600}>
+        <ClientOrderListView
+          orders={filteredOrders}
+          onEdit={handleOrderEdit}
+          onDelete={handleOrderDelete}
+          loading={loading}
+        />
+      </FadeInContainer>
 
       {/* Order Details Modal */}
       <OrderDetailsModal

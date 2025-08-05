@@ -6,7 +6,7 @@ import {
   OrderFilters, 
   OrderStats, 
 } from '../../components/orders';
-import { Button, LoadingSpinner, EmptyState } from '../../components/ui';
+import { Button, LoadingSpinner, EmptyState, FadeInContainer } from '../../components/ui';
 
 const Orders = () => {
   const { user } = useAuth();
@@ -110,53 +110,61 @@ const Orders = () => {
   return (
     <div className="lg:px-3">
       {/* Order Statistics */}
-      <OrderStats stats={orderStats} />
+      <FadeInContainer delay={200} duration={600}>
+        <OrderStats stats={orderStats} />
+      </FadeInContainer>
 
       {/* Filters and Search */}
-      <OrderFilters
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onSearch={handleSearch}
-        showCustomerTypeFilter={true} // Admin-specific filter
-      />
+      <FadeInContainer delay={400} duration={600}>
+        <OrderFilters
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onSearch={handleSearch}
+          showCustomerTypeFilter={true} // Admin-specific filter
+        />
+      </FadeInContainer>
 
       {/* Order List */}
-      <div className="mt-6">
-        <AdminOrderListView
-          orders={filteredOrders}
-          onView={handleOrderView}
-          onEdit={handleOrderEdit}
-          onDelete={handleOrderDelete}
-          loading={loading}
-        />
-      </div>
+      <FadeInContainer delay={600} duration={600}>
+        <div className="mt-6">
+          <AdminOrderListView
+            orders={filteredOrders}
+            onView={handleOrderView}
+            onEdit={handleOrderEdit}
+            onDelete={handleOrderDelete}
+            loading={loading}
+          />
+        </div>
+      </FadeInContainer>
 
       {/* Pagination */}
-      {pagination.total > pagination.limit && (
-        <div className="flex justify-center mt-6">
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fetchAllOrders(pagination.page - 1)}
-              disabled={pagination.page === 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-gray-600">
-              Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fetchAllOrders(pagination.page + 1)}
-              disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-            >
-              Next
-            </Button>
+      <FadeInContainer delay={800} duration={600}>
+        {pagination.total > pagination.limit && (
+          <div className="flex justify-center mt-6">
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fetchAllOrders(pagination.page - 1)}
+                disabled={pagination.page === 1}
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-gray-600">
+                Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fetchAllOrders(pagination.page + 1)}
+                disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
+              >
+                Next
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </FadeInContainer>
 
       {/* Order Details Modal */}
       <OrderDetailsModal

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ProductStatSection, ProductTable, UpdateProductModal, ViewProductModal } from ".";
-import { Button, DeleteModal, LoadingSpinner, EmptyState } from "../../ui";
+import { Button, DeleteModal, LoadingSpinner, EmptyState, FadeInContainer } from "../../ui";
 import { toast } from "react-toastify";
 import { useProducts } from "../../../hooks/useProducts";
 
@@ -90,19 +90,25 @@ const ProductsMainView = ({ setView }) => {
 
   return (
     <section className="space-y-6">
-      <ProductStatSection stats={stats} loading={loading} />
+      <FadeInContainer delay={200} duration={600}>
+        <ProductStatSection stats={stats} loading={loading} />
+      </FadeInContainer>
       
-      <div className="flex justify-end items-center">
-        <Button onClickHandler={() => setView('add')} additionalClasses="bg-accent text-white">
-          Add Product
-        </Button>
-      </div>
+      <FadeInContainer delay={400} duration={600}>
+        <div className="flex justify-end items-center">
+          <Button onClickHandler={() => setView('add')} additionalClasses="bg-accent text-white">
+            Add Product
+          </Button>
+        </div>
+      </FadeInContainer>
       
-      <ProductTable 
-        onEdit={handleEdit} 
-        onView={handleView} 
-        onDelete={handleDelete} 
-      />
+      <FadeInContainer delay={600} duration={600}>
+        <ProductTable 
+          onEdit={handleEdit} 
+          onView={handleView} 
+          onDelete={handleDelete} 
+        />
+      </FadeInContainer>
       
       <UpdateProductModal
         isOpen={editModalOpen}

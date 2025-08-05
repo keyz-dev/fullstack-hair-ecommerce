@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Table, Pagination, DropdownMenu, StatusPill, AdvancedFilters } from "../../ui";
+import { Table, Pagination, DropdownMenu, StatusPill, AdvancedFilters, FadeInContainer } from "../../ui";
 import { Edit, Trash2, Eye, FileText, Calendar, User } from "lucide-react";
 import { usePost } from "../../../hooks";
 import { useCategory } from "../../../hooks";
@@ -249,36 +249,42 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
   return (
     <div className="space-y-6">
       {/* Advanced Search and Filters */}
-      <AdvancedFilters
-        filters={{ ...filters, search }}
-        onFilterChange={handleFilterChange}
-        onSearch={setSearchAndFetch}
-        onClearAll={clearAllFilters}
-        filterConfigs={filterConfigs}
-        searchPlaceholder="Search posts by title, description, or tags..."
-      />
+      <FadeInContainer delay={200} duration={600}>
+        <AdvancedFilters
+          filters={{ ...filters, search }}
+          onFilterChange={handleFilterChange}
+          onSearch={setSearchAndFetch}
+          onClearAll={clearAllFilters}
+          filterConfigs={filterConfigs}
+          searchPlaceholder="Search posts by title, description, or tags..."
+        />
+      </FadeInContainer>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <Table
-          columns={columns}
-          data={posts}
-          loading={loading}
-          className="min-h-[400px]"
-          emptyStateMessage="No posts found"
-        />
-      </div>
-
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex justify-center">
-          <Pagination
-            currentPage={pagination.page}
-            totalPages={pagination.totalPages}
-            onPageChange={setPageAndFetch}
+      <FadeInContainer delay={400} duration={600}>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <Table
+            columns={columns}
+            data={posts}
+            loading={loading}
+            className="min-h-[400px]"
+            emptyStateMessage="No posts found"
           />
         </div>
-      )}
+      </FadeInContainer>
+
+      {/* Pagination */}
+      <FadeInContainer delay={600} duration={600}>
+        {pagination.totalPages > 1 && (
+          <div className="flex justify-center">
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              onPageChange={setPageAndFetch}
+            />
+          </div>
+        )}
+      </FadeInContainer>
     </div>
   );
 };

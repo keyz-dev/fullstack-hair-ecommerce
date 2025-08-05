@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ServiceStatSection, ServicesListView, AddServiceModal, UpdateServiceModal, ViewServiceModal } from ".";
-import { Button, DeleteModal } from "../../ui";
+import { Button, DeleteModal, FadeInContainer } from "../../ui";
 import { toast } from "react-toastify";
 import { useService } from "../../../hooks";
 
@@ -43,17 +43,24 @@ const ServicesMainView = () => {
 
   return (
     <section>
-      <ServiceStatSection />
-      <div className="flex justify-end items-center mb-4">
-        <Button 
-          onClickHandler={() => setIsModalOpen(true)} 
-          additionalClasses="bg-accent text-white"
-        >
-          Add Service
-        </Button>
-      </div>
+      <FadeInContainer delay={200} duration={600}>
+        <ServiceStatSection />
+      </FadeInContainer>
       
-      <ServicesListView onEdit={handleEdit} onView={handleView} onDelete={handleDelete} />
+      <FadeInContainer delay={400} duration={600}>
+        <div className="flex justify-end items-center mb-4">
+          <Button 
+            onClickHandler={() => setIsModalOpen(true)} 
+            additionalClasses="bg-accent text-white"
+          >
+            Add Service
+          </Button>
+        </div>
+      </FadeInContainer>
+      
+      <FadeInContainer delay={600} duration={600}>
+        <ServicesListView onEdit={handleEdit} onView={handleView} onDelete={handleDelete} />
+      </FadeInContainer>
       
       <AddServiceModal
         isOpen={isModalOpen}

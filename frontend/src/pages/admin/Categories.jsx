@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useCategory } from "../../hooks";
 import { CategoriesListView, AddCategoryModal, UpdateCategoryModal, CategoryStatSection } from "../../components/dashboard/categories"
-import { Button, AdvancedFilters, DeleteModal, LoadingSpinner, EmptyState } from "../../components/ui";
+import { Button, AdvancedFilters, DeleteModal, LoadingSpinner, EmptyState, FadeInContainer } from "../../components/ui";
 
 const CategoriesMainView = () => {
   const {
@@ -104,90 +104,100 @@ const CategoriesMainView = () => {
   return (
     <div className="lg:px-3">
       {/* Category Statistics */}
-      <CategoryStatSection stats={stats} loading={loading} />
+      <FadeInContainer delay={200} duration={600}>
+        <CategoryStatSection stats={stats} loading={loading} />
+      </FadeInContainer>
 
       {/* Add Category Button */}
-      <div className="flex justify-end items-center my-3">
-        <Button
-          onClickHandler={() => setIsModalOpen(true)}
-          additionalClasses="primarybtn"
-        >
-          Add Category
-        </Button>
-      </div>
+      <FadeInContainer delay={400} duration={600}>
+        <div className="flex justify-end items-center my-3">
+          <Button
+            onClickHandler={() => setIsModalOpen(true)}
+            additionalClasses="primarybtn"
+          >
+            Add Category
+          </Button>
+        </div>
+      </FadeInContainer>
 
       {/* Advanced Search and Filters */}
-      <AdvancedFilters
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onSearch={handleSearch}
-        onClearAll={actions.clearAllFilters}
-        onSearchingChange={handleSearchingChange}
-        filterConfigs={[
-          {
-            key: 'status',
-            label: 'Status',
-            defaultValue: 'all',
-            colorClass: 'bg-green-100 text-green-800',
-            options: [
-              { value: 'all', label: 'All Statuses' },
-              { value: 'active', label: 'Active' },
-              { value: 'inactive', label: 'Inactive' },
-              { value: 'archived', label: 'Archived' },
-            ]
-          },
-          {
-            key: 'sortBy',
-            label: 'Sort By',
-            defaultValue: 'name',
-            colorClass: 'bg-purple-100 text-purple-800',
-            options: [
-              { value: 'name', label: 'Name' },
-              { value: 'createdAt', label: 'Date Created' },
-              { value: 'updatedAt', label: 'Last Updated' },
-            ]
-          }
-        ]}
-        searchPlaceholder="Search categories by name or description..."
-        loading={loading}
-      />
+      <FadeInContainer delay={600} duration={600}>
+        <AdvancedFilters
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onSearch={handleSearch}
+          onClearAll={actions.clearAllFilters}
+          onSearchingChange={handleSearchingChange}
+          filterConfigs={[
+            {
+              key: 'status',
+              label: 'Status',
+              defaultValue: 'all',
+              colorClass: 'bg-green-100 text-green-800',
+              options: [
+                { value: 'all', label: 'All Statuses' },
+                { value: 'active', label: 'Active' },
+                { value: 'inactive', label: 'Inactive' },
+                { value: 'archived', label: 'Archived' },
+              ]
+            },
+            {
+              key: 'sortBy',
+              label: 'Sort By',
+              defaultValue: 'name',
+              colorClass: 'bg-purple-100 text-purple-800',
+              options: [
+                { value: 'name', label: 'Name' },
+                { value: 'createdAt', label: 'Date Created' },
+                { value: 'updatedAt', label: 'Last Updated' },
+              ]
+            }
+          ]}
+          searchPlaceholder="Search categories by name or description..."
+          loading={loading}
+        />
+      </FadeInContainer>
 
       {/* Categories List */}
-      <div className="mt-6">
-        <CategoriesListView
-          categories={filteredCategories}
-          loading={loading || isSearching}
-          onEdit={handleCategoryEdit}
-          onDelete={handleCategoryDelete}
-        />
-      </div>
-
-      {/* Pagination */}
-      {pagination.total > pagination.limit && (
-        <div className="flex justify-center mt-6">
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fetchCategories(pagination.page - 1)}
-              disabled={pagination.page === 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-gray-600">
-              Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fetchCategories(pagination.page + 1)}
-              disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-            >
-              Next
-            </Button>
-          </div>
+      <FadeInContainer delay={800} duration={600}>
+        <div className="mt-6">
+          <CategoriesListView
+            categories={filteredCategories}
+            loading={loading || isSearching}
+            onEdit={handleCategoryEdit}
+            onDelete={handleCategoryDelete}
+          />
         </div>
-      )}
+      </FadeInContainer>
+
+             {/* Pagination */}
+       <FadeInContainer delay={1000} duration={600}>
+         {pagination.total > pagination.limit && (
+           <div className="flex justify-center mt-6">
+             <div className="flex items-center space-x-2">
+               <Button
+                 variant="outline"
+                 size="sm"
+                 onClick={() => fetchCategories(pagination.page - 1)}
+                 disabled={pagination.page === 1}
+               >
+                 Previous
+               </Button>
+               <span className="text-sm text-gray-600">
+                 Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
+               </span>
+               <Button
+                 variant="outline"
+                 size="sm"
+                 onClick={() => fetchCategories(pagination.page + 1)}
+                 disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
+               >
+                 Next
+               </Button>
+             </div>
+           </div>
+         )}
+       </FadeInContainer>
 
       {/* Modals */}
       <AddCategoryModal

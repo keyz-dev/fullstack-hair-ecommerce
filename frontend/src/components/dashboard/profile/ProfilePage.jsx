@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useProfile } from '../../../hooks';
-import { TabGroup } from '../../ui';
+import { TabGroup, FadeInContainer } from '../../ui';
 import ProfileOverview from './ProfileOverview';
 import ProfileEdit from './ProfileEdit';
 import SecuritySettings from './SecuritySettings';
@@ -68,19 +68,23 @@ const ProfilePage = () => {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
-        <p className="text-gray-600 mt-1">
-          Manage your account settings and preferences
-        </p>
-      </div>
+      <FadeInContainer delay={200} duration={600}>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+          <p className="text-gray-600 mt-1">
+            Manage your account settings and preferences
+          </p>
+        </div>
+      </FadeInContainer>
 
-      <TabGroup
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        className="bg-white rounded-lg shadow-sm border border-gray-200"
-      />
+      <FadeInContainer delay={400} duration={600}>
+        <TabGroup
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          className="bg-white rounded-lg shadow-sm border border-gray-200"
+        />
+      </FadeInContainer>
     </div>
   );
 };

@@ -9,7 +9,7 @@ import {
 import { useClientAnalytics } from '../../hooks/useClientAnalytics';
 import { useAuth } from '../../hooks';
 import { RefreshCw, TrendingUp, BarChart3 } from 'lucide-react';
-import { Button } from '../../components/ui';
+import { Button, FadeInContainer } from '../../components/ui';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -39,53 +39,62 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-end gap-2">
-          <p className="text-gray-600">Welcome back, </p>
-          <h1 className="text-2xl font-bold text-gray-900">{user?.name?.split(' ')[0] || 'User'}!</h1>
+      <FadeInContainer delay={200} duration={600}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-end gap-2">
+            <p className="text-gray-600">Welcome back, </p>
+            <h1 className="text-2xl font-bold text-gray-900">{user?.name?.split(' ')[0] || 'User'}!</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <DateRangePicker 
+              onRangeChange={handleDateRangeChange} 
+              currentRange={dateRange} 
+            />
+            <Button
+              onClickHandler={refreshAnalytics}
+              isDisabled={loading}
+              additionalClasses="primarybtn min-h-fit"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <DateRangePicker 
-            onRangeChange={handleDateRangeChange} 
-            currentRange={dateRange} 
-          />
-          <Button
-            onClickHandler={refreshAnalytics}
-            isDisabled={loading}
-            additionalClasses="primarybtn min-h-fit"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
-          </Button>
-        </div>
-      </div>
+      </FadeInContainer>
 
       {/* Overview Stats */}
-      <ClientOverviewStats 
-        stats={analytics.overview} 
-        loading={loading} 
-      />
+      <FadeInContainer delay={400} duration={600}>
+        <ClientOverviewStats 
+          stats={analytics.overview} 
+          loading={loading} 
+        />
+      </FadeInContainer>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SpendingChart 
-          data={analytics.spending?.chartData} 
-          loading={loading} 
-        />
-        <OrderStatusChart 
-          data={analytics.orders?.statusDistribution} 
-          loading={loading} 
-        />
-      </div>
+      <FadeInContainer delay={600} duration={600}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SpendingChart 
+            data={analytics.spending?.chartData} 
+            loading={loading} 
+          />
+          <OrderStatusChart 
+            data={analytics.orders?.statusDistribution} 
+            loading={loading} 
+          />
+        </div>
+      </FadeInContainer>
 
       {/* Activity Timeline */}
-      <ActivityTimeline 
-        activities={analytics.activity} 
-        loading={loading} 
-      />
+      <FadeInContainer delay={800} duration={600}>
+        <ActivityTimeline 
+          activities={analytics.activity} 
+          loading={loading} 
+        />
+      </FadeInContainer>
 
       {/* Quick Actions */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6">
+      <FadeInContainer delay={1000} duration={600}>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6">
         <div className="flex items-center gap-3 mb-4">
           <BarChart3 className="w-6 h-6 text-blue-600" />
           <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
@@ -114,6 +123,7 @@ const Dashboard = () => {
           </button>
         </div>
       </div>
+      </FadeInContainer>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { PostStatSection, PostsListView, EditPostModal, ViewPostModal } from ".";
-import { Button, DeleteModal } from "../../ui";
+import { Button, DeleteModal, FadeInContainer } from "../../ui";
 import { usePost } from "../../../hooks";
 
 const PostsMainView = ({ setView }) => {
@@ -43,17 +43,24 @@ const PostsMainView = ({ setView }) => {
 
   return (
     <section>
-      <PostStatSection stats={stats} loading={loading} />
-      <div className="flex justify-end items-center mb-4">
-        <Button 
-          onClickHandler={() => setView('create')} 
-          additionalClasses="primarybtn"
-        >
-          Add Post
-        </Button>
-      </div>
+      <FadeInContainer delay={200} duration={600}>
+        <PostStatSection stats={stats} loading={loading} />
+      </FadeInContainer>
       
-      <PostsListView onEdit={handleEdit} onView={handleView} onDelete={handleDelete} />
+      <FadeInContainer delay={400} duration={600}>
+        <div className="flex justify-end items-center mb-4">
+          <Button 
+            onClickHandler={() => setView('create')} 
+            additionalClasses="primarybtn"
+          >
+            Add Post
+          </Button>
+        </div>
+      </FadeInContainer>
+      
+      <FadeInContainer delay={600} duration={600}>
+        <PostsListView onEdit={handleEdit} onView={handleView} onDelete={handleDelete} />
+      </FadeInContainer>
       
       <EditPostModal
         isOpen={editModalOpen}

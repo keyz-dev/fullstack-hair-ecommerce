@@ -18,7 +18,6 @@ const GeneralSettings = () => {
   // Populate form when settings are loaded
   useEffect(() => {
     if (settings && settings.length > 0) {
-      console.log('Settings loaded:', settings);
       setForm({
         default_currency: getSetting('default_currency') || 'XAF',
         default_language: getSetting('default_language') || 'en',

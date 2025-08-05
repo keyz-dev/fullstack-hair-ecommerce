@@ -44,3 +44,5 @@ export { default as VideoUpload } from './VideoUpload';
 export { default as AdvancedFilters } from './AdvancedFilters';
 export { default as StatRenderer } from './StatRenderer';
 export { default as AnimatedStatCard } from './AnimatedStatCard';
+export { default as FadeInContainer } from './FadeInContainer';
+export { default as StaggeredFadeIn } from './StaggeredFadeIn';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AnimatedStatCard } from '../../ui';
+import { AnimatedStatCard, StaggeredFadeIn } from '../../ui';
 import { 
   DollarSign, 
   Users, 
@@ -66,7 +66,12 @@ const AdminOverviewStats = ({ stats, loading }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-4">
+    <StaggeredFadeIn 
+      staggerDelay={150} 
+      baseDelay={400} 
+      duration={800}
+      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-4"
+    >
       {statCards.map((card, index) => (
         <AnimatedStatCard 
           key={index} 
@@ -76,7 +81,7 @@ const AdminOverviewStats = ({ stats, loading }) => {
           duration={1.5}
         />
       ))}
-    </div>
+    </StaggeredFadeIn>
   );
 };
 
