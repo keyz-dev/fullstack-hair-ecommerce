@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { serviceApi } from '../api/service';
 import { toast } from 'react-toastify';
 
@@ -49,30 +49,19 @@ export const ServiceProvider = ({ children }) => {
   });
   const [search, setSearch] = useState('');
 
-  const fetchServices = useCallback(async (params = {}) => {
+  // Fetch all services (only once on mount)
+  const fetchServices = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const queryParams = {
-        page: pagination.page,
-        limit: pagination.limit,
-        search,
-        ...filters,
-        ...params,
-      };
-      
-      const response = await serviceApi.getAllServices(queryParams);
+      const response = await serviceApi.getAllServices({
+        limit: 1000, // Get all services for client-side filtering
+      });
       
       if (response.success) {
         setServices(response.services || []);
-        if (response.pagination) {
-          setPagination(prev => ({
-            ...prev,
-            page: response.pagination.page,
-            totalPages: response.pagination.totalPages,
-            total: response.pagination.total,
-          }));
-        }
+      } else {
+        setServices([]);
       }
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || "Failed to fetch services";
@@ -81,7 +70,105 @@ export const ServiceProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, search, filters]);
+  }, []);
+
+  // Client-side filtering and pagination
+  const getFilteredServices = useCallback(() => {
+    let filtered = services.filter(service => {
+      // Category filter
+      if (filters.category && filters.category !== '') {
+        const serviceCategoryId = typeof service.category === 'object' ? service.category._id : service.category;
+        if (serviceCategoryId !== filters.category) {
+          return false;
+        }
+      }
+      
+      // Status filter
+      if (filters.status && filters.status !== '') {
+        if (service.status !== filters.status) {
+          return false;
+        }
+      }
+      
+      // Requires staff filter
+      if (filters.requiresStaff && filters.requiresStaff !== '') {
+        const requiresStaff = filters.requiresStaff === 'true';
+        if (service.requiresStaff !== requiresStaff) {
+          return false;
+        }
+      }
+      
+      // Price range filters
+      if (filters.minPrice && filters.minPrice !== '') {
+        if (service.basePrice < parseFloat(filters.minPrice)) {
+          return false;
+        }
+      }
+      
+      if (filters.maxPrice && filters.maxPrice !== '') {
+        if (service.basePrice > parseFloat(filters.maxPrice)) {
+          return false;
+        }
+      }
+      
+      // Duration range filters
+      if (filters.minDuration && filters.minDuration !== '') {
+        if (service.duration < parseFloat(filters.minDuration)) {
+          return false;
+        }
+      }
+      
+      if (filters.maxDuration && filters.maxDuration !== '') {
+        if (service.duration > parseFloat(filters.maxDuration)) {
+          return false;
+        }
+      }
+      
+      // Staff filter
+      if (filters.staff && filters.staff !== '') {
+        const serviceStaff = service.staff || [];
+        if (!serviceStaff.some(staff => 
+          (typeof staff === 'object' ? staff._id : staff) === filters.staff
+        )) {
+          return false;
+        }
+      }
+      
+      // Search filter
+      if (search) {
+        const searchTerm = search.toLowerCase();
+        const name = service.name?.toLowerCase() || '';
+        const description = service.description?.toLowerCase() || '';
+        
+        if (!name.includes(searchTerm) && !description.includes(searchTerm)) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+
+    // Sort by creation date (newest first)
+    filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    return filtered;
+  }, [services, filters.category, filters.status, filters.requiresStaff, filters.minPrice, filters.maxPrice, filters.minDuration, filters.maxDuration, filters.staff, search]);
+
+  // Get paginated services from filtered results
+  const getPaginatedServices = useCallback(() => {
+    const filtered = getFilteredServices();
+    const startIndex = (pagination.page - 1) * pagination.limit;
+    const endIndex = startIndex + pagination.limit;
+    return filtered.slice(startIndex, endIndex);
+  }, [getFilteredServices, pagination.page, pagination.limit]);
+
+  // Calculate pagination info from filtered results
+  const getPaginationInfo = useCallback(() => {
+    const filtered = getFilteredServices();
+    const total = filtered.length;
+    const totalPages = Math.ceil(total / pagination.limit);
+    return { total, totalPages };
+  }, [getFilteredServices, pagination.limit]);
 
   const fetchActiveServices = useCallback(async (params = {}) => {
     setLoading(true);
@@ -258,6 +345,7 @@ export const ServiceProvider = ({ children }) => {
     }
   }, [fetchServices, fetchStats]);
 
+  // Client-side filter actions (no API calls)
   const setPage = useCallback((page) => {
     setPagination(prev => ({ ...prev, page }));
   }, []);
@@ -290,15 +378,33 @@ export const ServiceProvider = ({ children }) => {
     setFilters(clearedFilters);
     setSearch('');
     setPagination(prev => ({ ...prev, page: 1 }));
-    fetchServices({ page: 1 });
-  }, [fetchServices]);
+  }, []);
+
+  // Fetch services on mount only
+  useEffect(() => {
+    fetchServices();
+  }, []); // Empty dependency array - only run on mount
+
+  // Update pagination info when filters change
+  useEffect(() => {
+    const { total, totalPages } = getPaginationInfo();
+    setPagination(prev => ({
+      ...prev,
+      total,
+      totalPages
+    }));
+  }, [getPaginationInfo]);
 
   const value = {
-    services,
+    services: getPaginatedServices(), // Return paginated services
+    allServices: services, // All services for reference
     loading,
     error,
     stats,
-    pagination,
+    pagination: {
+      ...pagination,
+      ...getPaginationInfo()
+    },
     filters,
     search,
     fetchServices,

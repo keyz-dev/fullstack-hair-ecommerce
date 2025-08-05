@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Table, Pagination, DropdownMenu, StatusPill, AdvancedFilters, FadeInContainer } from "../../ui";
 import { Edit, Trash2, Clock, DollarSign, Users, Eye, Power, PowerOff } from "lucide-react";
 import { useService } from "../../../hooks";
@@ -10,7 +10,6 @@ const ServicesListView = ({ onEdit, onView, onDelete }) => {
   const {
     services, 
     pagination, 
-    fetchServices, 
     setPage, 
     setSearch, 
     search, 
@@ -65,10 +64,6 @@ const ServicesListView = ({ onEdit, onView, onDelete }) => {
       ]
     }
   ];
-
-  useEffect(() => {
-    fetchServices();
-  }, [pagination.page, filters, search, fetchServices]);
 
   const handleFilterChange = (filterName, value) => {
     setFilters({ ...filters, [filterName]: value });
@@ -247,7 +242,7 @@ const ServicesListView = ({ onEdit, onView, onDelete }) => {
           <Table
             columns={columns}
             data={services}
-            loading={loading}
+            isLoading={loading}
             className="min-h-[400px]"
             emptyStateMessage="No services found"
           />

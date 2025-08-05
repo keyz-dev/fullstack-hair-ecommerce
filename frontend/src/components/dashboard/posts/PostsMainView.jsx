@@ -8,7 +8,7 @@ const PostsMainView = ({ setView }) => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
-  const { deletePost, loading, fetchStats, fetchInitialPosts, posts, stats } = usePost();
+  const { deletePost, loading, fetchStats, fetchInitialPosts, stats } = usePost();
 
   // Fetch posts and stats on component mount
   useEffect(() => {
@@ -51,7 +51,7 @@ const PostsMainView = ({ setView }) => {
             onClickHandler={() => setView('create')} 
             additionalClasses="primarybtn"
           >
-            Add Post
+            Create New Post
           </Button>
         </div>
       </FadeInContainer>

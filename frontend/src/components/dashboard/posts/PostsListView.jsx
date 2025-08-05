@@ -114,11 +114,6 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
                 {row.description?.substring(0, 50)}...
               </div>
               <div className="text-xs text-gray-400 mt-1">
-                {row.postType && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-50 text-blue-700 mr-2">
-                    {row.postType.replace('-', ' ')}
-                  </span>
-                )}
                 {row.categories && row.categories.length > 0 && (
                   <span className="text-gray-500">
                     {row.categories.map(cat => cat.name).join(', ')}
@@ -170,6 +165,19 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
             <span className="text-sm text-gray-900">
               {row.author?.name || 'Unknown'}
             </span>
+          </div>
+        ),
+      },
+      {
+        Header: "Type",
+        accessor: "postType",
+        Cell: ({ row }) => (
+          <div className="flex items-center">
+            {row.postType && (
+              <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-50 text-blue-700 text-xs">
+                {row.postType.replace('-', ' ')}
+              </span>
+            )}
           </div>
         ),
       },
@@ -261,7 +269,7 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
           <Table
             columns={columns}
             data={posts}
-            loading={loading}
+            isLoading={loading}
             className="min-h-[400px]"
             emptyStateMessage="No posts found"
           />
