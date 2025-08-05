@@ -1,1 +1,4 @@
 {"level":"error","message":"E11000 duplicate key error collection: test.products index: slug_1 dup key: { slug: \"the-test-product\" }","timestamp":"2025-08-05T11:10:05.201Z"}
+{"level":"error","message":"Categories must be an array","timestamp":"2025-08-05T14:45:50.526Z"}
+{"level":"error","message":"Video file is required for video posts","timestamp":"2025-08-05T15:12:53.022Z"}
+{"level":"error","message":"Video file is required for video posts","timestamp":"2025-08-05T15:19:14.282Z"}

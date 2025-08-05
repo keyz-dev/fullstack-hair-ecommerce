@@ -81,13 +81,13 @@ const CreatePostPage = ({ setView }) => {
     setStep(3);
   };
 
-  const handleVideoUpload = (video, thumbnail) => {
-    setPostData(prev => ({ 
-      ...prev, 
-      postVideo: video?.file || null,
-      thumbnail: thumbnail?.file || null,
-      videoCaption: ''
-    }));
+  const handleVideoUpload = () => {
+    // Check if video is uploaded
+    if (!postData.postVideo) {
+      toast.error('Please upload a video file before continuing');
+      return;
+    }
+    
     setStep(3);
   };
 
@@ -98,6 +98,19 @@ const CreatePostPage = ({ setView }) => {
 
   const handleAdvancedSubmit = async (advancedData) => {
     const finalData = { ...postData, ...advancedData };
+    
+    // Validate video upload for video posts
+    if (finalData.mediaType === 'video' && !finalData.postVideo) {
+      toast.error('Please upload a video file for video posts');
+      return;
+    }
+    
+    // Ensure array fields are always arrays
+    finalData.categories = Array.isArray(finalData.categories) ? finalData.categories : [];
+    finalData.tags = Array.isArray(finalData.tags) ? finalData.tags : [];
+    finalData.services = Array.isArray(finalData.services) ? finalData.services : [];
+    finalData.products = Array.isArray(finalData.products) ? finalData.products : [];
+    
     try {
       const response = await createPost(finalData);
       if (response.success) {
@@ -107,6 +120,7 @@ const CreatePostPage = ({ setView }) => {
         toast.error(response.message || "Failed to create post");
       }
     } catch (error) {
+      console.error('Post creation error:', error);
       toast.error(error.message || "Failed to create post");
     }
   };
@@ -172,14 +186,24 @@ const CreatePostPage = ({ setView }) => {
               file: postData.thumbnail,
               url: URL.createObjectURL(postData.thumbnail)
             } : null}
-            onVideoChange={(video) => setPostData(prev => ({ 
-              ...prev, 
-              postVideo: video?.file || null 
-            }))}
-            onThumbnailChange={(thumbnail) => setPostData(prev => ({ 
-              ...prev, 
-              thumbnail: thumbnail?.file || null 
-            }))}
+            onVideoChange={(video) => {
+              setPostData(prev => {
+                const newState = { 
+                  ...prev, 
+                  postVideo: video?.file || null 
+                };
+                return newState;
+              });
+            }}
+            onThumbnailChange={(thumbnail) => {
+              setPostData(prev => {
+                const newState = { 
+                  ...prev, 
+                  thumbnail: thumbnail?.file || null 
+                };
+                return newState;
+              });
+            }}
             onSave={handleVideoUpload}
             onBack={handleBack}
             loading={loading}

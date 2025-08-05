@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Input, Textarea } from '../../../ui';
-import { X, Plus, Calendar, Tag, Target, Share2 } from 'lucide-react';
+import { X, Plus, Calendar, Tag, Target, Share2, ArrowLeftIcon } from 'lucide-react';
 import { useCategory } from '../../../../hooks/';
 import { toast } from 'react-toastify';
 
@@ -16,8 +16,8 @@ const AdvancedSettingsStep = ({
 }) => {
   const { categories: availableCategories, loading: loadingCategories } = useCategory();
   const [formData, setFormData] = useState({
-    tags,
-    categories,
+    tags: Array.isArray(tags) ? tags : [],
+    categories: Array.isArray(categories) ? categories : [],
     callToAction,
     scheduledFor,
     featured
@@ -70,7 +70,14 @@ const AdvancedSettingsStep = ({
   };
 
   const handleSubmit = () => {
-    onSave(formData);
+    // Ensure categories is always an array before submitting
+    const submitData = {
+      ...formData,
+      categories: Array.isArray(formData.categories) ? formData.categories : [],
+      tags: Array.isArray(formData.tags) ? formData.tags : []
+    };
+    
+    onSave(submitData);
   };
 
   return (
@@ -86,7 +93,7 @@ const AdvancedSettingsStep = ({
 
       <div className="space-y-3">
         {/* Tags Section */}
-        <div className="bg-gray-50 rounded-lg p-6">
+        <div className="bg-gray-50 rounded-xs p-6">
           <div className="flex items-center gap-2 mb-4">
             <Tag className="w-5 h-5 text-gray-600" />
             <h3 className="text-lg font-semibold text-primary">Tags</h3>
@@ -137,7 +144,7 @@ const AdvancedSettingsStep = ({
         </div>
 
                  {/* Categories Section */}
-         <div className="bg-gray-50 rounded-lg p-6">
+         <div className="bg-gray-50 rounded-xs p-6">
            <div className="flex items-center gap-2 mb-4">
              <Target className="w-5 h-5 text-gray-600" />
              <h3 className="text-lg font-semibold text-primary">Categories</h3>
@@ -148,7 +155,7 @@ const AdvancedSettingsStep = ({
 
            <div className="mb-4">
              <select
-               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+               className="w-full px-3 py-2 border border-gray-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                onChange={(e) => {
                  if (e.target.value) {
                    handleAddCategory(e.target.value);
@@ -345,6 +352,10 @@ const AdvancedSettingsStep = ({
                 // Clean up callToAction data before submitting
                 const cleanedFormData = { ...formData };
                 
+                // Ensure categories and tags are always arrays
+                cleanedFormData.categories = Array.isArray(cleanedFormData.categories) ? cleanedFormData.categories : [];
+                cleanedFormData.tags = Array.isArray(cleanedFormData.tags) ? cleanedFormData.tags : [];
+                
                 // If CTA type is not 'custom', remove the link field or set it to null
                 if (cleanedFormData.callToAction && cleanedFormData.callToAction.type !== 'custom') {
                   cleanedFormData.callToAction = {
@@ -385,7 +396,7 @@ const AdvancedSettingsStep = ({
           <Button
             onClickHandler={onBack}
             additionalClasses="border border-gray-300 text-gray-700 hover:bg-gray-50"
-            leadingIcon={"fas fa-arrow-left"}
+            leadingIcon={<ArrowLeftIcon className="w-4 h-4" />}
           >
             Back
           </Button>

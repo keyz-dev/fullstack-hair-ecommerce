@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ImageUploadModal } from ".";
-import { X, ImageIcon } from "lucide-react";
+import { X, ImageIcon, Plus, ArrowLeft } from "lucide-react";
 import { Button } from "../ui";
 
 const ImageUploadStep = ({ images = [], onImagesChange, onSave, loading, onBack, submitBtnText = "Save Images" }) => {
@@ -48,7 +48,7 @@ const ImageUploadStep = ({ images = [], onImagesChange, onSave, loading, onBack,
           <Button
             onClickHandler={handleAddMorePhotos}
             additionalClasses="border border-line_clr text-secondary"
-            leadingIcon={"fas fa-plus"}
+            leadingIcon={<Plus className="w-4 h-4" />}
           >
             Add Image
           </Button>
@@ -121,7 +121,7 @@ const ImageUploadStep = ({ images = [], onImagesChange, onSave, loading, onBack,
           <Button
             onClickHandler={onBack}
             additionalClasses="border border-line_clr text-secondary"
-            leadingIcon={"fas fa-arrow-left"}
+            leadingIcon={<ArrowLeft className="w-4 h-4" />}
           >
             Back
           </Button>

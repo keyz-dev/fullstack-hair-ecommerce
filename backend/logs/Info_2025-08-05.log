@@ -8,3 +8,18 @@
 {"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-04T23:25:47.881Z"}
 {"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-05T10:34:57.677Z"}
 {"level":"error","message":"E11000 duplicate key error collection: test.products index: slug_1 dup key: { slug: \"the-test-product\" }","timestamp":"2025-08-05T11:10:05.211Z"}
+{"level":"error","message":"Categories must be an array","timestamp":"2025-08-05T14:45:50.534Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-05T14:49:01.757Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-05T14:50:13.408Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-05T14:50:28.452Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-05T14:51:55.790Z"}
+{"level":"error","message":"Video file is required for video posts","timestamp":"2025-08-05T15:12:53.023Z"}
+{"level":"error","message":"Video file is required for video posts","timestamp":"2025-08-05T15:19:14.282Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-05T15:25:14.982Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-05T15:25:36.733Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-05T15:27:01.349Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-05T15:27:13.030Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-05T15:27:33.833Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-05T15:37:46.194Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-05T15:37:53.571Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-00.2cqrvds.mongodb.net","timestamp":"2025-08-05T15:38:04.561Z"}

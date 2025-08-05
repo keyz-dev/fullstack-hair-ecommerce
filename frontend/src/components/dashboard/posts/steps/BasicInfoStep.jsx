@@ -7,7 +7,8 @@ import {
   Lightbulb, 
   Zap, 
   Camera, 
-  TrendingUp 
+  TrendingUp,
+  ArrowLeftIcon
 } from 'lucide-react';
 
 const BasicInfoStep = ({ 
@@ -221,8 +222,8 @@ const BasicInfoStep = ({
           <Button
             onClickHandler={onBack}
             additionalClasses="border border-gray-300 text-gray-700 hover:bg-gray-50"
-            leadingIcon={"fas fa-arrow-left"}
           >
+            <ArrowLeftIcon className="w-4 h-4" />
             Back
           </Button>
           <Button

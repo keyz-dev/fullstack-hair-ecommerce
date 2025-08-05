@@ -84,8 +84,6 @@ const getAllPosts = async (req, res, next) => {
 
     const total = await Post.countDocuments(query);
 
-    // Debug logs removed - posts fetching working correctly
-
     res.json({
       message: 'Posts fetched successfully',
       success: true,
@@ -178,7 +176,12 @@ const createPost = async (req, res, next) => {
     const parseJsonField = (field) => {
       if (typeof field === 'string') {
         try {
-          return JSON.parse(field);
+          const parsed = JSON.parse(field);
+          // Ensure arrays are always returned as arrays, even if empty
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+          return parsed;
         } catch (error) {
           console.error(`Error parsing field: ${field}`, error);
           return null;
@@ -200,10 +203,10 @@ const createPost = async (req, res, next) => {
       callToAction: parseJsonField(callToAction),
       socialShare: parseJsonField(socialShare),
       postMetadata: parseJsonField(postMetadata),
-      tags: parseJsonField(tags),
-      categories: parseJsonField(categories),
-      services: parseJsonField(services),
-      products: parseJsonField(products),
+      tags: parseJsonField(tags) || [],
+      categories: parseJsonField(categories) || [],
+      services: parseJsonField(services) || [],
+      products: parseJsonField(products) || [],
     };
 
     const { error } = createPostSchema.validate(postData);
@@ -226,7 +229,7 @@ const createPost = async (req, res, next) => {
       return next(new BadRequestError(error.details[0].message));
     }
 
-    if (req.files) {
+    if (req.files) {      
       if (mediaType === 'images' && req.files.postImages) {
         const imageFiles = Array.isArray(req.files.postImages) ? req.files.postImages : [req.files.postImages];
         const validImages = imageFiles.filter(file => file && file.path);
@@ -249,13 +252,10 @@ const createPost = async (req, res, next) => {
         if (!videoFile) {
           return next(new BadRequestError('Video file is required for video posts'));
         }
-        if (!thumbnailFile) {
-          return next(new BadRequestError('Thumbnail is required for video posts'));
-        }
 
         postData.video = {
           url: videoFile.path,
-          thumbnail: thumbnailFile.path,
+          thumbnail: thumbnailFile ? thumbnailFile.path : videoFile.path, // Use video as thumbnail if no thumbnail provided
           caption: req.body.videoCaption || ''
         };
       }
@@ -267,10 +267,6 @@ const createPost = async (req, res, next) => {
     if (mediaType === 'video' && (!postData.video || !postData.video.url)) {
       return next(new BadRequestError('Video file is required for video posts'));
     }
-
-    console.log("\n=======About to the created ============")
-    console.log("postData: ", postData)
-    console.log("\n===================")
 
     const post = new Post(postData);
     await post.save();
@@ -290,7 +286,6 @@ const createPost = async (req, res, next) => {
     });
   } catch (error) {
     if (req.files || req.file) await cleanUpFileImages(req);
-    console.error('Error creating post:', error);
     return next(new InternalServerError('Error creating post'));
   }
 };
@@ -310,7 +305,12 @@ const updatePost = async (req, res, next) => {
     const parseJsonField = (field) => {
       if (typeof field === 'string') {
         try {
-          return JSON.parse(field);
+          const parsed = JSON.parse(field);
+          // Ensure arrays are always returned as arrays, even if empty
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+          return parsed;
         } catch (error) {
           console.error('Error parsing JSON field:', error);
           return field;
@@ -322,8 +322,14 @@ const updatePost = async (req, res, next) => {
     // Parse all object fields
     const fieldsToParse = ['callToAction', 'socialShare', 'postMetadata', 'tags', 'categories', 'services', 'products'];
     fieldsToParse.forEach(field => {
-      if (updateData[field]) {
-        updateData[field] = parseJsonField(updateData[field]);
+      if (updateData[field] !== undefined) {
+        const parsed = parseJsonField(updateData[field]);
+        // Ensure array fields are always arrays
+        if (['tags', 'categories', 'services', 'products'].includes(field)) {
+          updateData[field] = Array.isArray(parsed) ? parsed : [];
+        } else {
+          updateData[field] = parsed;
+        }
       }
     });
 
@@ -399,7 +405,6 @@ const updatePost = async (req, res, next) => {
       post: updatedPost
     });
   } catch (error) {
-    console.error('Error updating post:', error);
     return next(new InternalServerError('Error updating post'));
   }
 };
@@ -427,7 +432,6 @@ const deletePost = async (req, res, next) => {
 
     res.json({ message: 'Post deleted successfully' });
   } catch (error) {
-    console.error('Error deleting post:', error);
     return next(new InternalServerError('Error deleting post'));
   }
 };
@@ -461,7 +465,6 @@ const toggleLike = async (req, res, next) => {
       userLiked: !existingLike
     });
   } catch (error) {
-    console.error('Error toggling like:', error);
     return next(new InternalServerError('Error toggling like'));
   }
 };
@@ -499,7 +502,6 @@ const getPostAnalytics = async (req, res, next) => {
 
     res.json(analytics);
   } catch (error) {
-    console.error('Error fetching post analytics:', error);
     return next(new InternalServerError('Error fetching analytics'));
   }
 };
@@ -520,7 +522,6 @@ const getFeaturedPosts = async (req, res, next) => {
 
     res.json(posts);
   } catch (error) {
-    console.error('Error fetching featured posts:', error);
     return next(new InternalServerError('Error fetching featured posts'));
   }
 };
@@ -553,7 +554,6 @@ const getPostsByCategory = async (req, res, next) => {
       total
     });
   } catch (error) {
-    console.error('Error fetching posts by category:', error);
     return next(new InternalServerError('Error fetching posts by category'));
   }
 };

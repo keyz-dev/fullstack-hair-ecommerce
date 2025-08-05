@@ -1,16 +1,32 @@
 import { useState, useRef } from "react";
-import { VideoIcon, Upload, X, Play } from "lucide-react";
+import { VideoIcon, Upload, X, ArrowLeft } from "lucide-react";
 import { Button } from "../../../ui";
 
 const VideoUploadStep = ({ video = null, thumbnail = null, onVideoChange, onThumbnailChange, onSave, onBack, loading }) => {
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-  const [isThumbnailModalOpen, setIsThumbnailModalOpen] = useState(false);
+  const [isVideoDragOver, setIsVideoDragOver] = useState(false);
+  const [isThumbnailDragOver, setIsThumbnailDragOver] = useState(false);
   const videoInputRef = useRef(null);
   const thumbnailInputRef = useRef(null);
 
   const handleVideoSelect = (event) => {
     const file = event.target.files[0];
-    if (file && file.type.startsWith("video/")) {
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/webm', 'video/mkv'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please select a valid video file (MP4, AVI, MOV, WMV, FLV, WebM, MKV)');
+        event.target.value = "";
+        return;
+      }
+      
+      // Validate file size (50MB limit as per backend)
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        alert('Video file size must be less than 50MB');
+        event.target.value = "";
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         onVideoChange({
@@ -56,15 +72,46 @@ const VideoUploadStep = ({ video = null, thumbnail = null, onVideoChange, onThum
     onThumbnailChange(null);
   };
 
-  const handleDragOver = (e) => {
+  const handleVideoDragOver = (e) => {
     e.preventDefault();
+    setIsVideoDragOver(true);
+  };
+
+  const handleVideoDragLeave = (e) => {
+    e.preventDefault();
+    setIsVideoDragOver(false);
+  };
+
+  const handleThumbnailDragOver = (e) => {
+    e.preventDefault();
+    setIsThumbnailDragOver(true);
+  };
+
+  const handleThumbnailDragLeave = (e) => {
+    e.preventDefault();
+    setIsThumbnailDragOver(false);
   };
 
   const handleVideoDrop = (e) => {
     e.preventDefault();
+    setIsVideoDragOver(false);
     const files = Array.from(e.dataTransfer.files);
     const videoFile = files.find(file => file.type.startsWith("video/"));
     if (videoFile) {
+      // Validate file type
+      const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/webm', 'video/mkv'];
+      if (!allowedTypes.includes(videoFile.type)) {
+        alert('Please select a valid video file (MP4, AVI, MOV, WMV, FLV, WebM, MKV)');
+        return;
+      }
+      
+      // Validate file size (50MB limit as per backend)
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (videoFile.size > maxSize) {
+        alert('Video file size must be less than 50MB');
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         onVideoChange({
@@ -74,6 +121,24 @@ const VideoUploadStep = ({ video = null, thumbnail = null, onVideoChange, onThum
         });
       };
       reader.readAsDataURL(videoFile);
+    }
+  };
+
+  const handleThumbnailDrop = (e) => {
+    e.preventDefault();
+    setIsThumbnailDragOver(false);
+    const files = Array.from(e.dataTransfer.files);
+    const imageFile = files.find(file => file.type.startsWith("image/"));
+    if (imageFile) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        onThumbnailChange({
+          file: imageFile,
+          url: e.target.result,
+          name: imageFile.name,
+        });
+      };
+      reader.readAsDataURL(imageFile);
     }
   };
 
@@ -115,8 +180,13 @@ const VideoUploadStep = ({ video = null, thumbnail = null, onVideoChange, onThum
               </div>
             ) : (
               <div
-                className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center"
-                onDragOver={handleDragOver}
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                  isVideoDragOver 
+                    ? 'border-accent bg-accent/5' 
+                    : 'border-gray-300'
+                }`}
+                onDragOver={handleVideoDragOver}
+                onDragLeave={handleVideoDragLeave}
                 onDrop={handleVideoDrop}
               >
                 <div className="flex flex-col items-center gap-4">
@@ -166,7 +236,16 @@ const VideoUploadStep = ({ video = null, thumbnail = null, onVideoChange, onThum
                 </button>
               </div>
             ) : (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <div 
+                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                  isThumbnailDragOver 
+                    ? 'border-accent bg-accent/5' 
+                    : 'border-gray-300'
+                }`}
+                onDragOver={handleThumbnailDragOver}
+                onDragLeave={handleThumbnailDragLeave}
+                onDrop={handleThumbnailDrop}
+              >
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
                     <Upload className="w-6 h-6 text-blue-600" />
@@ -174,7 +253,7 @@ const VideoUploadStep = ({ video = null, thumbnail = null, onVideoChange, onThum
                   <div>
                     <h3 className="font-medium text-gray-900">Upload Thumbnail</h3>
                     <p className="text-sm text-gray-500 mt-1">
-                      Choose an image to represent your video
+                      Drag and drop or browse for image files
                     </p>
                   </div>
                   <Button
@@ -194,7 +273,7 @@ const VideoUploadStep = ({ video = null, thumbnail = null, onVideoChange, onThum
           <Button
             onClickHandler={onBack}
             additionalClasses="border border-gray-300 text-gray-700 hover:bg-gray-50"
-            leadingIcon={"fas fa-arrow-left"}
+            leadingIcon={<ArrowLeft className="w-4 h-4" />}
           >
             Back
           </Button>
@@ -213,7 +292,7 @@ const VideoUploadStep = ({ video = null, thumbnail = null, onVideoChange, onThum
       <input
         ref={videoInputRef}
         type="file"
-        accept="video/*"
+        accept="video/mp4,video/avi,video/mov,video/wmv,video/flv,video/webm,video/mkv"
         onChange={handleVideoSelect}
         className="hidden"
       />

@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
 
 const ToastMessage = ({ message, type, onClose }) => {
   if (!message) return null; // Don't render if no message
@@ -22,7 +23,7 @@ const ToastMessage = ({ message, type, onClose }) => {
           className="absolute right-2 cursor-pointer ml-2 text-lg"
           onClick={onClose}
         >
-          <i className="fas fa-x"></i>
+          <X className="w-4 h-4" />
         </button>
       </motion.div>
     </AnimatePresence>
