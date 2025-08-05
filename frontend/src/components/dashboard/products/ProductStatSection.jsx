@@ -35,7 +35,7 @@ const ProductStatSection = ({ stats, loading }) => {
   ];
 
   return (
-    <StatRenderer statCards={statCards} className="lg:w-[230px]" isLoading={loading} />
+    <StatRenderer statCards={statCards} className="lg:w-[240px]" isLoading={loading} />
   );
 };
 

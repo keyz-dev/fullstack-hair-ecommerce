@@ -24,11 +24,6 @@ export const navBarItems = [
     path: "/blog",
     icon: "blog",
   },
-  {
-    title: "Posts",
-    path: "/posts",
-    icon: "posts",
-  },  
 ];
 
 export const guaranteeItems = [

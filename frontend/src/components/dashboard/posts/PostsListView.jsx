@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Table, Pagination, DropdownMenu, StatusPill, AdvancedFilters, FadeInContainer } from "../../ui";
 import { Edit, Trash2, Eye, FileText, Calendar, User } from "lucide-react";
 import { usePost } from "../../../hooks";
@@ -9,7 +9,6 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
   const {
     posts, 
     pagination, 
-    fetchPosts, 
     setPageAndFetch, 
     setSearchAndFetch, 
     search, 
@@ -76,10 +75,6 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
       ]
     }
   ];
-
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
 
   const handleFilterChange = (filterName, value) => {
     setFiltersAndFetch({ ...filters, [filterName]: value });

@@ -1,5 +1,5 @@
 import { Route } from "react-router-dom";
-import { Home, ProductDetails, Shop, Cart, Services, AboutUs, Blog, Posts, Checkout, OrderConfirmation, OrderTracking } from "../pages";
+import { Home, ProductDetails, Shop, Cart, Services, AboutUs, Blog, Checkout, OrderConfirmation, OrderTracking } from "../pages";
 import { Login, Register, ForgotPassword, VerifyAccount, ResetPassword } from "../pages/auth";
 import { HomeLayout, AuthLayout } from "../components/layout";
 
@@ -15,7 +15,6 @@ export const publicRoutes = [
     <Route path="/services" element={<Services />} />
     <Route path="/about" element={<AboutUs />} />
     <Route path="/blog" element={<Blog />} />
-    <Route path="/posts" element={<Posts />} />
   </Route>,
   <Route key="auth" element={<AuthLayout />}>
     <Route key="login" path="/login" element={<Login />} />

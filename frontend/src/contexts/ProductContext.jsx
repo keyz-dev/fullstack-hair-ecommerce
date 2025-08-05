@@ -1,6 +1,5 @@
 import React, { createContext, useReducer, useCallback, useEffect, useMemo } from "react";
 import { productApi } from "../api/product";
-import { toast } from "react-toastify";
 
 // Utility function to extract error message from API errors
 const extractErrorMessage = (error) => {
@@ -172,7 +171,6 @@ const ProductProvider = ({ children }) => {
       console.error('Error fetching products:', err);
       const errorMessage = extractErrorMessage(err) || 'Failed to load products. Please try again.';
       dispatch({ type: PRODUCT_ACTIONS.SET_ERROR, payload: errorMessage });
-      toast.error('Failed to load products');
     }
   }, [state.pagination.limit]);
 
@@ -330,13 +328,10 @@ const ProductProvider = ({ children }) => {
       
       // Add the new product to the state
       dispatch({ type: PRODUCT_ACTIONS.ADD_PRODUCT, payload: newProduct });
-      
-      toast.success('Product created successfully');
-      return newProduct;
+      return {success: true, message: 'Product created successfully'};
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || 'Failed to create product';
       dispatch({ type: PRODUCT_ACTIONS.SET_ERROR, payload: errorMessage });
-      toast.error('Failed to create product');
       throw new Error(errorMessage);
     } finally {
       dispatch({ type: PRODUCT_ACTIONS.SET_LOADING, payload: false });
@@ -353,12 +348,10 @@ const ProductProvider = ({ children }) => {
       
       dispatch({ type: PRODUCT_ACTIONS.UPDATE_PRODUCT, payload: updatedProduct });
       
-      toast.success('Product updated successfully');
-      return updatedProduct;
+      return {success: true, message: 'Product updated successfully'};
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || 'Failed to update product';
       dispatch({ type: PRODUCT_ACTIONS.SET_ERROR, payload: errorMessage });
-      toast.error('Failed to update product');
       throw new Error(errorMessage);
     } finally {
       dispatch({ type: PRODUCT_ACTIONS.SET_LOADING, payload: false });
@@ -373,12 +366,10 @@ const ProductProvider = ({ children }) => {
       await productApi.deleteProduct(id);
       dispatch({ type: PRODUCT_ACTIONS.DELETE_PRODUCT, payload: id });
       
-      toast.success('Product deleted successfully');
-      return true;
+      return {success: true, message: 'Product deleted successfully'};
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || 'Failed to delete product';
       dispatch({ type: PRODUCT_ACTIONS.SET_ERROR, payload: errorMessage });
-      toast.error('Failed to delete product');
       throw new Error(errorMessage);
     } finally {
       dispatch({ type: PRODUCT_ACTIONS.SET_LOADING, payload: false });

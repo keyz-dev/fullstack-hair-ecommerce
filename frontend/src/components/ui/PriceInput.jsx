@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import CurrencySelector from '../header/CurrencySelector';
-import { Input } from '.';
+import { Input, CurrencySelector } from '.';
 import { useCurrency } from '../../hooks/useCurrency';
 
 const PriceInput = ({
@@ -40,20 +39,11 @@ const PriceInput = ({
     }
   }, [price, currency, formatPrice]);
 
-  const handlePriceChange = (e) => {
-    const value = e.target.value;
-    // Remove currency symbols and formatting for input
-    const numericValue = value.replace(/[^\d.]/g, '');
-    onPriceChange(numericValue);
-  };
-
   const handleCurrencyChange = async (newCurrency) => {
     if (onCurrencyChange) {
       onCurrencyChange(newCurrency);
     }
   };
-
-  const currentCurrencyInfo = getCurrencyInfo(currency);
 
   return (
     <div className={className}>
@@ -83,7 +73,7 @@ const PriceInput = ({
             name="price"
             type="number"
             value={price || ''}
-            onChangeHandler={handlePriceChange}
+            onChangeHandler={onPriceChange}
             error={error}
             disabled={disabled}
             required={required}

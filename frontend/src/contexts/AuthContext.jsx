@@ -34,6 +34,12 @@ export const AuthProvider = ({ children }) => {
       case "admin":
         navigate("/admin");
         break;
+      case "vendor":
+        navigate("/vendor");
+        break;
+      case "client":
+        navigate("/client");
+        break;
       default:
         navigate("/");
     }

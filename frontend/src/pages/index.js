@@ -8,6 +8,5 @@ export { default as Cart } from "./Cart";
 export { default as Services } from "./Services";
 export { default as AboutUs } from "./AboutUs";
 export { default as Blog } from "./Blog";
-export { default as Posts } from "./Posts";
 export { default as UpcomingDemo } from "./UpcomingDemo";
 

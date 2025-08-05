@@ -1,0 +1,1 @@
+{"level":"error","message":"E11000 duplicate key error collection: test.products index: slug_1 dup key: { slug: \"the-test-product\" }","timestamp":"2025-08-05T11:10:05.201Z"}

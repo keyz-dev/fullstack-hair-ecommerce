@@ -6,3 +6,5 @@
 {"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-04T23:24:47.162Z"}
 {"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-04T23:25:14.399Z"}
 {"level":"info","message":"server connected to database ac-st5dkat-shard-00-02.2cqrvds.mongodb.net","timestamp":"2025-08-04T23:25:47.881Z"}
+{"level":"info","message":"server connected to database ac-st5dkat-shard-00-01.2cqrvds.mongodb.net","timestamp":"2025-08-05T10:34:57.677Z"}
+{"level":"error","message":"E11000 duplicate key error collection: test.products index: slug_1 dup key: { slug: \"the-test-product\" }","timestamp":"2025-08-05T11:10:05.211Z"}

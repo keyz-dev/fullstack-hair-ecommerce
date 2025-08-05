@@ -180,6 +180,7 @@ const SpecificationsStep = ({
               placeholder="Add a tag"
               value={newTag}
               onChangeHandler={(e) => setNewTag(e.target.value)}
+              required={false}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
             />
             <Button

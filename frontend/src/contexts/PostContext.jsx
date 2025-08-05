@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback } from 'react';
+import React, { createContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { postApi } from '../api/post';
 import { toast } from 'react-toastify';
 import { extractErrorMessage } from '../utils/extractError';
@@ -35,84 +35,22 @@ export const PostProvider = ({ children }) => {
   });
   const [search, setSearch] = useState('');
 
-  const fetchPosts = useCallback(async (params = {}) => {
+  // Fetch all posts (only once on mount)
+  const fetchPosts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const queryParams = {
-        page: pagination.page,
-        limit: pagination.limit,
-        search,
-        category: filters.category,
-        tag: filters.tag,
-        featured: filters.featured,
-        author: filters.author,
-        sortBy: filters.sortBy,
-        sortOrder: filters.sortOrder,
-        ...params,
-      };
-
-      // Handle postType filter - backend expects 'type'
-      if (filters.postType && filters.postType !== '') {
-        queryParams.type = filters.postType;
-      }
-      
-      // Only add status if it's not empty
-      if (filters.status && filters.status !== '') {
-        queryParams.status = filters.status;
-      }
-      
-      const response = await postApi.getAllPosts(queryParams);
-
-      if (response.success && response.data) {
-        const { posts, pagination: newPagination } = response.data;
-        setPosts(posts || []);
-        setPagination(prev => ({
-          ...prev,
-          page: newPagination.currentPage || 1,
-          totalPages: newPagination.totalPages || 1,
-          total: newPagination.total || 0,
-        }));
-      } else {
-        // Handle cases where the API call might not be successful
-        setPosts([]);
-        setPagination(prev => ({ ...prev, page: 1, totalPages: 1, total: 0 }));
-      }
-    } catch (err) {
-      const errorMessage = extractErrorMessage(err) || "Failed to fetch posts";
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [pagination.page, pagination.limit, search, filters.category, filters.tag, filters.featured, filters.author, filters.postType, filters.sortBy, filters.sortOrder]);
-
-  // Separate function for initial fetch that doesn't depend on filters
-  const fetchInitialPosts = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const queryParams = {
-        page: 1,
-        limit: 10,
+      const response = await postApi.getAllPosts({
+        limit: 1000, // Get all posts for client-side filtering
         sortBy: 'publishedAt',
         sortOrder: 'desc'
-      };
-      
-      const response = await postApi.getAllPosts(queryParams);
+      });
 
       if (response.success && response.data) {
-        const { posts, pagination: newPagination } = response.data;
+        const { posts } = response.data;
         setPosts(posts || []);
-        setPagination(prev => ({
-          ...prev,
-          page: newPagination.currentPage || 1,
-          totalPages: newPagination.totalPages || 1,
-          total: newPagination.total || 0,
-        }));
       } else {
         setPosts([]);
-        setPagination(prev => ({ ...prev, page: 1, totalPages: 1, total: 0 }));
       }
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || "Failed to fetch posts";
@@ -122,6 +60,156 @@ export const PostProvider = ({ children }) => {
       setLoading(false);
     }
   }, []);
+
+  // Separate function for initial fetch that doesn't depend on filters
+  const fetchInitialPosts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await postApi.getAllPosts({
+        limit: 1000, // Get all posts for client-side filtering
+        sortBy: 'publishedAt',
+        sortOrder: 'desc'
+      });
+
+      if (response.success && response.data) {
+        const { posts } = response.data;
+        setPosts(posts || []);
+      } else {
+        setPosts([]);
+      }
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err) || "Failed to fetch posts";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Client-side filtering and pagination
+  const getFilteredPosts = useCallback(() => {
+    let filtered = posts.filter(post => {
+      // Status filter
+      if (filters.status && filters.status !== '') {
+        if (post.status !== filters.status) {
+          return false;
+        }
+      }
+      
+      // Category filter
+      if (filters.category && filters.category !== '') {
+        const postCategories = post.categories || [];
+        const hasCategory = postCategories.some(cat => 
+          (typeof cat === 'object' ? cat._id : cat) === filters.category
+        );
+        if (!hasCategory) {
+          return false;
+        }
+      }
+      
+      // Tag filter
+      if (filters.tag && filters.tag !== '') {
+        const postTags = post.tags || [];
+        if (!postTags.some(tag => tag.toLowerCase().includes(filters.tag.toLowerCase()))) {
+          return false;
+        }
+      }
+      
+      // Featured filter
+      if (filters.featured && filters.featured !== '') {
+        const isFeatured = filters.featured === 'true';
+        if (post.featured !== isFeatured) {
+          return false;
+        }
+      }
+      
+      // Author filter
+      if (filters.author && filters.author !== '') {
+        const authorName = post.author?.name || '';
+        if (!authorName.toLowerCase().includes(filters.author.toLowerCase())) {
+          return false;
+        }
+      }
+      
+      // Post type filter
+      if (filters.postType && filters.postType !== '') {
+        if (post.postType !== filters.postType) {
+          return false;
+        }
+      }
+      
+      // Search filter
+      if (search) {
+        const searchTerm = search.toLowerCase();
+        const title = post.title?.toLowerCase() || '';
+        const description = post.description?.toLowerCase() || '';
+        const tags = (post.tags || []).join(' ').toLowerCase();
+        const authorName = post.author?.name?.toLowerCase() || '';
+        
+        if (!title.includes(searchTerm) && 
+            !description.includes(searchTerm) && 
+            !tags.includes(searchTerm) &&
+            !authorName.includes(searchTerm)) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+
+    // Sort the filtered results
+    if (filters.sortBy) {
+      filtered.sort((a, b) => {
+        let aValue, bValue;
+        
+        switch (filters.sortBy) {
+          case 'title':
+            aValue = a.title || '';
+            bValue = b.title || '';
+            return filters.sortOrder === 'desc' 
+              ? bValue.localeCompare(aValue) 
+              : aValue.localeCompare(bValue);
+          case 'publishedAt':
+            aValue = new Date(a.publishedAt || a.createdAt);
+            bValue = new Date(b.publishedAt || b.createdAt);
+            return filters.sortOrder === 'desc' ? bValue - aValue : aValue - bValue;
+          case 'createdAt':
+            aValue = new Date(a.createdAt);
+            bValue = new Date(b.createdAt);
+            return filters.sortOrder === 'desc' ? bValue - aValue : aValue - bValue;
+          case 'updatedAt':
+            aValue = new Date(a.updatedAt);
+            bValue = new Date(b.updatedAt);
+            return filters.sortOrder === 'desc' ? bValue - aValue : aValue - bValue;
+          case 'views':
+            aValue = a.views || 0;
+            bValue = b.views || 0;
+            return filters.sortOrder === 'desc' ? bValue - aValue : aValue - bValue;
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return filtered;
+  }, [posts, filters.status, filters.category, filters.tag, filters.featured, filters.author, filters.postType, filters.sortBy, filters.sortOrder, search]);
+
+  // Get paginated posts from filtered results
+  const getPaginatedPosts = useCallback(() => {
+    const filtered = getFilteredPosts();
+    const startIndex = (pagination.page - 1) * pagination.limit;
+    const endIndex = startIndex + pagination.limit;
+    return filtered.slice(startIndex, endIndex);
+  }, [getFilteredPosts, pagination.page, pagination.limit]);
+
+  // Calculate pagination info from filtered results
+  const getPaginationInfo = useCallback(() => {
+    const filtered = getFilteredPosts();
+    const total = filtered.length;
+    const totalPages = Math.ceil(total / pagination.limit);
+    return { total, totalPages };
+  }, [getFilteredPosts, pagination.limit]);
 
   const fetchFeaturedPosts = useCallback(async (limit = 6) => {
     try {
@@ -217,17 +305,16 @@ export const PostProvider = ({ children }) => {
     }
   }, []);
 
+  // Client-side filter actions (no API calls)
   const setFiltersAndFetch = useCallback((newFilters) => {
     setFilters(newFilters);
     setPagination(prev => ({ ...prev, page: 1 }));
-    fetchPosts({ page: 1 });
-  }, [fetchPosts]);
+  }, []);
 
   const setSearchAndFetch = useCallback((newSearch) => {
     setSearch(newSearch);
     setPagination(prev => ({ ...prev, page: 1 }));
-    fetchPosts({ page: 1 });
-  }, [fetchPosts]);
+  }, []);
 
   const clearAllFilters = useCallback(() => {
     const clearedFilters = {
@@ -243,22 +330,39 @@ export const PostProvider = ({ children }) => {
     setFilters(clearedFilters);
     setSearch('');
     setPagination(prev => ({ ...prev, page: 1 }));
-    fetchPosts({ page: 1 });
-  }, [fetchPosts]);
+  }, []);
 
   const setPageAndFetch = useCallback((page) => {
     setPagination(prev => ({ ...prev, page }));
-    fetchPosts({ page });
-  }, [fetchPosts]);
+  }, []);
+
+  // Fetch posts on mount only
+  useEffect(() => {
+    fetchPosts();
+  }, []); // Empty dependency array - only run on mount
+
+  // Update pagination info when filters change
+  useEffect(() => {
+    const { total, totalPages } = getPaginationInfo();
+    setPagination(prev => ({
+      ...prev,
+      total,
+      totalPages
+    }));
+  }, [getPaginationInfo]);
 
   const value = {
     // State
-    posts,
+    posts: getPaginatedPosts(), // Return paginated posts
+    allPosts: posts, // All posts for reference
     featuredPosts,
     loading,
     error,
     stats,
-    pagination,
+    pagination: {
+      ...pagination,
+      ...getPaginationInfo()
+    },
     filters,
     search,
     

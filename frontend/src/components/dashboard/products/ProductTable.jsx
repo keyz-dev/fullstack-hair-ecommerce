@@ -3,6 +3,7 @@ import { useProducts } from "../../../hooks/useProducts";
 import { Table, Pagination, DropdownMenu, StatusPill, AdvancedFilters } from "../../ui";
 import { Edit, Trash2, Eye } from "lucide-react";
 import { useCategory } from "../../../hooks";
+import { useCurrency } from "../../../hooks/useCurrency";
 
 const ProductTable = ({ onEdit, onView, onDelete }) => {
   const [isSearching, setIsSearching] = React.useState(false);
@@ -17,6 +18,7 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
   } = useProducts();
 
   const { categories, loading: categoriesLoading } = useCategory();
+  const { formatPrice } = useCurrency();
 
   // Filter configurations
   const filterConfigs = [
@@ -103,13 +105,15 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
       Header: "Price", 
       accessor: "price", 
       Cell: ({ row }) => {
-        const currency = row.currency;
-        if (currency && currency.symbol) {
-          return currency.position === 'after' 
-            ? `${row.price} ${currency.symbol}`
-            : `${currency.symbol} ${row.price}`;
+        try {
+          // Use the currency service to format the price properly
+          const formattedPrice = formatPrice(row.price, row.currency);
+          return formattedPrice;
+        } catch (error) {
+          console.error('Error formatting price:', error);
+          // Fallback to basic formatting
+          return `${row.price} ${row.currency || 'XAF'}`;
         }
-        return `${row.price}`;
       }
     },
     { 

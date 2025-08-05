@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   AdminOverviewStats, 
   RevenueChart, 
@@ -16,11 +17,31 @@ import { Button, FadeInContainer } from '../../components/ui';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [dateRange, setDateRange] = useState('30d');
   const { analytics, loading, error, refreshAnalytics } = useAdminAnalytics(dateRange);
 
   const handleDateRangeChange = (newRange) => {
     setDateRange(newRange);
+  };
+
+  const handleQuickAction = (action) => {
+    switch (action) {
+      case 'products':
+        navigate('/admin/products');
+        break;
+      case 'users':
+        navigate('/admin/users');
+        break;
+      case 'orders':
+        navigate('/admin/orders');
+        break;
+      case 'settings':
+        navigate('/admin/settings');
+        break;
+      default:
+        break;
+    }
   };
 
   if (loading) {
@@ -113,28 +134,40 @@ const Dashboard = () => {
           <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
+          <button 
+            onClick={() => handleQuickAction('products')}
+            className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors hover:shadow-md"
+          >
             <Package className="w-5 h-5 text-blue-600" />
             <div className="text-left">
               <p className="font-medium text-gray-900">Manage Products</p>
               <p className="text-sm text-gray-500">Add or edit products</p>
             </div>
           </button>
-          <button className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
+          <button 
+            onClick={() => handleQuickAction('users')}
+            className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors hover:shadow-md"
+          >
             <Users className="w-5 h-5 text-purple-600" />
             <div className="text-left">
               <p className="font-medium text-gray-900">Manage Users</p>
               <p className="text-sm text-gray-500">View user accounts</p>
             </div>
           </button>
-          <button className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
+          <button 
+            onClick={() => handleQuickAction('orders')}
+            className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors hover:shadow-md"
+          >
             <TrendingUp className="w-5 h-5 text-green-600" />
             <div className="text-left">
               <p className="font-medium text-gray-900">View Orders</p>
               <p className="text-sm text-gray-500">Process orders</p>
             </div>
           </button>
-          <button className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
+          <button 
+            onClick={() => handleQuickAction('settings')}
+            className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors hover:shadow-md"
+          >
             <Settings className="w-5 h-5 text-orange-600" />
             <div className="text-left">
               <p className="font-medium text-gray-900">Settings</p>

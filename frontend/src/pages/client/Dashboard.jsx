@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   ClientOverviewStats, 
   SpendingChart, 
@@ -8,16 +9,33 @@ import {
 } from '../../components/dashboard/analytics';
 import { useClientAnalytics } from '../../hooks/useClientAnalytics';
 import { useAuth } from '../../hooks';
-import { RefreshCw, TrendingUp, BarChart3 } from 'lucide-react';
+import { RefreshCw, TrendingUp, BarChart3, ShoppingBag, Calendar } from 'lucide-react';
 import { Button, FadeInContainer } from '../../components/ui';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [dateRange, setDateRange] = useState('30d');
   const { analytics, loading, error, refreshAnalytics } = useClientAnalytics(dateRange);
 
   const handleDateRangeChange = (newRange) => {
     setDateRange(newRange);
+  };
+
+  const handleQuickAction = (action) => {
+    switch (action) {
+      case 'orders':
+        navigate('/client/orders');
+        break;
+      case 'book-service':
+        navigate('/client/book-appointment');
+        break;
+      case 'shop':
+        navigate('/shop');
+        break;
+      default:
+        break;
+    }
   };
 
   if (error) {
@@ -45,7 +63,7 @@ const Dashboard = () => {
             <p className="text-gray-600">Welcome back, </p>
             <h1 className="text-2xl font-bold text-gray-900">{user?.name?.split(' ')[0] || 'User'}!</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex justify-between sm:justify-end items-center gap-3">
             <DateRangePicker 
               onRangeChange={handleDateRangeChange} 
               currentRange={dateRange} 
@@ -56,7 +74,7 @@ const Dashboard = () => {
               additionalClasses="primarybtn min-h-fit"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
+              <span className="">Refresh</span>
             </Button>
           </div>
         </div>
@@ -100,22 +118,31 @@ const Dashboard = () => {
           <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
+          <button 
+            onClick={() => handleQuickAction('orders')}
+            className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors hover:shadow-md"
+          >
             <TrendingUp className="w-5 h-5 text-blue-600" />
             <div className="text-left">
               <p className="font-medium text-gray-900">View Orders</p>
               <p className="text-sm text-gray-500">Check your order history</p>
             </div>
           </button>
-          <button className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
-            <TrendingUp className="w-5 h-5 text-purple-600" />
+          <button 
+            onClick={() => handleQuickAction('book-service')}
+            className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors hover:shadow-md"
+          >
+            <Calendar className="w-5 h-5 text-purple-600" />
             <div className="text-left">
               <p className="font-medium text-gray-900">Book Service</p>
               <p className="text-sm text-gray-500">Schedule an appointment</p>
             </div>
           </button>
-          <button className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
-            <TrendingUp className="w-5 h-5 text-green-600" />
+          <button 
+            onClick={() => handleQuickAction('shop')}
+            className="flex items-center gap-3 p-4 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors hover:shadow-md"
+          >
+            <ShoppingBag className="w-5 h-5 text-green-600" />
             <div className="text-left">
               <p className="font-medium text-gray-900">Shop Now</p>
               <p className="text-sm text-gray-500">Browse our products</p>

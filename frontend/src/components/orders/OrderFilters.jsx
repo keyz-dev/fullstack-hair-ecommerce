@@ -40,9 +40,9 @@ const OrderFilters = ({ filters, onFilterChange, onSearch, showCustomerTypeFilte
         </div>
 
         {/* Filters */}
-        <div className="flex items-center space-x-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-1 md:justify-start lg:justify-end md:flex-wrap gap-4">
           {/* Status Filter */}
-          <div className="flex flex-col sm:flex-row items-center space-x-2">
+          <div className="flex flex-col sm:flex-row sm:items-center space-x-2 space-y-1">
             <label className="text-sm font-medium text-gray-700">Status:</label>
             <select
               value={filters.status}

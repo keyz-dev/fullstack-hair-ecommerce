@@ -89,7 +89,7 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
         price: initialData.price || "",
         discount: initialData.discount || 0,
         stock: initialData.stock || "",
-        currency: initialData.currency?.code || "XAF",
+        currency: initialData.currency || "XAF", // Fix: currency is already a string code
         category: initialData.category?._id || initialData.category || "",
         isActive: initialData.isActive !== undefined ? initialData.isActive : true,
         isFeatured: initialData.isFeatured || false,

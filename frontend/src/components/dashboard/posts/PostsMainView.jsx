@@ -37,9 +37,7 @@ const PostsMainView = ({ setView }) => {
       setDeleteModalOpen(false);
       setSelectedPost(null);
     }
-  };
-
-  console.log(posts)
+  };  
 
   return (
     <section>

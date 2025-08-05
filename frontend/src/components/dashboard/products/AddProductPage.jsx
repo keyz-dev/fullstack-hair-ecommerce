@@ -77,12 +77,16 @@ const AddProductsPage = ({ setView }) => {
     const imageFiles = productImages.map(({ file }) => file);
 
     try {
-      await createProduct({
+      const response = await createProduct({
         ...productData,
         productImages: imageFiles,
       });
-      toast.success("Product created successfully");
-      setView("main");
+
+      if (response.success){
+        toast.success(`${response.message || "Product created successfully"}`)
+        setView("main");
+      }
+
     } catch (error) {
       toast.error(error.message || "Failed to create product");
     }
