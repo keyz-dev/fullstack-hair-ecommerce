@@ -27,7 +27,6 @@ export const PostProvider = ({ children }) => {
     status: '',
     category: '',
     tag: '',
-    featured: '',
     author: '',
     postType: '',
     sortBy: 'publishedAt',
@@ -92,8 +91,16 @@ export const PostProvider = ({ children }) => {
     let filtered = posts.filter(post => {
       // Status filter
       if (filters.status && filters.status !== '') {
-        if (post.status !== filters.status) {
-          return false;
+        if (filters.status === 'featured') {
+          // Show only featured posts regardless of their status
+          if (!post.featured) {
+            return false;
+          }
+        } else {
+          // Regular status filtering
+          if (post.status !== filters.status) {
+            return false;
+          }
         }
       }
       
@@ -112,14 +119,6 @@ export const PostProvider = ({ children }) => {
       if (filters.tag && filters.tag !== '') {
         const postTags = post.tags || [];
         if (!postTags.some(tag => tag.toLowerCase().includes(filters.tag.toLowerCase()))) {
-          return false;
-        }
-      }
-      
-      // Featured filter
-      if (filters.featured && filters.featured !== '') {
-        const isFeatured = filters.featured === 'true';
-        if (post.featured !== isFeatured) {
           return false;
         }
       }
@@ -193,7 +192,7 @@ export const PostProvider = ({ children }) => {
     }
 
     return filtered;
-  }, [posts, filters.status, filters.category, filters.tag, filters.featured, filters.author, filters.postType, filters.sortBy, filters.sortOrder, search]);
+  }, [posts, filters.status, filters.category, filters.tag, filters.author, filters.postType, filters.sortBy, filters.sortOrder, search]);
 
   // Get paginated posts from filtered results
   const getPaginatedPosts = useCallback(() => {
@@ -321,7 +320,6 @@ export const PostProvider = ({ children }) => {
       status: '',
       category: '',
       tag: '',
-      featured: '',
       author: '',
       postType: '',
       sortBy: 'publishedAt',

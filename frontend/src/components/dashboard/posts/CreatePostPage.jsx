@@ -13,7 +13,7 @@ const CreatePostPage = ({ setView }) => {
     description: '',
     postType: 'work-showcase',
     mediaType: '',
-    status: 'draft',
+    status: 'published',
     featured: false,
     tags: [],
     categories: [],

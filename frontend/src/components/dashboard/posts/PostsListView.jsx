@@ -45,6 +45,7 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
         { value: 'draft', label: 'Draft' },
         { value: 'published', label: 'Published' },
         { value: 'archived', label: 'Archived' },
+        { value: 'featured', label: 'Featured' },
       ]
     },
     {
@@ -61,17 +62,6 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
         { value: 'transformation', label: 'Transformation' },
         { value: 'technique-demo', label: 'Technique Demo' },
         { value: 'promotion', label: 'Promotion' },
-      ]
-    },
-    {
-      key: 'featured',
-      label: 'Featured',
-      defaultValue: '',
-      colorClass: 'bg-orange-100 text-orange-800',
-      options: [
-        { value: '', label: 'All Posts' },
-        { value: 'true', label: 'Featured Only' },
-        { value: 'false', label: 'Not Featured' },
       ]
     }
   ];
@@ -106,17 +96,22 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
                 </div>
               )}
             </div>
-            <div className="ml-4">
-              <div className="text-sm font-medium text-gray-900">
+            <div className="ml-4 min-w-0 flex-1">
+              <div className="text-sm font-medium text-gray-900 truncate">
                 {row.title}
               </div>
-              <div className="text-sm text-gray-500">
-                {row.description?.substring(0, 50)}...
-              </div>
-              <div className="text-xs text-gray-400 mt-1">
+              <div className="flex items-center gap-2 mt-1">
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                  row.mediaType === 'video' 
+                    ? 'bg-red-100 text-red-700' 
+                    : 'bg-blue-100 text-blue-700'
+                }`}>
+                  {row.mediaType === 'video' ? '🎥 Video' : '🖼️ Images'}
+                </span>
                 {row.categories && row.categories.length > 0 && (
-                  <span className="text-gray-500">
-                    {row.categories.map(cat => cat.name).join(', ')}
+                  <span className="text-xs text-gray-500">
+                    {row.categories[0].name}
+                    {row.categories.length > 1 && ` +${row.categories.length - 1}`}
                   </span>
                 )}
               </div>
@@ -128,30 +123,53 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
         Header: "Status",
         accessor: "status",
         Cell: ({ row }) => {
-          const getStatusConfig = (status) => {
-            if (status === 'published') {
-              return { status: "active", text: "Published" };
-            } else if (status === 'draft') {
-              return { status: "draft", text: "Draft" };
-            } else if (status === 'archived') {
-              return { status: "inactive", text: "Archived" };
+          const getStatusConfig = (status, featured) => {
+            if (featured) {
+              return { 
+                status: "featured", 
+                text: "Featured", 
+                className: "bg-purple-100 text-purple-800 border-purple-200" 
+              };
             }
-            return { status: "draft", text: "Draft" };
+            
+            switch (status) {
+              case 'published':
+                return { 
+                  status: "active", 
+                  text: "Published", 
+                  className: "bg-green-100 text-green-800 border-green-200" 
+                };
+              case 'draft':
+                return { 
+                  status: "draft", 
+                  text: "Draft", 
+                  className: "bg-yellow-100 text-yellow-800 border-yellow-200" 
+                };
+              case 'archived':
+                return { 
+                  status: "inactive", 
+                  text: "Archived", 
+                  className: "bg-gray-100 text-gray-800 border-gray-200" 
+                };
+              default:
+                return { 
+                  status: "draft", 
+                  text: "Draft", 
+                  className: "bg-yellow-100 text-yellow-800 border-yellow-200" 
+                };
+            }
           };
 
-          const statusConfig = getStatusConfig(row.status);
+          const statusConfig = getStatusConfig(row.status, row.featured);
           
           return (
-            <div className="flex flex-col gap-1">
-              <StatusPill
-                status={statusConfig.status}
-                text={statusConfig.text}
-              />
-              {row.featured && (
-                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                  Featured
-                </span>
-              )}
+            <div className="flex items-center">
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${statusConfig.className}`}>
+                {row.featured && (
+                  <span className="mr-1">⭐</span>
+                )}
+                {statusConfig.text}
+              </span>
             </div>
           );
         },
@@ -161,8 +179,10 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
         accessor: "author",
         Cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <User size={14} className="text-gray-500" />
-            <span className="text-sm text-gray-900">
+            <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <User size={12} className="text-gray-600" />
+            </div>
+            <span className="text-sm font-medium text-gray-900">
               {row.author?.name || 'Unknown'}
             </span>
           </div>
@@ -171,15 +191,32 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
       {
         Header: "Type",
         accessor: "postType",
-        Cell: ({ row }) => (
-          <div className="flex items-center">
-            {row.postType && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-50 text-blue-700 text-xs">
-                {row.postType.replace('-', ' ')}
+        Cell: ({ row }) => {
+          const getTypeConfig = (postType) => {
+            const typeConfigs = {
+              'work-showcase': { icon: '🎨', label: 'Work Showcase', color: 'bg-indigo-100 text-indigo-700' },
+              'tutorial': { icon: '📚', label: 'Tutorial', color: 'bg-blue-100 text-blue-700' },
+              'product-review': { icon: '⭐', label: 'Product Review', color: 'bg-yellow-100 text-yellow-700' },
+              'styling-tip': { icon: '💡', label: 'Styling Tip', color: 'bg-green-100 text-green-700' },
+              'transformation': { icon: '✨', label: 'Transformation', color: 'bg-purple-100 text-purple-700' },
+              'technique-demo': { icon: '🎯', label: 'Technique Demo', color: 'bg-orange-100 text-orange-700' },
+              'promotion': { icon: '🎉', label: 'Promotion', color: 'bg-pink-100 text-pink-700' }
+            };
+            
+            return typeConfigs[postType] || { icon: '📄', label: postType?.replace('-', ' ') || 'Unknown', color: 'bg-gray-100 text-gray-700' };
+          };
+
+          const typeConfig = getTypeConfig(row.postType);
+          
+          return (
+            <div className="flex items-center">
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${typeConfig.color}`}>
+                <span className="mr-1">{typeConfig.icon}</span>
+                {typeConfig.label}
               </span>
-            )}
-          </div>
-        ),
+            </div>
+          );
+        },
       },
       {
         Header: "Published",
@@ -203,21 +240,32 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
         accessor: "engagement",
         Cell: ({ row }) => (
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">
-                👁️ {row.views || 0} views
-              </span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <span className="text-gray-400">👁️</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {row.views || 0}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-gray-400">❤️</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {row.likes?.length || 0}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">
-                ❤️ {row.likes?.length || 0} likes
-              </span>
-            </div>
-            <div className="text-xs text-gray-400">
-              {row.tags && row.tags.length > 0 && (
-                <span>Tags: {row.tags.slice(0, 2).join(', ')}{row.tags.length > 2 ? '...' : ''}</span>
-              )}
-            </div>
+            {row.tags && row.tags.length > 0 && (
+              <div className="text-xs text-gray-500">
+                {row.tags.slice(0, 2).map(tag => (
+                  <span key={tag} className="inline-block bg-gray-100 rounded px-1.5 py-0.5 mr-1">
+                    #{tag}
+                  </span>
+                ))}
+                {row.tags.length > 2 && (
+                  <span className="text-gray-400">+{row.tags.length - 2}</span>
+                )}
+              </div>
+            )}
           </div>
         ),
       },

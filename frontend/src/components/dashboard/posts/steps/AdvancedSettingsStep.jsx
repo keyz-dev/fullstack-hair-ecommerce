@@ -70,11 +70,15 @@ const AdvancedSettingsStep = ({
   };
 
   const handleSubmit = () => {
+    // Check if post is scheduled for future
+    const isScheduled = formData.scheduledFor && new Date(formData.scheduledFor) > new Date();
+    
     // Ensure categories is always an array before submitting
     const submitData = {
       ...formData,
       categories: Array.isArray(formData.categories) ? formData.categories : [],
-      tags: Array.isArray(formData.tags) ? formData.tags : []
+      tags: Array.isArray(formData.tags) ? formData.tags : [],
+      status: isScheduled ? 'draft' : 'published' // Set to draft if scheduled for future, otherwise published
     };
     
     onSave(submitData);
@@ -371,7 +375,7 @@ const AdvancedSettingsStep = ({
                   cleanedFormData.callToAction.link = null;
                 }
                 
-                onSave({ ...cleanedFormData, status: 'draft' });
+                onSave({ ...cleanedFormData, status: 'draft' }); // Always save as draft
               }}
               additionalClasses="text-secondary border border-line_clr"
               isDisabled={loading}
