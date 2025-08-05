@@ -5,7 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'react-toastify';
 import BlogFilters from './BlogFilters';
 import PostCard from './PostCard';
-import { EmptyState, Pagination } from '../ui';
+import { EmptyState, Pagination, HeroSection } from '../ui';
 import blogHeroBg from '../../assets/images/blog_bg.jpg';
 
 const BlogPage = () => {
@@ -109,25 +109,18 @@ const BlogPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-gray-900 to-gray-800 py-16">
-        <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{ backgroundImage: `url(${blogHeroBg})` }}></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <nav className="flex justify-center mb-4">
-              <ol className="flex items-center space-x-2 text-sm text-white/80">
-                <li><a href="/" className="hover:text-white">Home</a></li>
-                <li>/</li>
-                <li>Blog</li>
-              </ol>
-            </nav>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Blog & Tutorials</h1>
-            <p className="text-xl text-white/80 mb-4">Discover hair styling tips, transformations, and professional insights</p>
-            <p className="text-white/60 text-sm">
-              {stats.totalPosts} posts available
-            </p>
-          </div>
+      <HeroSection
+        title="Blog"
+        subtitle="Stay updated with the latest news and insights from our team"
+        backgroundImage={blogHeroBg}
+        breadcrumbs={['Home', 'Blog']}
+      >
+        <div className="mt-8">
+          <p className="text-white/80 text-sm">
+            {posts?.length} posts available
+          </p>
         </div>
-      </div>
+      </HeroSection>
 
       {/* Filters */}
       <BlogFilters
