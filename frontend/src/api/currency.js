@@ -1,8 +1,7 @@
 // Currency API - using backend endpoints for real-time currency operations
 
 import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/v2/api';
+import { API_BASE_URL } from './index';
 
 // Create axios instance for currency API
 const currencyApiClient = axios.create({
