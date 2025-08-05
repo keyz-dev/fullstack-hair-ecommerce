@@ -119,8 +119,6 @@ const EditPostPage = () => {
 
   const handleAdvancedSettingsSave = async (advancedData) => {
     const finalData = { ...postData, ...advancedData };
-
-    console.log('Updating post with data:', finalData);
     
     // Ensure array fields are always arrays
     finalData.categories = Array.isArray(finalData.categories) ? finalData.categories : [];
@@ -130,12 +128,16 @@ const EditPostPage = () => {
     
     try {
       setSaving(true);
-      await updatePost(postId, finalData);
-      toast.success('Post updated successfully!');
-      navigate('/admin/posts');
+      const response = await updatePost(postId, finalData);
+      if (response.success) {
+        toast.success("Post updated successfully!");
+        navigate('/admin/posts');
+      } else {
+        toast.error(response.message || "Failed to update post");
+      }
     } catch (error) {
-      console.error('Error updating post:', error);
-      toast.error('Failed to update post. Please try again.');
+      console.error('Post update error:', error);
+      toast.error(error.message || "Failed to update post");
     } finally {
       setSaving(false);
     }
@@ -281,6 +283,7 @@ const EditPostPage = () => {
               onSave={handleAdvancedSettingsSave}
               onBack={handleBack}
               loading={saving}
+              isEditing={true}
             />
           )}
         </div>

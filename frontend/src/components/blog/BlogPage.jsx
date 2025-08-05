@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { usePost } from '../../hooks/usePost';
-import { useCategory } from '../../hooks/useCategory';
-import { useAuth } from '../../hooks/useAuth';
+import { usePost, useCategory, useAuth } from '../../hooks';
 import { toast } from 'react-toastify';
 import BlogFilters from './BlogFilters';
 import PostCard from './PostCard';
@@ -12,10 +10,9 @@ const BlogPage = () => {
   const { user } = useAuth();
   const { categories } = useCategory();
   const {
-    posts,
+    publishedPosts: posts,
     loading,
     error,
-    stats,
     pagination,
     filters,
     setFiltersAndFetch,
@@ -23,7 +20,7 @@ const BlogPage = () => {
     setPageAndFetch,
     clearAllFilters,
     toggleLike,
-    fetchPosts
+    fetchPublishedPosts
   } = usePost();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,8 +29,8 @@ const BlogPage = () => {
 
   // Initialize posts on mount
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    fetchPublishedPosts();
+  }, [fetchPublishedPosts]);
 
   // Handle search
   const handleSearch = (term) => {
@@ -95,7 +92,7 @@ const BlogPage = () => {
           description={error}
           action={
             <button
-              onClick={fetchPosts}
+              onClick={fetchPublishedPosts}
               className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-accent/90 transition-colors"
             >
               Try Again

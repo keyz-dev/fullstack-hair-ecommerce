@@ -12,7 +12,8 @@ const AdvancedSettingsStep = ({
   featured = false,
   onSave, 
   onBack, 
-  loading 
+  loading,
+  isEditing = false
 }) => {
   const { categories: availableCategories, loading: loadingCategories } = useCategory();
   const [formData, setFormData] = useState({
@@ -389,7 +390,7 @@ const AdvancedSettingsStep = ({
               isLoading={loading}
               isDisabled={loading}
             >
-              Create Post
+              {isEditing ? 'Update Post' : 'Create Post'}
             </Button>
             
           </div>

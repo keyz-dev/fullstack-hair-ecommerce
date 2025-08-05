@@ -2,11 +2,13 @@ import React, { createContext, useState, useCallback, useMemo, useEffect } from 
 import { postApi } from '../api/post';
 import { toast } from 'react-toastify';
 import { extractErrorMessage } from '../utils/extractError';
+import { useAuth } from '../hooks'
 
 const PostContext = createContext();
 
 export const PostProvider = ({ children }) => {
   const [posts, setPosts] = useState([]);
+  const [publishedPosts, setPublishedPosts] = useState([]);
   const [featuredPosts, setFeaturedPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -33,6 +35,7 @@ export const PostProvider = ({ children }) => {
     sortOrder: 'desc'
   });
   const [search, setSearch] = useState('');
+  const { user } = useAuth()
 
   // Fetch all posts (only once on mount)
   const fetchPosts = useCallback(async () => {
@@ -50,6 +53,31 @@ export const PostProvider = ({ children }) => {
         setPosts(posts || []);
       } else {
         setPosts([]);
+      }
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err) || "Failed to fetch posts";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchPublishedPosts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await postApi.getPublishedPosts({
+        limit: 1000, // Get all posts for client-side filtering
+        sortBy: 'publishedAt',
+        sortOrder: 'desc'
+      });
+
+      if (response.success && response.data) {
+        const { posts } = response.data;
+        setPublishedPosts(posts || []);
+      } else {
+        setPublishedPosts([]);
       }
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || "Failed to fetch posts";
@@ -253,13 +281,11 @@ export const PostProvider = ({ children }) => {
       setPosts(prev => prev.map(post => 
         post._id === id ? response.post : post
       ));
-      toast.success(response.message || "Post updated successfully");
-      return response;
+      return {success: true, message: response.message};
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || "Failed to update post";
       setError(errorMessage);
-      toast.error(errorMessage);
-      return null;
+      return {success: false, message: errorMessage};
     } finally {
       setLoading(false);
     }
@@ -389,26 +415,13 @@ export const PostProvider = ({ children }) => {
     }
   }, []);
 
-  // Fetch post by slug
-  const fetchPostBySlug = useCallback(async (slug) => {
+  const fetchPostById = useCallback(async (id, userId = null) => {
     try {
-      const response = await postApi.getPostBySlug(slug);
+      const response = await postApi.getPostById(id, userId);
       if (response.success) {
         return response.data;
-      }
-    } catch (err) {
-      const errorMessage = extractErrorMessage(err) || "Failed to fetch post";
-      toast.error(errorMessage);
-      throw err;
-    }
-  }, []);
-
-  // Fetch post by ID
-  const fetchPostById = useCallback(async (postId) => {
-    try {
-      const response = await postApi.getPostById(postId);
-      if (response.success) {
-        return response.data;
+      }else{
+        throw new Error("Failed to fetch post")
       }
     } catch (err) {
       const errorMessage = extractErrorMessage(err) || "Failed to fetch post";
@@ -419,7 +432,11 @@ export const PostProvider = ({ children }) => {
 
   // Fetch posts on mount only
   useEffect(() => {
-    fetchPosts();
+    if(user?.role === 'admin') {
+      fetchPosts();
+    } else {
+      fetchPublishedPosts();
+    }
   }, []); // Empty dependency array - only run on mount
 
   // Update pagination info when filters change
@@ -437,6 +454,7 @@ export const PostProvider = ({ children }) => {
     posts: getPaginatedPosts(), // Return paginated posts
     allPosts: posts, // All posts for reference
     featuredPosts,
+    publishedPosts,
     loading,
     error,
     stats,
@@ -449,6 +467,7 @@ export const PostProvider = ({ children }) => {
     
     // Actions
     fetchPosts,
+    fetchPublishedPosts,
     fetchInitialPosts,
     fetchFeaturedPosts,
     createPost,
@@ -461,7 +480,6 @@ export const PostProvider = ({ children }) => {
     clearAllFilters,
     toggleLike,
     addComment,
-    fetchPostBySlug,
     fetchPostById,
     setError: (error) => setError(error),
     clearError: () => setError(null)

@@ -3,13 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Eye, Calendar, Tag, Share2, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui';
 import { format } from 'date-fns';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth, usePost } from '../hooks';
 import { toast } from 'react-toastify';
+import { getPostTypeConfig, getMediaType } from '../utils/postUtils';
 
 const BlogPostDetail = () => {
-  const { slug } = useParams();
+  const { postId } = useParams();
+
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { fetchPostById, toggleLike } = usePost();
   
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,78 +24,31 @@ const BlogPostDetail = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
 
-  const getMediaType = () => {
-    if (post?.video) return 'video';
-    if (post?.images && post.images.length > 0) return 'image';
-    return 'text';
-  };
-
-  const getPostTypeConfig = (postType) => {
-    const configs = {
-      'work-showcase': { icon: '🎨', label: 'Work Showcase', color: 'bg-indigo-100 text-indigo-700' },
-      'tutorial': { icon: '📚', label: 'Tutorial', color: 'bg-blue-100 text-blue-700' },
-      'product-review': { icon: '⭐', label: 'Product Review', color: 'bg-yellow-100 text-yellow-700' },
-      'styling-tip': { icon: '💡', label: 'Styling Tip', color: 'bg-green-100 text-green-700' },
-      'transformation': { icon: '✨', label: 'Transformation', color: 'bg-purple-100 text-purple-700' },
-      'technique-demo': { icon: '🎯', label: 'Technique Demo', color: 'bg-orange-100 text-orange-700' },
-      'promotion': { icon: '🎉', label: 'Promotion', color: 'bg-pink-100 text-pink-700' }
-    };
-    
-    return configs[postType] || { icon: '📄', label: postType?.replace('-', ' ') || 'Post', color: 'bg-gray-100 text-gray-700' };
-  };
-
   // Fetch post data
   useEffect(() => {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        // TODO: Replace with actual API call
-        // const response = await fetch(`/api/posts/${slug}`);
-        // const data = await response.json();
-        
-        // Mock data for now
-        const mockPost = {
-          _id: '1',
-          slug: slug,
-          title: 'The second test post that i\'m adding to this site',
-          description: 'What do you think of it?? Isn\'t it crazy how fast a kid can grow??',
-          content: 'This is the full content of the blog post. It would contain much more detailed information about the topic, including step-by-step instructions, tips, and insights.',
-          postType: 'technique-demo',
-          featured: true,
-          images: [
-            { url: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=800&h=600&fit=crop' },
-            { url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800&h=600&fit=crop' },
-            { url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&h=600&fit=crop' }
-          ],
-          video: null,
-          tags: ['hair styling', 'technique', 'tutorial'],
-          views: 0,
-          likes: 0,
-          createdAt: '2025-08-05T10:00:00Z',
-          author: {
-            name: 'Leila Styles',
-            avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop'
-          }
-        };
-        
-        setPost(mockPost);
-        setLikesCount(mockPost.likes);
+        const response = await fetchPostById(postId, user?._id);
+        setPost(response);
+        setLikesCount(response.likes?.length || 0);
+        setIsLiked(response.userLiked || false);
       } catch (err) {
-        setError('Failed to load post');
         console.error('Error fetching post:', err);
+        setError('Failed to load post');
       } finally {
         setLoading(false);
       }
     };
 
-    if (slug) {
+    if (postId) {
       fetchPost();
     }
-  }, [slug]);
+  }, [postId, user?._id]);
 
   // Auto-cycle through images every 5 seconds (only for image type with multiple images)
   useEffect(() => {
-    if (getMediaType() !== 'image' || !post?.images || post.images.length <= 1) return;
+    if (!post || getMediaType(post) !== 'image' || !post?.images || post.images.length <= 1) return;
     
     const interval = setInterval(() => {
       if (!isTransitioning) {
@@ -144,12 +100,15 @@ const BlogPostDetail = () => {
       return;
     }
 
+    if (!post?._id) {
+      toast.error('Post not available');
+      return;
+    }
+
     try {
-      // TODO: Replace with actual API call
-      // await likePost(post._id);
+      await toggleLike(post._id);
       setIsLiked(!isLiked);
       setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
-      toast.success(isLiked ? 'Post unliked' : 'Post liked!');
     } catch (error) {
       console.error('Error liking post:', error);
       toast.error('Failed to like post');
@@ -185,19 +144,28 @@ const BlogPostDetail = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error || 'Post not found'}</p>
-          <Button
-            onClickHandler={() => navigate('/blog')}
-            text="Back to Blog"
-            additionalClasses="bg-accent text-white"
-          />
+          <div className="text-6xl mb-4">📝</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Post Not Found</h1>
+          <p className="text-gray-600 mb-6">{error || 'The post you are looking for does not exist.'}</p>
+          <div className="space-y-3">
+            <Button
+              onClickHandler={() => navigate('/blog')}
+              text="Back to Blog"
+              additionalClasses="bg-accent text-white"
+            />
+            <Button
+              onClickHandler={() => navigate('/')}
+              text="Go Home"
+              additionalClasses="bg-gray-100 text-gray-700"
+            />
+          </div>
         </div>
       </div>
     );
   }
 
-  const typeConfig = getPostTypeConfig(post.postType);
-  const mediaType = getMediaType();
+  const typeConfig = getPostTypeConfig(post?.postType);
+  const mediaType = getMediaType(post);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -364,13 +332,16 @@ const BlogPostDetail = () => {
               {post.author && (
                 <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
                   <img
-                    src={post.author.avatar}
+                    src={post.author.avatar || '/default-avatar.png'}
                     alt={post.author.name}
                     className="w-10 h-10 rounded-full object-cover"
                   />
                   <div>
                     <p className="font-medium text-gray-900">{post.author.name}</p>
                     <p className="text-sm text-gray-500">Author</p>
+                    {post.author.bio && (
+                      <p className="text-xs text-gray-600 mt-1">{post.author.bio}</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -398,7 +369,7 @@ const BlogPostDetail = () => {
               {/* Full Content */}
               <div className="prose prose-sm max-w-none">
                 <p className="text-gray-700 leading-relaxed">
-                  {post.content}
+                  {post.content || post.description}
                 </p>
               </div>
             </div>

@@ -15,7 +15,7 @@ export const publicRoutes = [
     <Route path="/services" element={<Services />} />
     <Route path="/about" element={<AboutUs />} />
     <Route path="/blog" element={<Blog />} />
-    <Route path="/blog/:slug" element={<BlogPostDetail />} />
+    <Route path="/blog/:postId" element={<BlogPostDetail />} />
   </Route>,
   <Route key="auth" element={<AuthLayout />}>
     <Route key="login" path="/login" element={<Login />} />

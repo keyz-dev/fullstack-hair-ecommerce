@@ -5,8 +5,9 @@ const { validate } = require('../middleware/validate');
 const { createPostSchema } = require('../schema/postSchema');
 const { BadRequestError, NotFoundError, InternalServerError } = require('../utils/errors');
 const { cleanUpFileImages } = require('../utils/imageCleanup');
+const logger = require("../utils/logger")
 
-// Get all posts with filtering and pagination
+// Get all posts with filtering and pagination (admin only - includes drafts)
 const getAllPosts = async (req, res, next) => {
   try {
     const {
@@ -104,13 +105,105 @@ const getAllPosts = async (req, res, next) => {
   }
 };
 
-// Get single post by slug
-const getPostBySlug = async (req, res, next) => {
+// Get published posts only (public access)
+const getPublishedPosts = async (req, res, next) => {
   try {
-    const { slug } = req.params;
+    const {
+      page = 1,
+      limit = 10,
+      type,
+      postType,
+      category,
+      tag,
+      search,
+      featured,
+      author,
+      sortBy = 'publishedAt',
+      sortOrder = 'desc'
+    } = req.query;
+
+    const query = { status: 'published' }; // Only published posts
+
+    // Type filter (support both type and postType for backward compatibility)
+    if (type) {
+      query.postType = type;
+    }
+    if (postType) {
+      query.postType = postType;
+    }
+
+    // Category filter - only apply if category is provided and not 'all'
+    if (category && category !== 'all' && category !== '') {
+      query.categories = category;
+    }
+
+    // Tag filter
+    if (tag) {
+      query.tags = { $in: [tag] };
+    }
+
+    // Search filter
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { tags: { $in: [new RegExp(search, 'i')] } }
+      ];
+    }
+
+    // Featured filter
+    if (featured !== undefined) {
+      query.featured = featured === 'true';
+    }
+
+    // Author filter
+    if (author) {
+      query.author = author;
+    }
+
+    // Sort options
+    const sortOptions = {};
+    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    const posts = await Post.find(query)
+      .populate('author', 'name avatar')
+      .populate('categories', 'name')
+      .populate('services', 'name price')
+      .populate('products', 'name price images')
+      .sort(sortOptions)
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+    const total = await Post.countDocuments(query);
+
+    res.json({
+      message: 'Published posts fetched successfully',
+      success: true,
+      data: {
+        posts,
+        pagination: {
+          totalPages: Math.ceil(total / limit),
+          currentPage: page,
+          total,
+          hasNext: page * limit < total,
+          hasPrev: page > 1
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching published posts:', error);
+    return next(new InternalServerError('Error fetching published posts'));
+  }
+};
+
+// Get single post by id
+const getPostById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
     const { userId } = req.query;
 
-    const post = await Post.findOne({ slug, status: 'published' })
+    const post = await Post.findById(id)
       .populate('author', 'name avatar bio')
       .populate('categories', 'name')
       .populate('services', 'name price description')
@@ -118,6 +211,7 @@ const getPostBySlug = async (req, res, next) => {
       .populate('likes.user', 'name avatar');
 
     if (!post) {
+      logger.error("Post not found: ", id)
       return res.status(404).json({ message: 'Post not found' });
     }
 
@@ -128,26 +222,33 @@ const getPostBySlug = async (req, res, next) => {
       status: 'active'
     });
 
-    // Increment view count
-    post.views += 1;
-    await post.save();
-
-    // Check if user has liked the post
+    // Only increment view count and check userLiked if not admin
     let userLiked = false;
-    if (userId) {
-      userLiked = post.likes.some(like => like.user._id.toString() === userId);
+    const isAdmin = req.rootUser && req.rootUser.role === 'admin';
+
+    if (!isAdmin) {
+      // Increment view count
+      post.views += 1;
+      await post.save();
+
+      // Check if user has liked the post
+      if (userId) {
+        userLiked = post.likes.some(like => like.user._id.toString() === userId);
+      }
     }
 
     res.json({
-      post: {
+      success: true,
+      message: 'Post fetched successfully',
+      data: {
         ...post.toObject(),
-        commentCount
+        commentCount,
+        userLiked
       },
-      userLiked
     });
   } catch (error) {
-    console.error('Error fetching post:', error);
-    return next(new InternalServerError('Error fetching post'));
+    logger.error('Error fetching post:', error);
+    return next(new InternalServerError('Error fetching post', error));
   }
 };
 
@@ -601,7 +702,8 @@ const getPostStats = async (req, res, next) => {
 
 module.exports = {
   getAllPosts,
-  getPostBySlug,
+  getPublishedPosts,
+  getPostById,
   createPost,
   updatePost,
   deletePost,

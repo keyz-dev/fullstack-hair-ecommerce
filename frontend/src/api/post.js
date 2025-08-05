@@ -3,22 +3,22 @@ import api from './index';
 const URL_PREFIX = "/post";
 
 export const postApi = {
-  // Get all posts with filtering and pagination
+  // Get all posts with filtering and pagination (admin only)
   getAllPosts: async (params = {}) => {
     const response = await api.get(`${URL_PREFIX}/`, { params });
     return response.data;
   },
 
-  // Get single post by slug
-  getPostBySlug: async (slug, userId = null) => {
-    const params = userId ? { userId } : {};
-    const response = await api.get(`${URL_PREFIX}/${slug}`, { params });
+  // Get published posts only (public access)
+  getPublishedPosts: async (params = {}) => {
+    const response = await api.get(`${URL_PREFIX}/published`, { params });
     return response.data;
   },
 
   // Get single post by ID
-  getPostById: async (postId) => {
-    const response = await api.get(`${URL_PREFIX}/id/${postId}`);
+  getPostById: async (postId, userId = null) => {
+    const params = userId ? { userId } : {};
+    const response = await api.get(`${URL_PREFIX}/${postId}`, { params });
     return response.data;
   },
 

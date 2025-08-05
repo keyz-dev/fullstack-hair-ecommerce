@@ -5,7 +5,8 @@ const { upload, handleCloudinaryUpload, formatFilePaths, handleUploadError } = r
 
 const {
   getAllPosts,
-  getPostBySlug,
+  getPublishedPosts,
+  getPostById,
   createPost,
   updatePost,
   deletePost,
@@ -17,16 +18,18 @@ const {
 } = require('../controller/post');
 
 // Public routes
-router.get('/', getAllPosts);
+router.get('/published', getPublishedPosts);
 router.get('/featured', getFeaturedPosts);
 router.get('/category/:categoryId', getPostsByCategory);
-router.get('/:slug', getPostBySlug);
+router.get('/:id', getPostById);
+
 
 // Protected routes (require authentication)
 router.post('/:id/like', authenticateUser, toggleLike);
 // Note: Comments now handled by /api/comments routes
 
 // Admin routes (require admin privileges)
+router.get('/', authenticateUser, authorizeRoles(['admin']), getAllPosts);
 router.get('/admin/stats', authenticateUser, authorizeRoles(['admin']), getPostStats);
 router.post('/', authenticateUser, authorizeRoles(['admin']), upload.fields([
   { name: 'postImages', maxCount: 10 },

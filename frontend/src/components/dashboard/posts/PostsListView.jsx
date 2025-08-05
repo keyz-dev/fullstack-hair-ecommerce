@@ -123,15 +123,7 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
         Header: "Status",
         accessor: "status",
         Cell: ({ row }) => {
-          const getStatusConfig = (status, featured) => {
-            if (featured) {
-              return { 
-                status: "featured", 
-                text: "Featured", 
-                className: "bg-purple-100 text-purple-800 border-purple-200" 
-              };
-            }
-            
+          const getStatusConfig = (status) => {
             switch (status) {
               case 'published':
                 return { 
@@ -160,17 +152,10 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
             }
           };
 
-          const statusConfig = getStatusConfig(row.status, row.featured);
+          const statusConfig = getStatusConfig(row.status);
           
           return (
-            <div className="flex items-center">
-              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${statusConfig.className}`}>
-                {row.featured && (
-                  <span className="mr-1">⭐</span>
-                )}
-                {statusConfig.text}
-              </span>
-            </div>
+            <StatusPill status={statusConfig.status} />
           );
         },
       },

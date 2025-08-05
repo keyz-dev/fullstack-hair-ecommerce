@@ -5,7 +5,6 @@ import { Button, Input, Select } from '../ui';
 const BlogFilters = ({ 
   filters, 
   onFilterChange, 
-  onSearch, 
   onClearFilters,
   categories = [],
   searchTerm = '',
