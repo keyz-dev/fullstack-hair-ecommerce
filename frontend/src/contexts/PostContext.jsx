@@ -334,6 +334,75 @@ export const PostProvider = ({ children }) => {
     setPagination(prev => ({ ...prev, page }));
   }, []);
 
+  // Toggle like for a post
+  const toggleLike = useCallback(async (postId) => {
+    try {
+      const response = await postApi.toggleLike(postId);
+      if (response.success) {
+        // Update the post in the local state
+        setPosts(prevPosts => 
+          prevPosts.map(post => 
+            post._id === postId 
+              ? { ...post, likes: response.data.likes }
+              : post
+          )
+        );
+        
+        // Update featured posts if needed
+        setFeaturedPosts(prevFeatured => 
+          prevFeatured.map(post => 
+            post._id === postId 
+              ? { ...post, likes: response.data.likes }
+              : post
+          )
+        );
+        
+        toast.success(response.data.liked ? 'Post liked!' : 'Post unliked!');
+      }
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err) || "Failed to toggle like";
+      toast.error(errorMessage);
+      throw err;
+    }
+  }, []);
+
+  // Add comment to a post
+  const addComment = useCallback(async (postId, commentData) => {
+    try {
+      const response = await postApi.addComment(postId, commentData);
+      if (response.success) {
+        // Update the post in the local state
+        setPosts(prevPosts => 
+          prevPosts.map(post => 
+            post._id === postId 
+              ? { ...post, comments: response.data.comments }
+              : post
+          )
+        );
+        
+        toast.success('Comment added successfully!');
+      }
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err) || "Failed to add comment";
+      toast.error(errorMessage);
+      throw err;
+    }
+  }, []);
+
+  // Fetch post by slug
+  const fetchPostBySlug = useCallback(async (slug) => {
+    try {
+      const response = await postApi.getPostBySlug(slug);
+      if (response.success) {
+        return response.data;
+      }
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err) || "Failed to fetch post";
+      toast.error(errorMessage);
+      throw err;
+    }
+  }, []);
+
   // Fetch posts on mount only
   useEffect(() => {
     fetchPosts();
@@ -376,6 +445,9 @@ export const PostProvider = ({ children }) => {
     setSearchAndFetch,
     setPageAndFetch,
     clearAllFilters,
+    toggleLike,
+    addComment,
+    fetchPostBySlug,
     setError: (error) => setError(error),
     clearError: () => setError(null)
   };

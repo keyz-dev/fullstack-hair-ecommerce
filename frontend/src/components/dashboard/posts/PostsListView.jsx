@@ -97,8 +97,8 @@ const PostsListView = ({ onEdit, onView, onDelete }) => {
               )}
             </div>
             <div className="ml-4 min-w-0 flex-1">
-              <div className="text-sm font-medium text-gray-900 truncate">
-                {row.title}
+              <div className="text-sm font-medium text-gray-900 truncate max-w-[200px]" title={row.title}>
+                {row.title.length > 50 ? `${row.title.substring(0, 50)}...` : row.title}
               </div>
               <div className="flex items-center gap-2 mt-1">
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
