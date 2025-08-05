@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Eye, Share2, Play, Calendar, User, Tag, Bookmark } from 'lucide-react';
+import { Heart, Eye, Play, Calendar, User, Tag } from 'lucide-react';
 import { Button } from '../ui';
 import { format } from 'date-fns';
 
 const PostCard = ({ 
   post, 
   onLike, 
-  onShare, 
-  onView, 
-  onBookmark,
+  onView,
   isLiked = false,
-  isBookmarked = false,
-  showActions = true 
+  simplified = false,
+  viewMode = 'grid'
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -36,32 +34,177 @@ const PostCard = ({
     return configs[postType] || { icon: '📄', label: postType?.replace('-', ' ') || 'Post', color: 'bg-gray-100 text-gray-700' };
   };
 
-  const getStatusConfig = (status, featured) => {
-    if (featured) {
-      return { text: 'Featured', color: 'bg-purple-100 text-purple-700 border-purple-200' };
-    }
-    
-    switch (status) {
-      case 'published':
-        return { text: 'Published', color: 'bg-green-100 text-green-700 border-green-200' };
-      case 'draft':
-        return { text: 'Draft', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
-      default:
-        return { text: 'Draft', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
-    }
-  };
-
   const typeConfig = getPostTypeConfig(post.postType);
-  const statusConfig = getStatusConfig(post.status, post.featured);
   const mediaType = getMediaType();
 
+  const handleCardClick = (e) => {
+    // Don't trigger card click if clicking on like button or other interactive elements
+    if (e.target.closest('button') || e.target.closest('a')) {
+      return;
+    }
+    onView(post);
+  };
+
+  const handleLikeClick = (e) => {
+    e.stopPropagation();
+    onLike(post._id);
+  };
+
+  if (viewMode === 'list') {
+    return (
+      <div
+        className={`group relative bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer ${
+          isHovered ? 'ring-1 ring-accent/20' : ''
+        }`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={handleCardClick}
+      >
+        <div className="flex">
+          {/* Media Section */}
+          <div className="relative w-48 h-32 flex-shrink-0 overflow-hidden bg-gray-100">
+            {mediaType === 'video' ? (
+              <div className="relative w-full h-full">
+                {post.video?.thumbnail ? (
+                  <img
+                    src={post.video.thumbnail}
+                    alt={post.title}
+                    className={`w-full h-full object-cover transition-transform duration-300 ${
+                      isHovered ? 'scale-105' : 'scale-100'
+                    }`}
+                    onLoad={() => setImageLoaded(true)}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                    <Play size={32} className="text-gray-400" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                  <div className="bg-white/90 rounded-full p-2 shadow-lg">
+                    <Play size={20} className="text-accent" />
+                  </div>
+                </div>
+              </div>
+            ) : mediaType === 'image' ? (
+              <img
+                src={post.images[0].url}
+                alt={post.title}
+                className={`w-full h-full object-cover transition-transform duration-300 ${
+                  isHovered ? 'scale-105' : 'scale-100'
+                }`}
+                onLoad={() => setImageLoaded(true)}
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-accent/10 to-purple-100 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-2xl mb-1">📝</div>
+                  <div className="text-xs text-gray-600">Text Post</div>
+                </div>
+              </div>
+            )}
+
+            {/* Post Type Badge */}
+            <div className="absolute top-2 left-2">
+              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${typeConfig.color}`}>
+                <span>{typeConfig.icon}</span>
+                <span>{typeConfig.label}</span>
+              </span>
+            </div>
+
+            {/* Featured Badge */}
+            {post.featured && (
+              <div className="absolute top-2 right-2">
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                  ⭐ Featured
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Content Section */}
+          <div className="flex-1 p-4 flex flex-col justify-between">
+            <div>
+              {/* Title */}
+              <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-accent transition-colors line-clamp-1">
+                {post.title}
+              </h3>
+
+              {/* Description */}
+              <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                {post.description || post.content?.substring(0, 200)}
+              </p>
+
+              {/* Meta Information */}
+              <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                <div className="flex items-center gap-2">
+                  <Calendar size={12} />
+                  <span>{format(new Date(post.createdAt), 'MMM dd, yyyy')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Eye size={12} />
+                  <span>{post.views || 0}</span>
+                </div>
+              </div>
+
+              {/* Tags */}
+              {post.tags && post.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {post.tags.slice(0, 3).map((tag, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600"
+                    >
+                      <Tag size={10} />
+                      {tag}
+                    </span>
+                  ))}
+                  {post.tags.length > 3 && (
+                    <span className="text-xs text-gray-500">+{post.tags.length - 3} more</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-between">
+              <Button
+                onClickHandler={(e) => {
+                  e.stopPropagation();
+                  onView(post);
+                }}
+                text="Read More"
+                additionalClasses="text-sm bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-md"
+              />
+              
+              {!simplified && (
+                <button
+                  onClick={handleLikeClick}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm transition-colors ${
+                    isLiked 
+                      ? 'bg-red-100 text-red-600 hover:bg-red-200' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <Heart size={14} className={isLiked ? 'fill-current' : ''} />
+                  <span>{post.likes || 0}</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Grid view (default)
   return (
     <div
-      className={`group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-500 hover:shadow-xl hover:scale-[1.02] hover:border-accent/20 ${
-        isHovered ? 'ring-2 ring-accent/20' : ''
+      className={`group relative bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer ${
+        isHovered ? 'ring-1 ring-accent/20' : ''
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
     >
       {/* Media Section */}
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
@@ -71,19 +214,19 @@ const PostCard = ({
               <img
                 src={post.video.thumbnail}
                 alt={post.title}
-                className={`w-full h-full object-cover transition-transform duration-500 ${
-                  isHovered ? 'scale-110' : 'scale-100'
+                className={`w-full h-full object-cover transition-transform duration-300 ${
+                  isHovered ? 'scale-105' : 'scale-100'
                 }`}
                 onLoad={() => setImageLoaded(true)}
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                <Play size={48} className="text-gray-400" />
+                <Play size={32} className="text-gray-400" />
               </div>
             )}
             <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-              <div className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg">
-                <Play size={24} className="text-accent" />
+              <div className="bg-white/90 rounded-full p-2 shadow-lg">
+                <Play size={20} className="text-accent" />
               </div>
             </div>
           </div>
@@ -91,8 +234,8 @@ const PostCard = ({
           <img
             src={post.images[0].url}
             alt={post.title}
-            className={`w-full h-full object-cover transition-transform duration-500 ${
-              isHovered ? 'scale-110' : 'scale-100'
+            className={`w-full h-full object-cover transition-transform duration-300 ${
+              isHovered ? 'scale-105' : 'scale-100'
             }`}
             onLoad={() => setImageLoaded(true)}
           />
@@ -100,163 +243,96 @@ const PostCard = ({
           <div className="w-full h-full bg-gradient-to-br from-accent/10 to-purple-100 flex items-center justify-center">
             <div className="text-center">
               <div className="text-4xl mb-2">📝</div>
-              <div className="text-sm text-gray-500">Text Post</div>
+              <div className="text-sm text-gray-600">Text Post</div>
             </div>
           </div>
         )}
 
-        {/* Loading Overlay */}
-        {!imageLoaded && mediaType !== 'text' && (
-          <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
+        {/* Post Type Badge */}
+        <div className="absolute top-3 left-3">
+          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${typeConfig.color}`}>
+            <span>{typeConfig.icon}</span>
+            <span>{typeConfig.label}</span>
+          </span>
+        </div>
 
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
-          {post.featured && (
-            <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 border border-purple-200">
+        {/* Featured Badge */}
+        {post.featured && (
+          <div className="absolute top-3 right-3">
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
               ⭐ Featured
-            </div>
-          )}
-          <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${typeConfig.color}`}>
-            <span className="mr-1">{typeConfig.icon}</span>
-            {typeConfig.label}
-          </div>
-        </div>
-
-        {/* Media Type Indicator */}
-        <div className="absolute top-3 right-3">
-          <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-black/50 text-white backdrop-blur-sm">
-            {mediaType === 'video' ? '🎥' : mediaType === 'image' ? '🖼️' : '📝'}
-          </div>
-        </div>
-
-        {/* Quick Actions Overlay */}
-        {showActions && (
-          <div className={`absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center transition-opacity duration-300 ${
-            isHovered ? 'opacity-100' : 'opacity-0'
-          }`}>
-            <div className="flex gap-3">
-              <Button
-                onClickHandler={() => onView(post)}
-                text="View Post"
-                additionalClasses="bg-white text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-xl shadow-lg"
-              />
-              <Button
-                onClickHandler={() => onShare(post)}
-                additionalClasses="bg-white/20 text-white hover:bg-white/30 p-3 rounded-xl backdrop-blur-sm"
-              >
-                <Share2 size={16} />
-              </Button>
-            </div>
+            </span>
           </div>
         )}
       </div>
 
       {/* Content Section */}
-      <div className="p-6">
-        {/* Meta Information */}
-        <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Calendar size={14} />
-              {format(new Date(post.publishedAt || post.createdAt), 'MMM dd, yyyy')}
-            </div>
-            {post.author && (
-              <div className="flex items-center gap-1">
-                <User size={14} />
-                {post.author.name}
-              </div>
-            )}
-          </div>
-          {post.status && (
-            <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${statusConfig.color}`}>
-              {statusConfig.text}
-            </div>
-          )}
-        </div>
-
+      <div className="p-4 flex flex-col h-full">
         {/* Title */}
-        <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-accent transition-colors duration-300">
+        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-accent transition-colors">
           {post.title}
         </h3>
 
         {/* Description */}
-        <p className="text-gray-600 mb-4 line-clamp-3 leading-relaxed">
-          {post.description || post.content?.substring(0, 120) || 'No description available...'}
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2 flex-grow">
+          {post.description || post.content?.substring(0, 120)}
         </p>
+
+        {/* Meta Information */}
+        <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+          <div className="flex items-center gap-2">
+            <Calendar size={12} />
+            <span>{format(new Date(post.createdAt), 'MMM dd, yyyy')}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Eye size={12} />
+            <span>{post.views || 0}</span>
+          </div>
+        </div>
 
         {/* Tags */}
         {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {post.tags.slice(0, 3).map((tag, index) => (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {post.tags.slice(0, 2).map((tag, index) => (
               <span
                 key={index}
-                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-accent/10 hover:text-accent transition-colors duration-300"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600"
               >
-                <Tag size={12} className="mr-1" />
+                <Tag size={10} />
                 {tag}
               </span>
             ))}
-            {post.tags.length > 3 && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
-                +{post.tags.length - 3} more
-              </span>
+            {post.tags.length > 2 && (
+              <span className="text-xs text-gray-500">+{post.tags.length - 2} more</span>
             )}
           </div>
         )}
 
-        {/* Engagement Stats */}
-        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Eye size={14} />
-              <span className="font-medium">{post.views || 0}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Heart size={14} className={isLiked ? 'text-red-500 fill-current' : ''} />
-              <span className="font-medium">{post.likes?.length || 0}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <MessageCircle size={14} />
-              <span className="font-medium">{post.comments?.length || 0}</span>
-            </div>
-          </div>
+        {/* Actions - Fixed at bottom */}
+        <div className="flex items-center justify-between mt-auto">
+          <Button
+            onClickHandler={(e) => {
+              e.stopPropagation();
+              onView(post);
+            }}
+            text="Read More"
+            additionalClasses="text-sm bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-md"
+          />
+          
+          {!simplified && (
+            <button
+              onClick={handleLikeClick}
+              className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm transition-colors ${
+                isLiked 
+                  ? 'bg-red-100 text-red-600 hover:bg-red-200' 
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <Heart size={14} className={isLiked ? 'fill-current' : ''} />
+              <span>{post.likes || 0}</span>
+            </button>
+          )}
         </div>
-
-        {/* Action Buttons */}
-        {showActions && (
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-            <div className="flex items-center gap-2">
-              <Button
-                onClickHandler={() => onLike(post._id)}
-                additionalClasses={`p-2 rounded-lg transition-all duration-300 ${
-                  isLiked 
-                    ? 'bg-red-100 text-red-600 hover:bg-red-200' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <Heart size={16} className={isLiked ? 'fill-current' : ''} />
-              </Button>
-              <Button
-                onClickHandler={() => onBookmark(post._id)}
-                additionalClasses={`p-2 rounded-lg transition-all duration-300 ${
-                  isBookmarked 
-                    ? 'bg-accent/10 text-accent' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <Bookmark size={16} className={isBookmarked ? 'fill-current' : ''} />
-              </Button>
-            </div>
-            <Button
-              onClickHandler={() => onView(post)}
-              text="Read More"
-              additionalClasses="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105"
-            />
-          </div>
-        )}
       </div>
     </div>
   );

@@ -16,6 +16,12 @@ export const postApi = {
     return response.data;
   },
 
+  // Get single post by ID
+  getPostById: async (postId) => {
+    const response = await api.get(`${URL_PREFIX}/id/${postId}`);
+    return response.data;
+  },
+
   // Get featured posts
   getFeaturedPosts: async (limit = 6) => {
     const response = await api.get(`${URL_PREFIX}/featured`, { params: { limit } });

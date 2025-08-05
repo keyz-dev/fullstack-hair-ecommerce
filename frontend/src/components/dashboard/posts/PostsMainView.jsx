@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { PostStatSection, PostsListView, EditPostModal, ViewPostModal } from ".";
+import { useNavigate } from "react-router-dom";
+import { PostStatSection, PostsListView } from ".";
 import { Button, DeleteModal, FadeInContainer } from "../../ui";
 import { usePost } from "../../../hooks";
 
 const PostsMainView = ({ setView }) => {
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const navigate = useNavigate();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const { deletePost, loading, fetchStats, fetchInitialPosts, stats } = usePost();
@@ -17,13 +17,11 @@ const PostsMainView = ({ setView }) => {
   }, []); // Only run once on mount
 
   const handleEdit = (post) => {
-    setSelectedPost(post);
-    setEditModalOpen(true);
+    navigate(`/admin/posts/${post._id}/edit`);
   };
 
   const handleView = (post) => {
-    setSelectedPost(post);
-    setViewModalOpen(true);
+    navigate(`/admin/posts/${post._id}/view`);
   };
 
   const handleDelete = (post) => {
@@ -59,18 +57,6 @@ const PostsMainView = ({ setView }) => {
       <FadeInContainer delay={600} duration={600}>
         <PostsListView onEdit={handleEdit} onView={handleView} onDelete={handleDelete} />
       </FadeInContainer>
-      
-      <EditPostModal
-        isOpen={editModalOpen}
-        onClose={() => { setEditModalOpen(false); setSelectedPost(null); }}
-        initialData={selectedPost}
-      />
-
-      <ViewPostModal
-        isOpen={viewModalOpen}
-        onClose={() => { setViewModalOpen(false); setSelectedPost(null); }}
-        post={selectedPost}
-      />
       
       <DeleteModal
         isOpen={deleteModalOpen}

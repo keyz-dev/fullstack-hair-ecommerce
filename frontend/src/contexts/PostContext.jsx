@@ -403,6 +403,20 @@ export const PostProvider = ({ children }) => {
     }
   }, []);
 
+  // Fetch post by ID
+  const fetchPostById = useCallback(async (postId) => {
+    try {
+      const response = await postApi.getPostById(postId);
+      if (response.success) {
+        return response.data;
+      }
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err) || "Failed to fetch post";
+      toast.error(errorMessage);
+      throw err;
+    }
+  }, []);
+
   // Fetch posts on mount only
   useEffect(() => {
     fetchPosts();
@@ -448,6 +462,7 @@ export const PostProvider = ({ children }) => {
     toggleLike,
     addComment,
     fetchPostBySlug,
+    fetchPostById,
     setError: (error) => setError(error),
     clearError: () => setError(null)
   };

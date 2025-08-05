@@ -18,6 +18,8 @@ import {
   Settings,
 } from "../pages/admin";
 
+import EditPostPage from "../components/dashboard/posts/EditPostPage";
+import ViewPostPage from "../components/dashboard/posts/ViewPostPage";
 
 export const adminRoutes = [
   <Route
@@ -36,6 +38,8 @@ export const adminRoutes = [
       <Route path="notifications" element={<Notifications />} />
       <Route path="profile" element={<Profile />} />
       <Route path="posts" element={<Posts />} />
+      <Route path="posts/:postId/edit" element={<EditPostPage />} />
+      <Route path="posts/:postId/view" element={<ViewPostPage />} />
       <Route path="services" element={<Services />} />
       <Route path="bookings" element={<Bookings />} />
       <Route path="products" element={<Products />} />

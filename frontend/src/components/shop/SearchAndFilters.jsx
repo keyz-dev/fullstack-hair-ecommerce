@@ -90,7 +90,7 @@ const SearchAndFilters = ({
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             
             {/* Filter Button */}
             <Button
