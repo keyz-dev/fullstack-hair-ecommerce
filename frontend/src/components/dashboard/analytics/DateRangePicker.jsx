@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, ChevronDown } from 'lucide-react';
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -8,6 +9,8 @@ const DateRangePicker = ({ onRangeChange, currentRange = '30d' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const buttonRef = useRef(null);
 
   const predefinedRanges = [
     { label: 'Last 7 days', value: '7d' },
@@ -20,6 +23,10 @@ const DateRangePicker = ({ onRangeChange, currentRange = '30d' }) => {
   const handleRangeSelect = (range) => {
     onRangeChange(range);
     setIsOpen(false);
+  };
+
+  const handleDropdownClick = (e) => {
+    e.stopPropagation();
   };
 
   const handleCustomRange = () => {
@@ -35,10 +42,139 @@ const DateRangePicker = ({ onRangeChange, currentRange = '30d' }) => {
     return range ? range.label : 'Custom range';
   };
 
+  const updateDropdownPosition = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX
+      });
+    }
+  };
+
+  const handleToggle = () => {
+    if (!isOpen) {
+      updateDropdownPosition();
+    }
+    setIsOpen(!isOpen);
+  };
+
+  // Update position when window resizes
+  useEffect(() => {
+    if (isOpen) {
+      const handleResize = () => updateDropdownPosition();
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, [isOpen]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if click is outside both the button and the dropdown
+      const isOutsideButton = buttonRef.current && !buttonRef.current.contains(event.target);
+      const isOutsideDropdown = !event.target.closest('[data-dropdown-content]');
+      
+      if (isOutsideButton && isOutsideDropdown) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
+
+  const renderDropdown = () => {
+    if (!isOpen) return null;
+
+    const dropdownContent = (
+      <div 
+        className="fixed w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999]"
+        data-dropdown-content
+        onClick={handleDropdownClick}
+        style={{
+          top: dropdownPosition.top,
+          left: dropdownPosition.left
+        }}
+      >
+        <div className="p-4">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Select Date Range</h3>
+          
+          {/* Predefined ranges */}
+          <div className="space-y-2 mb-4">
+            {predefinedRanges.map((range) => (
+              <button
+                key={range.value}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRangeSelect(range.value);
+                }}
+                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                  currentRange === range.value
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                    : 'hover:bg-gray-50 text-gray-700'
+                }`}
+              >
+                {range.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Custom range */}
+          <div className="border-t pt-4">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Custom Range</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Start Date</label>
+                <ReactDatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  selectsStart
+                  startDate={startDate}
+                  endDate={endDate}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm"
+                  placeholderText="Start date"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">End Date</label>
+                <ReactDatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  selectsEnd
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={startDate}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm"
+                  placeholderText="End date"
+                />
+              </div>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCustomRange();
+              }}
+              disabled={!startDate || !endDate}
+              className="w-full mt-3 px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              Apply Custom Range
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+
+    // Render dropdown using portal to ensure it appears above all other elements
+    return createPortal(dropdownContent, document.body);
+  };
+
   return (
-    <div className="relative">
+    <div className="relative" ref={buttonRef}>
       <Button
-        onClickHandler={() => setIsOpen(!isOpen)}
+        onClickHandler={handleToggle}
         additionalClasses="border border-line_clr text-secondary min-h-fit py-[8px]"
       >
         <Calendar className="w-4 h-4 text-gray-600" />
@@ -48,69 +184,7 @@ const DateRangePicker = ({ onRangeChange, currentRange = '30d' }) => {
         <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </Button>
 
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-          <div className="p-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Select Date Range</h3>
-            
-            {/* Predefined ranges */}
-            <div className="space-y-2 mb-4">
-              {predefinedRanges.map((range) => (
-                <button
-                  key={range.value}
-                  onClick={() => handleRangeSelect(range.value)}
-                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                    currentRange === range.value
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                      : 'hover:bg-gray-50 text-gray-700'
-                  }`}
-                >
-                  {range.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Custom range */}
-            <div className="border-t pt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Custom Range</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-gray-600 mb-1">Start Date</label>
-                  <ReactDatePicker
-                    selected={startDate}
-                    onChange={(date) => setStartDate(date)}
-                    selectsStart
-                    startDate={startDate}
-                    endDate={endDate}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm"
-                    placeholderText="Start date"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-600 mb-1">End Date</label>
-                  <ReactDatePicker
-                    selected={endDate}
-                    onChange={(date) => setEndDate(date)}
-                    selectsEnd
-                    startDate={startDate}
-                    endDate={endDate}
-                    minDate={startDate}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm"
-                    placeholderText="End date"
-                  />
-                </div>
-              </div>
-              <button
-                onClick={handleCustomRange}
-                disabled={!startDate || !endDate}
-                className="w-full mt-3 px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-              >
-                Apply Custom Range
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {renderDropdown()}
     </div>
   );
 };

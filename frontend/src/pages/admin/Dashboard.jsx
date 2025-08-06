@@ -19,7 +19,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [dateRange, setDateRange] = useState('30d');
-  const { analytics, loading, error, refreshAnalytics } = useAdminAnalytics(dateRange);
+  const { analytics, loading, partialLoading, error, refreshAnalytics } = useAdminAnalytics(dateRange);
 
   const handleDateRangeChange = (newRange) => {
     setDateRange(newRange);
@@ -73,7 +73,7 @@ const Dashboard = () => {
             <p className="text-gray-600">Welcome back, </p>
             <h1 className="text-2xl font-bold text-gray-900">{user?.name?.split(' ')[0] || 'Admin'}!</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 relative">
             <DateRangePicker 
               onRangeChange={handleDateRangeChange} 
               currentRange={dateRange} 
@@ -94,7 +94,7 @@ const Dashboard = () => {
       <FadeInContainer delay={400} duration={600}>
         <AdminOverviewStats 
           stats={analytics.overview} 
-          loading={loading} 
+          loading={partialLoading.overview || loading} 
         />
       </FadeInContainer>
 
@@ -103,11 +103,11 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <RevenueChart 
             data={analytics.revenue?.chartData} 
-            loading={loading} 
+            loading={partialLoading.revenue || loading} 
           />
           <UserGrowthChart 
             data={analytics.users?.growthData} 
-            loading={loading} 
+            loading={partialLoading.users || loading} 
           />
         </div>
       </FadeInContainer>
@@ -117,7 +117,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ProductPerformanceChart 
             data={analytics.products?.statusDistribution} 
-            loading={loading} 
+            loading={partialLoading.products || loading} 
           />
           <AdminActivityTimeline 
             activities={analytics.activity} 
