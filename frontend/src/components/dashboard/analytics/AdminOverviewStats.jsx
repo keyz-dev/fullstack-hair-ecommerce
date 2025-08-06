@@ -76,7 +76,7 @@ const AdminOverviewStats = ({ stats, loading }) => {
         <AnimatedStatCard 
           key={index} 
           {...card} 
-          className="lg:w-[200px]" 
+          className="lg:w-[210px]" 
           isLoading={loading}
           duration={1.5}
         />

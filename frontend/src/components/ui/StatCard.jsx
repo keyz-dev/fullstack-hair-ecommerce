@@ -17,10 +17,11 @@ const StatCard = ({
   const TrendIcon = trend === "up" ? ArrowUp : ArrowDown;
   const trendColor = trend === "up" ? "text-green-500" : "text-red-500";
   const trendBgColor = trend === "up" ? "bg-green-100" : "bg-red-100";
+  const trendBorderColor = trend === "up" ? "border-green-500" : "border-red-500";
 
   return (
     <div
-      className={`${theme.background} rounded-sm p-3 border ${theme.border} hover:shadow-xs transition-shadow duration-200 mb-3 ${className}`}
+      className={`${theme.background} rounded-sm p-3 border ${theme.border} hover:shadow-xs transition-shadow duration-200 mb-3 ${className} flex flex-col`}
       {...props}
     >
       {/* Header with Icon */}
@@ -35,16 +36,7 @@ const StatCard = ({
         </h3>
       </div>
 
-      {trendValue && (
-        <div
-          className={`${trendBgColor} px-2 py-1 rounded-sm flex items-center gap-1`}
-        >
-          <TrendIcon className={`w-3 h-3 sm:w-4 sm:h-4 ${trendColor}`} />
-          <span className={`text-xs sm:text-sm font-medium ${trendColor}`}>
-            {trendValue}%
-          </span>
-        </div>
-      )}
+      
       {/* Value */}
       <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-2 sm:mb-3">
         {isLoading ? (
@@ -54,12 +46,25 @@ const StatCard = ({
         )}
       </div>
 
-      {/* Description */}
-      {description && (
-        <p className="text-xs sm:text-sm text-placeholder leading-relaxed">
-          {description}
-        </p>
-      )}
+      {/* Bottom section with consistent height */}
+      <div className="flex items-center gap-2 min-h-[24px] sm:min-h-[28px] mt-auto">
+        {trendValue && (
+          <div
+            className={`border ${trendBgColor} ${trendBorderColor} px-2 py-1 rounded-sm flex items-center gap-1 flex-shrink-0`}
+          >
+            <TrendIcon className={`w-3 h-3 sm:w-4 sm:h-4 ${trendColor}`} />
+            <span className={`text-xs sm:text-sm font-medium ${trendColor}`}>
+              {trendValue}%
+            </span>
+          </div>
+        )}
+        {/* Description */}
+        {description && (
+          <p className="text-xs sm:text-sm text-placeholder leading-relaxed w-fit truncate" style={{ maxWidth: '140px' }}>
+            {description}
+          </p>
+        )}
+      </div>
     </div>
   );
 };
