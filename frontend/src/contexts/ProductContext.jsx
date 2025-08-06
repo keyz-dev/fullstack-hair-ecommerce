@@ -29,7 +29,7 @@ const initialState = {
   },
   pagination: {
     page: 1,
-    limit: 20,
+    limit: 5,
     total: 0,
     totalPages: 1
   },
@@ -148,22 +148,25 @@ const ProductProvider = ({ children }) => {
     try {
       dispatch({ type: PRODUCT_ACTIONS.SET_LOADING, payload: true });
       
+      // Always fetch all products for client-side filtering
       const response = await productApi.getAllProducts({
-        page,
-        limit: state.pagination.limit,
-        sort: state.filters.sortBy
+        page: 1, // Always fetch page 1
+        limit: 1000, // Get a large number to have all products for client-side filtering
+        sort: '-createdAt', // Default sort
+        search: undefined, // Don't filter on server - we'll filter client-side
+        category: undefined,
+        stock_status: undefined,
+        price_range: undefined
       });
       
       const fetchedProducts = response.data?.products || [];
-      const totalProducts = response.data?.pagination?.total || fetchedProducts.length;
-      const totalPages = response.data?.pagination?.totalPages || 1;
       
       dispatch({
         type: PRODUCT_ACTIONS.SET_PRODUCTS,
         payload: { 
           products: fetchedProducts, 
-          total: totalProducts,
-          totalPages
+          total: fetchedProducts.length,
+          totalPages: 1 // We'll calculate this client-side
         }
       });
       
@@ -172,7 +175,7 @@ const ProductProvider = ({ children }) => {
       const errorMessage = extractErrorMessage(err) || 'Failed to load products. Please try again.';
       dispatch({ type: PRODUCT_ACTIONS.SET_ERROR, payload: errorMessage });
     }
-  }, [state.pagination.limit]);
+  }, []); // Removed filters dependency
 
   // Fetch product stats
   const fetchStats = useCallback(async () => {
@@ -192,42 +195,32 @@ const ProductProvider = ({ children }) => {
   // Filter and sort products based on current filters (client-side)
   const getFilteredProducts = useCallback(() => {
     let filtered = state.products.filter(product => {
-      // Status filter (stock status)
+      // Status filter
       if (state.filters.status !== 'all') {
-        const stock = product.stock || 0;
-        let productStatus;
-        if (stock > 10) productStatus = 'in_stock';
-        else if (stock === 0) productStatus = 'out_of_stock';
-        else productStatus = 'limited_stock';
-        
-
-        
-        if (productStatus !== state.filters.status) {
-          return false;
-        }
+        if (state.filters.status === 'active' && !product.isActive) return false;
+        if (state.filters.status === 'inactive' && product.isActive) return false;
       }
       
       // Category filter
-      if (state.filters.category !== 'all') {
-        const productCategoryId = typeof product.category === 'object' ? product.category._id : product.category;
-
-        if (productCategoryId !== state.filters.category) {
+      if (state.filters.category !== 'all' && product.category?._id !== state.filters.category) {
           return false;
-        }
       }
       
       // Price range filter
       if (state.filters.priceRange !== 'all') {
         const price = product.price || 0;
         switch (state.filters.priceRange) {
-          case 'low':
-            if (price > 50) return false;
+          case '0-1000':
+            if (price > 1000) return false;
             break;
-          case 'medium':
-            if (price < 50 || price > 200) return false;
+          case '1000-5000':
+            if (price < 1000 || price > 5000) return false;
             break;
-          case 'high':
-            if (price < 200) return false;
+          case '5000-10000':
+            if (price < 5000 || price > 10000) return false;
+            break;
+          case '10000+':
+            if (price < 10000) return false;
             break;
           default:
             break;
@@ -239,11 +232,11 @@ const ProductProvider = ({ children }) => {
         const searchTerm = state.filters.search.toLowerCase();
         const productName = product.name?.toLowerCase() || '';
         const productDescription = product.description?.toLowerCase() || '';
-        const productSku = product.sku?.toLowerCase() || '';
+        const productCategory = product.category?.name?.toLowerCase() || '';
         
         if (!productName.includes(searchTerm) && 
             !productDescription.includes(searchTerm) && 
-            !productSku.includes(searchTerm)) {
+            !productCategory.includes(searchTerm)) {
           return false;
         }
       }
@@ -251,7 +244,7 @@ const ProductProvider = ({ children }) => {
       return true;
     });
 
-    // Sort the filtered results
+    // Sort products
     if (state.filters.sortBy) {
       filtered.sort((a, b) => {
         switch (state.filters.sortBy) {
@@ -263,128 +256,69 @@ const ProductProvider = ({ children }) => {
             return (a.price || 0) - (b.price || 0);
           case '-price':
             return (b.price || 0) - (a.price || 0);
+          case 'stock':
+            return (a.stock || 0) - (b.stock || 0);
+          case '-stock':
+            return (b.stock || 0) - (a.stock || 0);
           case 'createdAt':
             return new Date(a.createdAt) - new Date(b.createdAt);
           case '-createdAt':
-            return new Date(b.createdAt) - new Date(a.createdAt);
-          case 'updatedAt':
-            return new Date(a.updatedAt) - new Date(b.updatedAt);
-          case '-updatedAt':
-            return new Date(b.updatedAt) - new Date(a.updatedAt);
           default:
-            return 0;
+            return new Date(b.createdAt) - new Date(a.createdAt);
         }
       });
     }
 
     return filtered;
-  }, [state.products, state.filters.status, state.filters.category, state.filters.priceRange, state.filters.search, state.filters.sortBy]);
+  }, [state.products, state.filters]);
 
-  // Create product
-  const createProduct = useCallback(async (data) => {
-    try {
-      dispatch({ type: PRODUCT_ACTIONS.SET_LOADING, payload: true });
-      
-      const formData = new FormData();
+  // Get paginated products from filtered results
+  const getPaginatedProducts = useCallback(() => {
+    const filteredProducts = getFilteredProducts();
+    const startIndex = (state.pagination.page - 1) * state.pagination.limit;
+    const endIndex = startIndex + state.pagination.limit;
+    return filteredProducts.slice(startIndex, endIndex);
+  }, [getFilteredProducts, state.pagination.page, state.pagination.limit]);
 
-      Object.keys(data).forEach((key) => {
-        if (key === "productImages" && data[key].length > 0) {
-          data[key].forEach(img => {
-            formData.append("productImages", img);
-          })
-        } else if (key === "variants" || key === "features" || key === "specifications") {
-          // Convert complex objects to JSON strings for FormData
-          if (data[key] && (Array.isArray(data[key]) || typeof data[key] === 'object')) {
-            // Handle empty arrays/objects
-            if (Array.isArray(data[key]) && data[key].length === 0) {
-              formData.append(key, JSON.stringify([]));
-            } else if (typeof data[key] === 'object' && Object.keys(data[key]).length === 0) {
-              formData.append(key, JSON.stringify({}));
-            } else {
-              formData.append(key, JSON.stringify(data[key]));
-            }
-          } else if (data[key] === null || data[key] === undefined) {
-            // Handle null/undefined values
-            formData.append(key, '');
-          } else {
-            formData.append(key, data[key]);
-          }
-        } else if (key === "tags") {
-          // Handle tags - convert array to comma-separated string
-          if (Array.isArray(data[key])) {
-            formData.append(key, data[key].join(','));
-          } else if (data[key] === null || data[key] === undefined) {
-            formData.append(key, '');
-          } else {
-            formData.append(key, data[key]);
-          }
-        } else {
-          formData.append(key, data[key]);
-        }
-      });
+  // Calculate pagination info from filtered results
+  const getPaginationInfo = useCallback(() => {
+    const filteredProducts = getFilteredProducts();
+    const total = filteredProducts.length;
+    const totalPages = Math.ceil(total / state.pagination.limit);
+    
+    return {
+      total,
+      totalPages,
+      currentPage: state.pagination.page
+    };
+  }, [getFilteredProducts, state.pagination.limit, state.pagination.page]);
 
-      const response = await productApi.addProduct(formData);
-      const newProduct = response.data || response;
-      
-      // Add the new product to the state
-      dispatch({ type: PRODUCT_ACTIONS.ADD_PRODUCT, payload: newProduct });
-      return {success: true, message: 'Product created successfully'};
-    } catch (err) {
-      const errorMessage = extractErrorMessage(err) || 'Failed to create product';
-      dispatch({ type: PRODUCT_ACTIONS.SET_ERROR, payload: errorMessage });
-      throw new Error(errorMessage);
-    } finally {
-      dispatch({ type: PRODUCT_ACTIONS.SET_LOADING, payload: false });
-    }
-  }, []);
-
-  // Update product
-  const updateProduct = useCallback(async (id, data) => {
-    try {
-      dispatch({ type: PRODUCT_ACTIONS.SET_LOADING, payload: true });
-      
-      const response = await productApi.updateProduct(id, data);
-      const updatedProduct = response.data || response;
-      
-      dispatch({ type: PRODUCT_ACTIONS.UPDATE_PRODUCT, payload: updatedProduct });
-      
-      return {success: true, message: 'Product updated successfully'};
-    } catch (err) {
-      const errorMessage = extractErrorMessage(err) || 'Failed to update product';
-      dispatch({ type: PRODUCT_ACTIONS.SET_ERROR, payload: errorMessage });
-      throw new Error(errorMessage);
-    } finally {
-      dispatch({ type: PRODUCT_ACTIONS.SET_LOADING, payload: false });
-    }
-  }, []);
-
-  // Delete product
-  const deleteProduct = useCallback(async (id) => {
-    try {
-      dispatch({ type: PRODUCT_ACTIONS.SET_LOADING, payload: true });
-      
-      await productApi.deleteProduct(id);
-      dispatch({ type: PRODUCT_ACTIONS.DELETE_PRODUCT, payload: id });
-      
-      return {success: true, message: 'Product deleted successfully'};
-    } catch (err) {
-      const errorMessage = extractErrorMessage(err) || 'Failed to delete product';
-      dispatch({ type: PRODUCT_ACTIONS.SET_ERROR, payload: errorMessage });
-      throw new Error(errorMessage);
-    } finally {
-      dispatch({ type: PRODUCT_ACTIONS.SET_LOADING, payload: false });
-    }
-  }, []);
-
-  // Actions - memoized to prevent unnecessary re-renders
-  const actions = useMemo(() => ({
+  // Actions
+  const actions = {
+    // Product management
+    addProduct: (product) => {
+      dispatch({ type: PRODUCT_ACTIONS.ADD_PRODUCT, payload: product });
+    },
+    
+    updateProduct: (product) => {
+      dispatch({ type: PRODUCT_ACTIONS.UPDATE_PRODUCT, payload: product });
+    },
+    
+    deleteProduct: (productId) => {
+      dispatch({ type: PRODUCT_ACTIONS.DELETE_PRODUCT, payload: productId });
+    },
+    
     // Filter management
     setFilter: (filterType, value) => {
       dispatch({ type: PRODUCT_ACTIONS.SET_FILTERS, payload: { [filterType]: value } });
+      // Reset to page 1 when filters change
+      dispatch({ type: PRODUCT_ACTIONS.SET_PAGINATION, payload: { page: 1 } });
     },
     
     setSearch: (searchTerm) => {
       dispatch({ type: PRODUCT_ACTIONS.SET_FILTERS, payload: { search: searchTerm } });
+      // Reset to page 1 when search changes
+      dispatch({ type: PRODUCT_ACTIONS.SET_PAGINATION, payload: { page: 1 } });
     },
     
     // Pagination
@@ -400,8 +334,23 @@ const ProductProvider = ({ children }) => {
     // Clear all filters
     clearAllFilters: () => {
       dispatch({ type: PRODUCT_ACTIONS.SET_FILTERS, payload: initialState.filters });
+      dispatch({ type: PRODUCT_ACTIONS.SET_PAGINATION, payload: { page: 1 } });
     }
-  }), []);
+  };
+
+  // Context value
+  const value = {
+    ...state,
+    filteredProducts: getPaginatedProducts(), // Return paginated filtered products
+    stats: calculateStats(getFilteredProducts()), // Calculate stats from filtered products
+    pagination: {
+      ...state.pagination,
+      ...getPaginationInfo() // Include calculated pagination info
+    },
+    actions,
+    fetchProducts,
+    fetchStats
+  };
 
   // Fetch products on mount only
   useEffect(() => {
@@ -414,18 +363,6 @@ const ProductProvider = ({ children }) => {
       fetchStats();
     }
   }, [state.products.length]); // Only depend on products length, not fetchStats
-
-  // Context value - memoized to prevent unnecessary re-renders
-  const value = useMemo(() => ({
-    ...state,
-    filteredProducts: getFilteredProducts(),
-    actions,
-    fetchProducts,
-    fetchStats,
-    createProduct,
-    updateProduct,
-    deleteProduct
-  }), [state, getFilteredProducts, actions, fetchProducts, fetchStats, createProduct, updateProduct, deleteProduct]);
 
   return (
     <ProductContext.Provider value={value}>

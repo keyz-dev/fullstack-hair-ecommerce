@@ -47,15 +47,15 @@ const AdminOverviewStats = ({ stats, loading }) => {
       icon: Package,
       description: "Products in inventory",
     },
-    {
-      title: "Active Bookings",
-      value: stats?.activeBookings ?? (loading ? "..." : 0),
-      colorTheme: "indigo",
-      icon: Calendar,
-      description: "Upcoming appointments",
-      trend: stats?.bookingTrend?.direction,
-      trendValue: stats?.bookingTrend?.percentage
-    },
+    // {
+    //   title: "Active Bookings",
+    //   value: stats?.activeBookings ?? (loading ? "..." : 0),
+    //   colorTheme: "indigo",
+    //   icon: Calendar,
+    //   description: "Upcoming appointments",
+    //   trend: stats?.bookingTrend?.direction,
+    //   trendValue: stats?.bookingTrend?.percentage
+    // },
     {
       title: "Conversion Rate",
       value: stats?.conversionRate ? `${stats.conversionRate}%` : (loading ? "..." : "0%"),
@@ -70,13 +70,13 @@ const AdminOverviewStats = ({ stats, loading }) => {
       staggerDelay={150} 
       baseDelay={400} 
       duration={800}
-      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-4"
+      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-4"
     >
       {statCards.map((card, index) => (
         <AnimatedStatCard 
           key={index} 
           {...card} 
-          className="lg:w-[210px]" 
+          className="lg:w-[220px]" 
           isLoading={loading}
           duration={1.5}
         />
@@ -85,4 +85,4 @@ const AdminOverviewStats = ({ stats, loading }) => {
   );
 };
 
-export default AdminOverviewStats; 
+export default AdminOverviewStats;

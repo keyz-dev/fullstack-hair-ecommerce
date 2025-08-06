@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useCategory } from "../../hooks";
 import { CategoriesListView, AddCategoryModal, UpdateCategoryModal, CategoryStatSection } from "../../components/dashboard/categories"
-import { Button, AdvancedFilters, DeleteModal, LoadingSpinner, EmptyState, FadeInContainer } from "../../components/ui";
+import { Button, AdvancedFilters, DeleteModal, LoadingSpinner, EmptyState, FadeInContainer, Pagination } from "../../components/ui";
 
 const CategoriesMainView = () => {
   const {
@@ -28,8 +28,6 @@ const CategoriesMainView = () => {
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
-
-  // No need to refetch when filters change since filtering is client-side
 
   // Handle category edit
   const handleCategoryEdit = () => {
@@ -71,10 +69,15 @@ const CategoriesMainView = () => {
     setIsSearching(searching);
   };
 
+  // Handle page change
+  const handlePageChange = (page) => {
+    actions.setPage(page);
+  };
+
   // Refresh categories
   const handleRefresh = () => {
     actions.refreshCategories();
-    fetchCategories(pagination.page);
+    fetchCategories();
   };
 
   if (loading && categories.length === 0) {
@@ -170,34 +173,16 @@ const CategoriesMainView = () => {
         </div>
       </FadeInContainer>
 
-             {/* Pagination */}
-       <FadeInContainer delay={1000} duration={600}>
-         {pagination.total > pagination.limit && (
-           <div className="flex justify-center mt-6">
-             <div className="flex items-center space-x-2">
-               <Button
-                 variant="outline"
-                 size="sm"
-                 onClick={() => fetchCategories(pagination.page - 1)}
-                 disabled={pagination.page === 1}
-               >
-                 Previous
-               </Button>
-               <span className="text-sm text-gray-600">
-                 Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
-               </span>
-               <Button
-                 variant="outline"
-                 size="sm"
-                 onClick={() => fetchCategories(pagination.page + 1)}
-                 disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-               >
-                 Next
-               </Button>
-             </div>
-           </div>
-         )}
-       </FadeInContainer>
+      {/* Pagination */}
+      <FadeInContainer delay={1000} duration={600}>
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          limit={pagination.limit}
+          onPageChange={handlePageChange}
+        />
+      </FadeInContainer>
 
       {/* Modals */}
       <AddCategoryModal
@@ -208,7 +193,7 @@ const CategoriesMainView = () => {
         isOpen={editModalOpen}
         onClose={() => { 
           setEditModalOpen(false); 
-          fetchCategories(pagination.page);
+          fetchCategories();
         }}
       />
       <DeleteModal

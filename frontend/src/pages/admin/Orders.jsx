@@ -6,7 +6,7 @@ import {
   OrderFilters, 
   OrderStats, 
 } from '../../components/orders';
-import { Button, LoadingSpinner, EmptyState, FadeInContainer } from '../../components/ui';
+import { Button, LoadingSpinner, EmptyState, FadeInContainer, Pagination } from '../../components/ui';
 
 const Orders = () => {
   const { user } = useAuth();
@@ -27,16 +27,9 @@ const Orders = () => {
   // Load orders on component mount
   useEffect(() => {
     if (user) {
-      fetchAllOrders();
-    }
-  }, [user, fetchAllOrders]);
-
-  // Refetch orders when filters change
-  useEffect(() => {
-    if (user) {
       fetchAllOrders(1);
     }
-  }, [filters, user, fetchAllOrders]);
+  }, [user, fetchAllOrders]);
 
   // Handle order view (open modal)
   const handleOrderView = (order) => {
@@ -75,13 +68,16 @@ const Orders = () => {
     actions.setSearch(searchTerm);
   };
 
+  // Handle page change
+  const handlePageChange = (page) => {
+    actions.setPage(page);
+  };
+
   // Refresh orders
   const handleRefresh = () => {
     actions.refreshOrders();
-    fetchAllOrders(pagination.page);
+    fetchAllOrders(1);
   };
-
-
 
   if (loading && orders.length === 0) {
     return (
@@ -139,31 +135,13 @@ const Orders = () => {
 
       {/* Pagination */}
       <FadeInContainer delay={800} duration={600}>
-        {pagination.total > pagination.limit && (
-          <div className="flex justify-center mt-6">
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fetchAllOrders(pagination.page - 1)}
-                disabled={pagination.page === 1}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-gray-600">
-                Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fetchAllOrders(pagination.page + 1)}
-                disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          limit={pagination.limit}
+          onPageChange={handlePageChange}
+        />
       </FadeInContainer>
 
       {/* Order Details Modal */}

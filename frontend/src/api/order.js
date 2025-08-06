@@ -20,9 +20,9 @@ export const orderApi = {
     return response.data;
   },
 
-  // Admin: Get all orders - matches GET /order/admin/all in backend
-  getAllOrders: async () => {
-    const response = await api.get('/order/admin/all');
+  // Admin: Get all orders with pagination - matches GET /order/admin/all in backend
+  getAllOrders: async (params = {}) => {
+    const response = await api.get('/order/admin/all', { params });
     return response.data;
   }
 };

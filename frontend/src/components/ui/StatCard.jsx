@@ -60,7 +60,7 @@ const StatCard = ({
         )}
         {/* Description */}
         {description && (
-          <p className="text-xs sm:text-sm text-placeholder leading-relaxed w-fit truncate" style={{ maxWidth: '140px' }}>
+          <p className="text-xs sm:text-sm text-placeholder leading-relaxed w-fit truncate" style={{ maxWidth: '150px' }}>
             {description}
           </p>
         )}

@@ -22,8 +22,9 @@ const initialState = {
   },
   pagination: {
     page: 1,
-    limit: 20,
-    total: 0
+    limit: 5,
+    total: 0,
+    totalPages: 1
   },
   stats: {
     total: 0,
@@ -68,8 +69,10 @@ const orderReducer = (state, action) => {
         orders: action.payload.orders || [],
         pagination: {
           ...state.pagination,
-          total: action.payload.total || action.payload.orders?.length || 0
+          total: action.payload.total || action.payload.orders?.length || 0,
+          totalPages: action.payload.totalPages || Math.ceil((action.payload.total || action.payload.orders?.length || 0) / state.pagination.limit)
         },
+        stats: action.payload.stats || state.stats,
         loading: false,
         error: null
       };
@@ -144,21 +147,25 @@ export const OrderProvider = ({ children }) => {
     try {
       dispatch({ type: ORDER_ACTIONS.SET_LOADING, payload: true });
       
+      // Only fetch from server if we don't have orders or if explicitly requested
       const response = await orderApi.getAllOrders({
-        page,
-        limit: state.pagination.limit,
-        status: state.filters.status !== 'all' ? state.filters.status : undefined,
-        paymentStatus: state.filters.paymentStatus !== 'all' ? state.filters.paymentStatus : undefined,
-        search: state.filters.search || undefined,
-        dateRange: state.filters.dateRange !== 'all' ? state.filters.dateRange : undefined
+        page: 1, // Always fetch page 1 to get all orders
+        limit: 1000, // Get a large number to have all orders for client-side filtering
+        status: undefined, // Don't filter on server - we'll filter client-side
+        paymentStatus: undefined,
+        search: undefined,
+        dateRange: undefined
       });
       
       const fetchedOrders = response.orders || [];
-      const totalOrders = response.pagination?.total || fetchedOrders.length;
       
       dispatch({
         type: ORDER_ACTIONS.SET_ORDERS,
-        payload: { orders: fetchedOrders, total: totalOrders }
+        payload: { 
+          orders: fetchedOrders, 
+          total: fetchedOrders.length,
+          totalPages: 1 // We'll calculate this client-side
+        }
       });
       
       // Start tracking payments for pending orders
@@ -180,7 +187,7 @@ export const OrderProvider = ({ children }) => {
       dispatch({ type: ORDER_ACTIONS.SET_ERROR, payload: 'Failed to load orders. Please try again.' });
       toast.error('Failed to load orders');
     }
-  }, [state.pagination.limit, state.filters, trackPayment, isTrackingPayment, user?._id]);
+  }, [trackPayment, isTrackingPayment, user?._id]); // Removed filters dependency
 
   // Fetch user orders (client access)
   const fetchMyOrders = React.useCallback(async () => {
@@ -272,6 +279,27 @@ export const OrderProvider = ({ children }) => {
     });
   };
 
+  // Get paginated orders from filtered results
+  const getPaginatedOrders = () => {
+    const filteredOrders = getFilteredOrders();
+    const startIndex = (state.pagination.page - 1) * state.pagination.limit;
+    const endIndex = startIndex + state.pagination.limit;
+    return filteredOrders.slice(startIndex, endIndex);
+  };
+
+  // Calculate pagination info from filtered results
+  const getPaginationInfo = () => {
+    const filteredOrders = getFilteredOrders();
+    const total = filteredOrders.length;
+    const totalPages = Math.ceil(total / state.pagination.limit);
+    
+    return {
+      total,
+      totalPages,
+      currentPage: state.pagination.page
+    };
+  };
+
   // Actions
   const actions = {
     // Order management
@@ -286,10 +314,14 @@ export const OrderProvider = ({ children }) => {
     // Filter management
     setFilter: (filterType, value) => {
       dispatch({ type: ORDER_ACTIONS.SET_FILTERS, payload: { [filterType]: value } });
+      // Reset to page 1 when filters change
+      dispatch({ type: ORDER_ACTIONS.SET_PAGINATION, payload: { page: 1 } });
     },
     
     setSearch: (searchTerm) => {
       dispatch({ type: ORDER_ACTIONS.SET_FILTERS, payload: { search: searchTerm } });
+      // Reset to page 1 when search changes
+      dispatch({ type: ORDER_ACTIONS.SET_PAGINATION, payload: { page: 1 } });
     },
     
     // Pagination
@@ -375,8 +407,12 @@ export const OrderProvider = ({ children }) => {
   // Context value
   const value = {
     ...state,
-    filteredOrders: getFilteredOrders(),
-    stats: calculateStats(state.orders),
+    filteredOrders: getPaginatedOrders(), // Return paginated filtered orders
+    stats: calculateStats(getFilteredOrders()), // Calculate stats from filtered orders
+    pagination: {
+      ...state.pagination,
+      ...getPaginationInfo() // Include calculated pagination info
+    },
     actions,
     fetchAllOrders,
     fetchMyOrders

@@ -115,19 +115,110 @@ const newOrder = async (req, res, next) => {
 
 // Get all orders (admin)
 const getAdminOrders = async (req, res, next) => {
-  const orders = await Order.find({})
-    .populate('user')
-    .populate('paymentMethod')
-    .populate('orderItems.product');
-  
-  // Format all orders with proper product images and details
-  const formattedOrders = [];
-  for (const order of orders) {
-    const formattedOrder = await formatOrderData(order);
-    formattedOrders.push(formattedOrder);
+  try {
+    const {
+      page = 1,
+      limit = 5,
+      status,
+      paymentStatus,
+      search,
+      dateRange
+    } = req.query;
+
+    // Build filter object
+    const filter = {};
+    
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
+    
+    if (paymentStatus && paymentStatus !== 'all') {
+      filter.paymentStatus = paymentStatus;
+    }
+    
+    if (search) {
+      filter.$or = [
+        { orderNumber: { $regex: search, $options: 'i' } },
+        { 'guestInfo.firstName': { $regex: search, $options: 'i' } },
+        { 'guestInfo.lastName': { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    if (dateRange && dateRange !== 'all') {
+      const now = new Date();
+      let startDate;
+      
+      switch (dateRange) {
+        case 'today':
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          break;
+        case 'week':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'month':
+          startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+          break;
+        default:
+          break;
+      }
+      
+      if (startDate) {
+        filter.createdAt = { $gte: startDate };
+      }
+    }
+
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const total = await Order.countDocuments(filter);
+    const totalPages = Math.ceil(total / parseInt(limit));
+
+    // Get orders with pagination
+    const orders = await Order.find(filter)
+      .populate('user')
+      .populate('paymentMethod')
+      .populate('orderItems.product')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    // Format all orders with proper product images and details
+    const formattedOrders = [];
+    for (const order of orders) {
+      const formattedOrder = await formatOrderData(order);
+      formattedOrders.push(formattedOrder);
+    }
+    
+    // Calculate stats from filtered orders (not all orders)
+    const filteredOrders = await Order.find(filter).populate('user');
+    const stats = {
+      total: filteredOrders.length,
+      pending: filteredOrders.filter(o => o.status === 'pending').length,
+      processing: filteredOrders.filter(o => o.status === 'accepted').length,
+      shipped: filteredOrders.filter(o => o.status === 'shipped').length,
+      delivered: filteredOrders.filter(o => o.status === 'delivered').length,
+      cancelled: filteredOrders.filter(o => o.status === 'cancelled').length,
+      totalRevenue: filteredOrders
+        .filter(o => o.paymentStatus === 'paid')
+        .reduce((sum, o) => sum + (o.totalAmount || 0), 0),
+      pendingPayments: filteredOrders.filter(o => o.paymentStatus === 'pending').length,
+      guestOrders: filteredOrders.filter(o => !o.user).length,
+      registeredOrders: filteredOrders.filter(o => o.user).length
+    };
+
+    res.status(200).json({ 
+      success: true, 
+      orders: formattedOrders,
+      stats,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages
+      }
+    });
+  } catch (error) {
+    next(error);
   }
-  
-  res.status(200).json({ success: true, orders: formattedOrders });
 };
 
 // Get my orders

@@ -117,17 +117,14 @@ export const CategoryProvider = ({ children }) => {
     try {
       dispatch({ type: CATEGORY_ACTIONS.SET_LOADING, payload: true });
       
-      const response = await categoryApi.getAllCategories({
-        page,
-        limit: state.pagination.limit
-      });
+      // Always fetch all categories for client-side filtering
+      const response = await categoryApi.getAllCategories();
       
       const fetchedCategories = response.data || [];
-      const totalCategories = response.pagination?.total || fetchedCategories.length;
       
       dispatch({
         type: CATEGORY_ACTIONS.SET_CATEGORIES,
-        payload: { categories: fetchedCategories, total: totalCategories }
+        payload: { categories: fetchedCategories, total: fetchedCategories.length }
       });
       
     } catch (err) {
@@ -136,7 +133,7 @@ export const CategoryProvider = ({ children }) => {
       dispatch({ type: CATEGORY_ACTIONS.SET_ERROR, payload: errorMessage });
       toast.error('Failed to load categories');
     }
-  }, [state.pagination.limit]);
+  }, []); // Removed pagination dependency
 
   // Filter and sort categories based on current filters (client-side)
   const getFilteredCategories = useCallback(() => {
@@ -179,6 +176,27 @@ export const CategoryProvider = ({ children }) => {
     return filtered;
   }, [state.categories, state.filters.status, state.filters.search, state.filters.sortBy]);
 
+  // Get paginated categories from filtered results
+  const getPaginatedCategories = useCallback(() => {
+    const filteredCategories = getFilteredCategories();
+    const startIndex = (state.pagination.page - 1) * state.pagination.limit;
+    const endIndex = startIndex + state.pagination.limit;
+    return filteredCategories.slice(startIndex, endIndex);
+  }, [getFilteredCategories, state.pagination.page, state.pagination.limit]);
+
+  // Calculate pagination info from filtered results
+  const getPaginationInfo = useCallback(() => {
+    const filteredCategories = getFilteredCategories();
+    const total = filteredCategories.length;
+    const totalPages = Math.ceil(total / state.pagination.limit);
+    
+    return {
+      total,
+      totalPages,
+      currentPage: state.pagination.page
+    };
+  }, [getFilteredCategories, state.pagination.limit, state.pagination.page]);
+
   // Get category by ID
   const getCategory = useCallback(async (id) => {
     try {
@@ -200,27 +218,17 @@ export const CategoryProvider = ({ children }) => {
     try {
       dispatch({ type: CATEGORY_ACTIONS.SET_LOADING, payload: true });
       
-      const formData = new FormData();
-      Object.keys(data).forEach((key) => {
-        if (key === "categoryImage" && data[key]) {
-          formData.append("categoryImage", data[key]);
-        } else {
-          formData.append(key, data[key]);
-        }
-      });
-
-      const response = await categoryApi.createCategory(formData);
+      const response = await categoryApi.createCategory(data);
+      const newCategory = response.data || response;
       
       // Add the new category to the state
-      dispatch({ type: CATEGORY_ACTIONS.ADD_CATEGORY, payload: response.data || response });
+      dispatch({ type: CATEGORY_ACTIONS.ADD_CATEGORY, payload: newCategory });
       
-      toast.success('Category created successfully');
-      return { success: true };
+      return { success: true, message: 'Category created successfully' };
     } catch (err) {
-      const errorMessage = err?.response?.data?.message || 'Failed to create category';
+      const errorMessage = extractErrorMessage(err) || 'Failed to create category';
       dispatch({ type: CATEGORY_ACTIONS.SET_ERROR, payload: errorMessage });
-      toast.error('Failed to create category');
-      return { success: false, error: errorMessage };
+      throw new Error(errorMessage);
     } finally {
       dispatch({ type: CATEGORY_ACTIONS.SET_LOADING, payload: false });
     }
@@ -236,13 +244,11 @@ export const CategoryProvider = ({ children }) => {
       
       dispatch({ type: CATEGORY_ACTIONS.UPDATE_CATEGORY, payload: updatedCategory });
       
-      toast.success('Category updated successfully');
-      return updatedCategory;
+      return { success: true, message: 'Category updated successfully' };
     } catch (err) {
-      const errorMessage = err?.response?.data?.message || 'Failed to update category';
+      const errorMessage = extractErrorMessage(err) || 'Failed to update category';
       dispatch({ type: CATEGORY_ACTIONS.SET_ERROR, payload: errorMessage });
-      toast.error('Failed to update category');
-      return null;
+      throw new Error(errorMessage);
     } finally {
       dispatch({ type: CATEGORY_ACTIONS.SET_LOADING, payload: false });
     }
@@ -256,27 +262,42 @@ export const CategoryProvider = ({ children }) => {
       await categoryApi.deleteCategory(id);
       dispatch({ type: CATEGORY_ACTIONS.DELETE_CATEGORY, payload: id });
       
-      toast.success('Category deleted successfully');
-      return true;
+      return { success: true, message: 'Category deleted successfully' };
     } catch (err) {
-      const errorMessage = err?.response?.data?.message || 'Failed to delete category';
+      const errorMessage = extractErrorMessage(err) || 'Failed to delete category';
       dispatch({ type: CATEGORY_ACTIONS.SET_ERROR, payload: errorMessage });
-      toast.error('Failed to delete category');
-      return false;
+      throw new Error(errorMessage);
     } finally {
       dispatch({ type: CATEGORY_ACTIONS.SET_LOADING, payload: false });
     }
   }, []);
 
   // Actions
-  const actions = useMemo(() => ({
+  const actions = {
+    // Category management
+    addCategory: (category) => {
+      dispatch({ type: CATEGORY_ACTIONS.ADD_CATEGORY, payload: category });
+    },
+    
+    updateCategory: (category) => {
+      dispatch({ type: CATEGORY_ACTIONS.UPDATE_CATEGORY, payload: category });
+    },
+    
+    deleteCategory: (categoryId) => {
+      dispatch({ type: CATEGORY_ACTIONS.DELETE_CATEGORY, payload: categoryId });
+    },
+    
     // Filter management
     setFilter: (filterType, value) => {
       dispatch({ type: CATEGORY_ACTIONS.SET_FILTERS, payload: { [filterType]: value } });
+      // Reset to page 1 when filters change
+      dispatch({ type: CATEGORY_ACTIONS.SET_PAGINATION, payload: { page: 1 } });
     },
     
     setSearch: (searchTerm) => {
       dispatch({ type: CATEGORY_ACTIONS.SET_FILTERS, payload: { search: searchTerm } });
+      // Reset to page 1 when search changes
+      dispatch({ type: CATEGORY_ACTIONS.SET_PAGINATION, payload: { page: 1 } });
     },
     
     // Pagination
@@ -287,41 +308,25 @@ export const CategoryProvider = ({ children }) => {
     // Refresh categories
     refreshCategories: () => {
       dispatch({ type: CATEGORY_ACTIONS.REFRESH_CATEGORIES });
-    },
-    
-    // Clear all filters
-    clearAllFilters: () => {
-      dispatch({ type: CATEGORY_ACTIONS.SET_FILTERS, payload: initialState.filters });
     }
-  }), []);
-
-  // Fetch categories on mount
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+  };
 
   // Context value
-  const value = useMemo(() => ({
+  const value = {
     ...state,
-    filteredCategories: getFilteredCategories(),
-    stats: calculateStats(state.categories),
+    filteredCategories: getPaginatedCategories(), // Return paginated filtered categories
+    stats: calculateStats(getFilteredCategories()), // Calculate stats from filtered categories
+    pagination: {
+      ...state.pagination,
+      ...getPaginationInfo() // Include calculated pagination info
+    },
     actions,
     fetchCategories,
     getCategory,
     createCategory,
     updateCategory,
     deleteCategory
-  }), [
-    state,
-    getFilteredCategories,
-    calculateStats,
-    actions,
-    fetchCategories,
-    getCategory,
-    createCategory,
-    updateCategory,
-    deleteCategory
-  ]);
+  };
 
   return (
     <CategoryContext.Provider value={value}>

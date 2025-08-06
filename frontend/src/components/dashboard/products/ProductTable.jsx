@@ -66,8 +66,6 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
     fetchProducts();
   }, []); // Empty dependency array - only run on mount
 
-  // No need to refetch when filters change since filtering is client-side
-
   // Handle filter changes
   const handleFilterChange = (filterType, value) => {
     actions.setFilter(filterType, value);
@@ -81,6 +79,11 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
   // Handle searching state change
   const handleSearchingChange = (searching) => {
     setIsSearching(searching);
+  };
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    actions.setPage(page);
   };
 
   const columns = [
@@ -187,13 +190,13 @@ const ProductTable = ({ onEdit, onView, onDelete }) => {
 
       {/* Pagination */}
       {pagination.total > pagination.limit && (
-        <div className="flex justify-center mt-6">
-          <Pagination
-            currentPage={pagination.page}
-            totalPages={Math.ceil(pagination.total / pagination.limit)}
-            onPageChange={fetchProducts}
-          />
-        </div>
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          limit={pagination.limit}
+          onPageChange={handlePageChange}
+        />
       )}
     </div>
   );

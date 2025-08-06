@@ -6,7 +6,7 @@ import {
   OrderFilters, 
   OrderStats, 
 } from '../../components/orders';
-import { Button, LoadingSpinner, EmptyState, FadeInContainer } from '../../components/ui';
+import { Button, LoadingSpinner, EmptyState, FadeInContainer, Pagination } from '../../components/ui';
 import { Download, RefreshCw } from 'lucide-react';
 
 const Orders = () => {
@@ -18,6 +18,7 @@ const Orders = () => {
     selectedOrder,
     showDetailsModal,
     filters,
+    pagination,
     stats: orderStats,
     filteredOrders,
     actions,
@@ -60,6 +61,11 @@ const Orders = () => {
   // Handle search
   const handleSearch = (searchTerm) => {
     actions.setSearch(searchTerm);
+  };
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    actions.setPage(page);
   };
 
   // Refresh orders
@@ -135,11 +141,24 @@ const Orders = () => {
 
       {/* Order List */}
       <FadeInContainer delay={800} duration={600}>
-        <ClientOrderListView
-          orders={filteredOrders}
-          onEdit={handleOrderEdit}
-          onDelete={handleOrderDelete}
-          loading={loading}
+        <div className="mt-6">
+          <ClientOrderListView
+            orders={filteredOrders}
+            onEdit={handleOrderEdit}
+            onDelete={handleOrderDelete}
+            loading={loading}
+          />
+        </div>
+      </FadeInContainer>
+
+      {/* Pagination */}
+      <FadeInContainer delay={1000} duration={600}>
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          limit={pagination.limit}
+          onPageChange={handlePageChange}
         />
       </FadeInContainer>
 

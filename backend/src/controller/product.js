@@ -92,7 +92,7 @@ const getAllProducts = async (req, res, next) => {
   try {
     let {
       page = 1,
-      limit = 10,
+      limit = 5,
       sort = "-createdAt",
       search = "",
       category,
