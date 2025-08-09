@@ -4,6 +4,7 @@ const {
   upload,
   handleCloudinaryUpload,
   formatFilePaths,
+  handleUploadError,
 } = require("../middleware/multer");
 const {
   hairValidationUpload,
@@ -55,6 +56,7 @@ router.post(
   upload.array("productImages", 10),
   handleCloudinaryUpload,
   formatFilePaths,
+  handleUploadError,
   validate(productCreateSchema),
   productController.createProduct
 );

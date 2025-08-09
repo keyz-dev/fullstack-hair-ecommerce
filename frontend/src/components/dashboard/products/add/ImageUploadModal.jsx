@@ -169,17 +169,7 @@ const ImageUploadModal = ({ isOpen, onClose, images, onImagesChange }) => {
                 : img
             )
           );
-
-          if (validationResult.data.isValid) {
-            console.log(`✅ ${image.name} validated successfully`);
-          } else {
-            console.log(
-              `❌ ${image.name} failed validation: ${validationResult.data.message}`
-            );
-          }
         } catch (error) {
-          console.error(`Validation failed for ${image.name}:`, error);
-
           // Mark as validation error with better error message
           let errorMessage = "Validation failed";
 
@@ -242,23 +232,12 @@ const ImageUploadModal = ({ isOpen, onClose, images, onImagesChange }) => {
       );
 
       if (validationResult.data.isValid) {
-        console.log(`✅ ${imageToRetry.name} retried validation successfully`);
-
         // Check if all images are now valid and auto-close
         if (areAllImagesValid() && !hasInvalidImages()) {
           scheduleAutoClose();
         }
-      } else {
-        console.log(
-          `❌ ${imageToRetry.name} failed retried validation: ${validationResult.data.message}`
-        );
       }
     } catch (error) {
-      console.error(
-        `Retried validation failed for ${imageToRetry.name}:`,
-        error
-      );
-
       let errorMessage = "Retried validation failed";
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;

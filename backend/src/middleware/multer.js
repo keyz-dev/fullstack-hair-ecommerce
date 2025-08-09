@@ -1,20 +1,31 @@
-require('dotenv').config();
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
-const { uploadToCloudinary } = require('../utils/cloudinary');
-const { BadRequestError } = require('../utils/errors');
+require("dotenv").config();
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
+const { uploadToCloudinary } = require("../utils/cloudinary");
+const { BadRequestError } = require("../utils/errors");
 
-const inProduction = process.env.NODE_ENV === 'production';
+const inProduction = process.env.NODE_ENV === "production";
 
 // --- Helpers ---
 // Ensure upload directories exist (only for development)
 function createUploadDirs() {
   if (inProduction) return;
-  const dirs = ['uploads', 'uploads/avatars', 'uploads/products', 'uploads/categories', 'uploads/services', 'uploads/icons', 'uploads/posts', 'uploads/posts/images', 'uploads/posts/videos', 'uploads/posts/thumbnails'];
+  const dirs = [
+    "uploads",
+    "uploads/avatars",
+    "uploads/products",
+    "uploads/categories",
+    "uploads/services",
+    "uploads/icons",
+    "uploads/posts",
+    "uploads/posts/images",
+    "uploads/posts/videos",
+    "uploads/posts/thumbnails",
+  ];
   dirs.forEach((dir) => {
-    const dirPath = path.join(process.cwd(), 'src', dir);
+    const dirPath = path.join(process.cwd(), "src", dir);
     if (!fs.existsSync(dirPath)) {
       fs.mkdirSync(dirPath, { recursive: true });
     }
@@ -24,28 +35,34 @@ function createUploadDirs() {
 // Determine subdirectory based on file fieldname
 function getUploadSubDir(fieldname) {
   switch (fieldname) {
-    case 'avatar': return 'avatars';
-    case 'productImage':
-    case 'productImages': return 'products';
-    case 'categoryImage': return 'categories';
-    case 'serviceImage': return 'services';
-    case 'icon': return 'icons';
-    case 'postImage':
-    case 'postImages':
-      return 'posts/images';
-    case 'videos':
-    case 'postVideo':
-    case 'postVideos':
-      return 'posts/videos';
-    case 'thumbnail':
-      return 'posts/thumbnails';
-    default: return 'others';
+    case "avatar":
+      return "avatars";
+    case "productImage":
+    case "productImages":
+      return "products";
+    case "categoryImage":
+      return "categories";
+    case "serviceImage":
+      return "services";
+    case "icon":
+      return "icons";
+    case "postImage":
+    case "postImages":
+      return "posts/images";
+    case "videos":
+    case "postVideo":
+    case "postVideos":
+      return "posts/videos";
+    case "thumbnail":
+      return "posts/thumbnails";
+    default:
+      return "others";
   }
 }
 
 // Helper for Cloudinary folder
 function getCloudinaryFolder(fieldname) {
-  return getUploadSubDir(fieldname) || 'misc';
+  return getUploadSubDir(fieldname) || "misc";
 }
 
 // --- Initialization ---
@@ -58,7 +75,7 @@ const storage = inProduction
       destination: (req, file, cb) => {
         const subDir = getUploadSubDir(file.fieldname);
         file.folderName = subDir;
-        const uploadDir = path.join(__dirname, '../uploads', subDir);
+        const uploadDir = path.join(__dirname, "../uploads", subDir);
         if (!fs.existsSync(uploadDir)) {
           fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -73,21 +90,26 @@ const storage = inProduction
 
 // --- File Filter ---
 const fileFilter = (req, file, cb) => {
+  console.log("file: ", file);
+  console.log("req: ", req.body);
   // Allow images for most uploads
   const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg|ico|avif)$/;
   // Allow videos for post uploads
   const videoExtensions = /\.(mp4|avi|mov|wmv|flv|webm|mkv)$/;
-  
-  if (file.fieldname === 'postVideo' || file.fieldname === 'postVideos') {
+
+  if (file.fieldname === "postVideo" || file.fieldname === "postVideos") {
     if (!file.originalname.match(videoExtensions)) {
-      return cb(new BadRequestError('Only video files are allowed for video uploads!'), false);
+      return cb(
+        new BadRequestError("Only video files are allowed for video uploads!"),
+        false
+      );
     }
   } else {
     if (!file.originalname.match(imageExtensions)) {
-      return cb(new BadRequestError('Only image files are allowed!'), false);
+      return cb(new BadRequestError("Only image files are allowed!"), false);
     }
   }
-  
+
   cb(null, true);
 };
 
@@ -95,9 +117,9 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { 
+  limits: {
     fileSize: 50 * 1024 * 1024, // 50MB for videos
-    files: 10 // Max 10 files
+    files: 10, // Max 10 files
   },
 });
 
@@ -114,11 +136,11 @@ const handleCloudinaryUpload = async (req, res, next) => {
       req.file.folderName = folderName;
       const result = await uploadToCloudinary(req.file.buffer, {
         folder: folderName,
-        resource_type: 'auto',
+        resource_type: "auto",
       });
       req.file.path = result.secure_url;
-    } 
-    
+    }
+
     // Handle multiple files
     else if (req.files) {
       // Case 1: req.files is an array (from upload.array)
@@ -128,7 +150,7 @@ const handleCloudinaryUpload = async (req, res, next) => {
           file.folderName = folderName;
           return uploadToCloudinary(file.buffer, {
             folder: folderName,
-            resource_type: 'auto',
+            resource_type: "auto",
           });
         });
 
@@ -139,19 +161,19 @@ const handleCloudinaryUpload = async (req, res, next) => {
           path: result.secure_url,
           public_id: result.public_id,
         }));
-      } 
+      }
       // Case 2: req.files is an object (from upload.fields)
-      else if (typeof req.files === 'object' && req.files !== null) {
+      else if (typeof req.files === "object" && req.files !== null) {
         const uploadedFiles = {};
         const fieldPromises = Object.keys(req.files).map(async (fieldname) => {
           const filesInField = req.files[fieldname];
-          
+
           const uploadPromises = filesInField.map((file) => {
             const folderName = getCloudinaryFolder(file.fieldname);
             file.folderName = folderName;
             return uploadToCloudinary(file.buffer, {
               folder: folderName,
-              resource_type: 'auto',
+              resource_type: "auto",
             });
           });
 
@@ -189,11 +211,12 @@ const formatFilePaths = (req, res, next) => {
           if (!inProduction) {
             file.path = `/uploads/${file.folderName}/${path.basename(file.path)}`;
           }
-          file.path = file.path.replace(/\\/g, '/');
+          file.path = file.path.replace(/\\/g, "/");
           return file;
         });
       } else {
-        req.files[key].path = `/uploads/${req.files[key].folderName}/${path.basename(req.files[key].path)}`;
+        req.files[key].path =
+          `/uploads/${req.files[key].folderName}/${path.basename(req.files[key].path)}`;
       }
     });
   }
@@ -203,8 +226,10 @@ const formatFilePaths = (req, res, next) => {
 // --- Middleware: Handle Multer Errors ---
 const handleUploadError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return next(new BadRequestError('File size too large. Maximum size is 5MB.'));
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return next(
+        new BadRequestError("File size too large. Maximum size is 5MB.")
+      );
     }
     return next(new BadRequestError(err.message));
   }

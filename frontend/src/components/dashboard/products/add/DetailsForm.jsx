@@ -28,9 +28,20 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+    let processedValue;
+    if (type === "checkbox") {
+      processedValue = checked;
+    } else if (type === "number") {
+      // Convert numeric fields to numbers, handle empty string as 0
+      processedValue = value === "" ? 0 : parseFloat(value);
+    } else {
+      processedValue = value;
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: processedValue,
     }));
   };
 
