@@ -2,3 +2,4 @@ node_modules/
 model_api_env/
 logs/
 .env
+backend/src/uploads/temp/
