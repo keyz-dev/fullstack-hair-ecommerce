@@ -86,12 +86,13 @@ const ImageItem = ({
         </button>
       )}
 
+      {/* Validation Message */}
       {(image.isValid === true || image.isValid === false) && (
         <div
           className={`absolute bottom-2 left-2 right-2 text-white text-xs p-2 rounded ${
             image.isValid
-              ? "bg-green-500 bg-opacity-70"
-              : "bg-red-500 bg-opacity-70"
+              ? "bg-green-600 bg-opacity-70"
+              : "bg-red-600 bg-opacity-70"
           }`}
         >
           <div

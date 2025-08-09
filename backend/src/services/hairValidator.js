@@ -9,15 +9,19 @@ const os = require("os");
  */
 class HairValidator {
   constructor() {
-    this.modelPath = path.join(__dirname, "..", "scripts");
-    this.pythonPath = path.join(
-      __dirname,
-      "..",
-      "..",
-      "model_api_env",
-      "Scripts",
-      "python.exe"
-    );
+    // Use environment variables for deployment, fallback to local paths for development
+    this.modelPath =
+      process.env.MODEL_PATH || path.join(__dirname, "..", "scripts");
+    this.pythonPath =
+      process.env.PYTHON_PATH ||
+      path.join(
+        __dirname,
+        "..",
+        "..",
+        "model_api_env",
+        "Scripts",
+        "python.exe"
+      );
     this.scriptPath = path.join(this.modelPath, "predict.py");
 
     // Check if model environment exists
@@ -31,8 +35,13 @@ class HairValidator {
       const stats = fs.statSync(modelPath);
       const modelSizeMB = Math.round(stats.size / 1024 / 1024);
       console.log(`✅ Hair validation model ready (${modelSizeMB}MB)`);
+      console.log(`📍 Model path: ${this.modelPath}`);
+      console.log(`🐍 Python path: ${this.pythonPath}`);
     } else {
       console.warn("⚠️ Hair validation model not available");
+      console.warn(`📍 Model path: ${this.modelPath}`);
+      console.warn(`🐍 Python path: ${this.pythonPath}`);
+      console.warn(`📜 Script path: ${this.scriptPath}`);
     }
   }
 
