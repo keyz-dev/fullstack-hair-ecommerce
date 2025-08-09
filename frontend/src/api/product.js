@@ -12,22 +12,18 @@ export const productApi = {
     return response.data;
   },
   addProduct: async (data) => {
-    // Create FormData object for multipart/form-data
     const formData = new FormData();
 
-    // Handle productImages separately (files)
     if (data.productImages && Array.isArray(data.productImages)) {
-      data.productImages.forEach((file, index) => {
+      data.productImages.forEach((file) => {
         formData.append("productImages", file);
       });
     }
 
-    // Handle all other fields
     Object.keys(data).forEach((key) => {
       if (key !== "productImages") {
         const value = data[key];
         if (typeof value === "object" && value !== null) {
-          // Convert objects and arrays to JSON strings
           formData.append(key, JSON.stringify(value));
         } else {
           formData.append(key, value);
@@ -35,38 +31,19 @@ export const productApi = {
       }
     });
 
-    Object.keys(formData.entries()).forEach((key) => {
-      console.log(key);
+    const response = await api.post(`${URL_PREFIX}/`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
-
-    const response = await api.post(`${URL_PREFIX}/`, formData);
     return response.data;
   },
   updateProduct: async (id, data) => {
-    // Create FormData object for multipart/form-data
-    const formData = new FormData();
-
-    // Handle productImages separately (files)
-    if (data.productImages && Array.isArray(data.productImages)) {
-      data.productImages.forEach((file, index) => {
-        formData.append("productImages", file);
-      });
-    }
-
-    // Handle all other fields
-    Object.keys(data).forEach((key) => {
-      if (key !== "productImages") {
-        const value = data[key];
-        if (typeof value === "object" && value !== null) {
-          // Convert objects and arrays to JSON strings
-          formData.append(key, JSON.stringify(value));
-        } else {
-          formData.append(key, value);
-        }
-      }
+    const response = await api.put(`${URL_PREFIX}/${id}`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
-
-    const response = await api.put(`${URL_PREFIX}/${id}`, formData);
     return response.data;
   },
   deleteProduct: async (id) => {
