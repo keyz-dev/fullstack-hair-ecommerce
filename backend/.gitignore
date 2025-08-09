@@ -1,3 +1,4 @@
 node_modules/
+model_api_env/
 logs/
 .env

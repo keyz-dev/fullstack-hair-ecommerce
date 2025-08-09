@@ -1,18 +1,25 @@
 import React, { useState } from "react";
-import { FormHeader, Input, Button, TextArea, Select, PriceInput } from "../../../ui";
-import { useCategory } from "../../../../hooks"
+import {
+  FormHeader,
+  Input,
+  Button,
+  TextArea,
+  Select,
+  PriceInput,
+} from "../../../ui";
+import { useCategory } from "../../../../hooks";
 
 const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
   const [formData, setFormData] = useState({
     ...data,
-    currency: data?.currency || 'XAF',
+    currency: data?.currency || "XAF",
     discount: data?.discount || 0,
     isActive: data?.isActive !== undefined ? data.isActive : true,
     isFeatured: data?.isFeatured || false,
     isOnSale: data?.isOnSale || false,
   });
   const [errors, setErrors] = useState({});
-  const { categories } = useCategory()
+  const { categories } = useCategory();
 
   const categoryOptions = categories.map((category) => ({
     value: category._id,
@@ -21,9 +28,9 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({ 
-      ...prev, 
-      [name]: type === 'checkbox' ? checked : value 
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -35,12 +42,15 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
     if (!formData.category) newErrors.category = "Category is required.";
     if (!formData.description)
       newErrors.description = "Description is required.";
-    
+
     // Validate discount
-    if (formData.discount && (parseFloat(formData.discount) < 0 || parseFloat(formData.discount) > 100)) {
+    if (
+      formData.discount &&
+      (parseFloat(formData.discount) < 0 || parseFloat(formData.discount) > 100)
+    ) {
       newErrors.discount = "Discount must be between 0 and 100.";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -63,7 +73,7 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
 
   return (
     <div className="p-2 lg:px-6 w-full max-w-2xl">
-      <FormHeader title="Basic Information"/>
+      <FormHeader title="Basic Information" />
       <form
         onSubmit={handleSave}
         className="max-w-lg sm:p-4 mx-auto flex flex-col gap-4"
@@ -79,7 +89,7 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
           additionalClasses="border-line_clr"
           placeholder="Enter product name"
         />
-        
+
         <TextArea
           label="Full Description"
           name="description"
@@ -90,12 +100,14 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
           additionalClasses="border-line_clr"
           placeholder="Enter detailed product description"
         />
-        
+
         <PriceInput
           price={formData.price}
           currency={formData.currency}
           onPriceChange={handleChange}
-          onCurrencyChange={(value) => setFormData((prev) => ({ ...prev, currency: value }))}
+          onCurrencyChange={(value) =>
+            setFormData((prev) => ({ ...prev, currency: value }))
+          }
           error={errors.price}
           required
           placeholder="Enter product price"
@@ -115,7 +127,7 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
             additionalClasses="border-line_clr"
             placeholder="Discount percentage (0-100)"
           />
-          
+
           <Input
             label="Stock"
             name="stock"
@@ -127,8 +139,8 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
             additionalClasses="border-line_clr"
             placeholder="Enter product stock"
           />
-        </div>        
-        
+        </div>
+
         {/* Category Selection */}
         <div>
           <label className="block text-sm font-medium text-secondary mb-2">
@@ -143,7 +155,7 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
             placeholder="Select a category"
           />
         </div>
-        
+
         {/* Product Status */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center">
@@ -159,7 +171,7 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
               Active
             </label>
           </div>
-          
+
           <div className="flex items-center">
             <input
               type="checkbox"
@@ -173,7 +185,7 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
               Featured
             </label>
           </div>
-          
+
           <div className="flex items-center">
             <input
               type="checkbox"
@@ -188,7 +200,7 @@ const DetailsForm = ({ isOpen, onFormSubmit, data }) => {
             </label>
           </div>
         </div>
-        
+
         <div className="flex justify-end">
           <Button
             type="submit"

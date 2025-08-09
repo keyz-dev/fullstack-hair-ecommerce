@@ -1,10 +1,13 @@
-const Product = require('../models/product');
-const Review = require('../models/review');
-const Wishlist = require('../models/wishlist');
-const { formatProductData } = require('../utils/returnFormats/productData');
-const { NotFoundError, BadRequestError } = require('../utils/errors');
-const { productCreateSchema, productUpdateSchema } = require('../schema/productSchema');
-const { cleanUpFileImages } = require('../utils/imageCleanup')
+const Product = require("../models/product");
+const Review = require("../models/review");
+const Wishlist = require("../models/wishlist");
+const { formatProductData } = require("../utils/returnFormats/productData");
+const { NotFoundError, BadRequestError } = require("../utils/errors");
+const {
+  productCreateSchema,
+  productUpdateSchema,
+} = require("../schema/productSchema");
+const { cleanUpFileImages } = require("../utils/imageCleanup");
 
 // Create product
 const createProduct = async (req, res, next) => {
@@ -13,12 +16,13 @@ const createProduct = async (req, res, next) => {
     if (error) return next(new BadRequestError(error.details[0].message));
 
     const formData = req.body;
-    const productImages = req.files ? req.files.map(file => file.path) : [];
+    const productImages = req.files ? req.files.map((file) => file.path) : [];
 
     // Generate slug from name
-    const slug = formData.name.toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+    const slug = formData.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
 
     // Parse JSON fields from form data
     let variants = [];
@@ -28,9 +32,10 @@ const createProduct = async (req, res, next) => {
 
     try {
       if (formData.variants) {
-        variants = typeof formData.variants === 'string' 
-          ? JSON.parse(formData.variants) 
-          : formData.variants;
+        variants =
+          typeof formData.variants === "string"
+            ? JSON.parse(formData.variants)
+            : formData.variants;
       }
     } catch (err) {
       return next(new BadRequestError("Invalid variants data"));
@@ -38,9 +43,10 @@ const createProduct = async (req, res, next) => {
 
     try {
       if (formData.features) {
-        features = typeof formData.features === 'string' 
-          ? JSON.parse(formData.features) 
-          : formData.features;
+        features =
+          typeof formData.features === "string"
+            ? JSON.parse(formData.features)
+            : formData.features;
       }
     } catch (err) {
       return next(new BadRequestError("Invalid features data"));
@@ -48,9 +54,10 @@ const createProduct = async (req, res, next) => {
 
     try {
       if (formData.specifications) {
-        specifications = typeof formData.specifications === 'string' 
-          ? JSON.parse(formData.specifications) 
-          : formData.specifications;
+        specifications =
+          typeof formData.specifications === "string"
+            ? JSON.parse(formData.specifications)
+            : formData.specifications;
       }
     } catch (err) {
       return next(new BadRequestError("Invalid specifications data"));
@@ -58,9 +65,12 @@ const createProduct = async (req, res, next) => {
 
     // Handle tags - can be array or comma-separated string
     if (formData.tags) {
-      tags = Array.isArray(formData.tags) 
-        ? formData.tags 
-        : formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      tags = Array.isArray(formData.tags)
+        ? formData.tags
+        : formData.tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag);
     }
 
     const product = new Product({
@@ -75,14 +85,14 @@ const createProduct = async (req, res, next) => {
 
     await product.save();
     const formattedProduct = await formatProductData(product);
-  
+
     res.status(201).json({
       success: true,
-      message: 'Product created successfully',
+      message: "Product created successfully",
       product: formattedProduct,
     });
   } catch (err) {
-    if(req.files) cleanUpFileImages(req)
+    if (req.files) cleanUpFileImages(req);
     next(err);
   }
 };
@@ -106,12 +116,13 @@ const getAllProducts = async (req, res, next) => {
       maxPrice,
       price_range,
     } = req.query;
-    
+
     page = parseInt(page);
     limit = parseInt(limit);
     const query = {};
-    
-    if (category && category !== 'all' && category !== '') query.category = category;
+
+    if (category && category !== "all" && category !== "")
+      query.category = category;
     if (isActive !== undefined) query.isActive = isActive === "true";
     if (isFeatured !== undefined) query.isFeatured = isFeatured === "true";
     if (isOnSale !== undefined) query.isOnSale = isOnSale === "true";
@@ -144,7 +155,7 @@ const getAllProducts = async (req, res, next) => {
       if (maxPrice) query.price.$lte = parseFloat(maxPrice);
     }
     if (tags) {
-      const tagArray = tags.split(',').map(tag => tag.trim());
+      const tagArray = tags.split(",").map((tag) => tag.trim());
       query.tags = { $in: tagArray };
     }
     if (search) {
@@ -155,7 +166,7 @@ const getAllProducts = async (req, res, next) => {
         { tags: { $in: [new RegExp(search, "i")] } },
       ];
     }
-    
+
     const total = await Product.countDocuments(query);
     const products = await Product.find(query)
       .sort(sort)
@@ -164,7 +175,9 @@ const getAllProducts = async (req, res, next) => {
       .populate("category", "_id name");
 
     // Format products with currency information
-    const formattedProducts = await Promise.all(products.map(formatProductData));
+    const formattedProducts = await Promise.all(
+      products.map(formatProductData)
+    );
 
     res.status(200).json({
       success: true,
@@ -193,18 +206,20 @@ const getSingleProduct = async (req, res, next) => {
         match: { isActive: true },
         populate: {
           path: "user",
-          select: "name avatar"
+          select: "name avatar",
         },
-        options: { sort: { createdAt: -1 }, limit: 10 }
+        options: { sort: { createdAt: -1 }, limit: 10 },
       });
 
     if (!product) return next(new NotFoundError("Product not found"));
 
     // Calculate average rating
     const reviews = await Review.find({ product: product._id, isActive: true });
-    const avgRating = reviews.length > 0 
-      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
-      : 0;
+    const avgRating =
+      reviews.length > 0
+        ? reviews.reduce((sum, review) => sum + review.rating, 0) /
+          reviews.length
+        : 0;
 
     // Update product rating
     product.rating = Math.round(avgRating * 10) / 10;
@@ -215,7 +230,7 @@ const getSingleProduct = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      product: formattedProduct 
+      product: formattedProduct,
     });
   } catch (err) {
     next(err);
@@ -227,12 +242,12 @@ const updateProduct = async (req, res, next) => {
   try {
     const { error } = productUpdateSchema.validate(req.body);
     if (error) return next(new BadRequestError(error.details[0].message));
-    
+
     let product = await Product.findById(req.params.id);
     if (!product) return next(new NotFoundError("Product not found"));
-    
+
     const formData = req.body;
-    
+
     // Handle existing images
     if (formData.existingImages) {
       try {
@@ -242,69 +257,76 @@ const updateProduct = async (req, res, next) => {
         return next(new BadRequestError("Invalid existing images data"));
       }
     }
-    
+
     // Handle new images
     if (req.files && req.files.length > 0) {
       const newImages = req.files.map((file) => file.path);
       product.images = [...(product.images || []), ...newImages];
     }
-    
+
     // Generate slug if name changed
     if (formData.name && formData.name !== product.name) {
-      const slug = formData.name.toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
+      const slug = formData.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
       formData.slug = slug;
     }
-    
+
     // Parse JSON fields from form data
     try {
       if (formData.variants) {
-        formData.variants = typeof formData.variants === 'string' 
-          ? JSON.parse(formData.variants) 
-          : formData.variants;
+        formData.variants =
+          typeof formData.variants === "string"
+            ? JSON.parse(formData.variants)
+            : formData.variants;
       }
     } catch (err) {
       return next(new BadRequestError("Invalid variants data"));
     }
-    
+
     try {
       if (formData.features) {
-        formData.features = typeof formData.features === 'string' 
-          ? JSON.parse(formData.features) 
-          : formData.features;
+        formData.features =
+          typeof formData.features === "string"
+            ? JSON.parse(formData.features)
+            : formData.features;
       }
     } catch (err) {
       return next(new BadRequestError("Invalid features data"));
     }
-    
+
     try {
       if (formData.specifications) {
-        formData.specifications = typeof formData.specifications === 'string' 
-          ? JSON.parse(formData.specifications) 
-          : formData.specifications;
+        formData.specifications =
+          typeof formData.specifications === "string"
+            ? JSON.parse(formData.specifications)
+            : formData.specifications;
       }
     } catch (err) {
       return next(new BadRequestError("Invalid specifications data"));
     }
-    
+
     // Handle tags - can be array or comma-separated string
     if (formData.tags) {
-      formData.tags = Array.isArray(formData.tags) 
-        ? formData.tags 
-        : formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      formData.tags = Array.isArray(formData.tags)
+        ? formData.tags
+        : formData.tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag);
     }
-    
+
     // Update product
     Object.assign(product, formData);
     await product.save();
-    
+
     const formattedProduct = await formatProductData(product);
-    
-    res.status(200).json({ 
-      success: true, 
-      message: "Product updated successfully", 
-      product: formattedProduct 
+
+    res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+      product: formattedProduct,
     });
   } catch (err) {
     next(err);
@@ -314,23 +336,23 @@ const updateProduct = async (req, res, next) => {
 // Delete product
 const deleteProduct = async (req, res, next) => {
   try {
-  let product = await Product.findById(req.params.id);
-  if (!product) return next(new NotFoundError("Product not found"));
-    
+    let product = await Product.findById(req.params.id);
+    if (!product) return next(new NotFoundError("Product not found"));
+
     // Delete associated reviews
     await Review.deleteMany({ product: product._id });
-    
+
     // Remove from wishlists
     await Wishlist.updateMany(
-      { 'products.product': product._id },
+      { "products.product": product._id },
       { $pull: { products: { product: product._id } } }
     );
-    
-  await product.deleteOne();
-    
-    res.status(200).json({ 
-      success: true, 
-      message: "Product deleted successfully" 
+
+    await product.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "Product deleted successfully",
     });
   } catch (err) {
     next(err);
@@ -343,9 +365,15 @@ const getProductStats = async (req, res, next) => {
     const total = await Product.countDocuments();
     const inStock = await Product.countDocuments({ stock: { $gt: 0 } });
     const outOfStock = await Product.countDocuments({ stock: 0 });
-    const featured = await Product.countDocuments({ isFeatured: true, isActive: true });
-    const onSale = await Product.countDocuments({ isOnSale: true, isActive: true });
-    
+    const featured = await Product.countDocuments({
+      isFeatured: true,
+      isActive: true,
+    });
+    const onSale = await Product.countDocuments({
+      isOnSale: true,
+      isActive: true,
+    });
+
     res.status(200).json({
       success: true,
       stats: {
@@ -366,21 +394,21 @@ const getProductReviews = async (req, res, next) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    
-    const reviews = await Review.find({ 
-      product: req.params.id, 
-      isActive: true 
+
+    const reviews = await Review.find({
+      product: req.params.id,
+      isActive: true,
     })
-    .populate('user', 'name avatar')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(parseInt(limit));
-    
-    const total = await Review.countDocuments({ 
-      product: req.params.id, 
-      isActive: true 
+      .populate("user", "name avatar")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Review.countDocuments({
+      product: req.params.id,
+      isActive: true,
     });
-    
+
     res.status(200).json({
       success: true,
       data: {

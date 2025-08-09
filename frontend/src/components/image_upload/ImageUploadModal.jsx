@@ -1,33 +1,36 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { X, ImageIcon, Plus, Trash2 } from "lucide-react";
 import { Button } from "../../../ui";
 
-const ImageUploadModal = ({
-  isOpen,
-  onClose,
-  images,
-  onImagesChange,
-}) => {
+const ImageUploadModal = ({ isOpen, onClose, images, onImagesChange }) => {
   const fileInputRef = useRef(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFileSelect = (event) => {
     const files = Array.from(event.target.files);
-    files.forEach((file) => {
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const newImage = {
-            id: Date.now() + Math.random(),
-            file,
-            url: e.target.result,
-            name: file.name,
-          };
-          onImagesChange((prev) => [...prev, newImage]);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
     event.target.value = "";
+
+    setIsProcessing(true);
+
+    // Process files with a small delay to show loading state
+    setTimeout(() => {
+      files.forEach((file) => {
+        if (file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const newImage = {
+              id: Date.now() + Math.random(),
+              file,
+              url: e.target.result,
+              name: file.name,
+            };
+            onImagesChange((prev) => [...prev, newImage]);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+      setIsProcessing(false);
+    }, 500);
   };
 
   const handleDragOver = (e) => {
@@ -37,21 +40,28 @@ const ImageUploadModal = ({
   const handleDrop = (e) => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files);
-    files.forEach((file) => {
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const newImage = {
-            id: Date.now() + Math.random(),
-            file,
-            url: e.target.result,
-            name: file.name,
+
+    setIsProcessing(true);
+
+    // Process files with a small delay to show loading state
+    setTimeout(() => {
+      files.forEach((file) => {
+        if (file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const newImage = {
+              id: Date.now() + Math.random(),
+              file,
+              url: e.target.result,
+              name: file.name,
+            };
+            onImagesChange((prev) => [...prev, newImage]);
           };
-          onImagesChange((prev) => [...prev, newImage]);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+          reader.readAsDataURL(file);
+        }
+      });
+      setIsProcessing(false);
+    }, 500);
   };
 
   const removeImage = (imageId) => {
@@ -63,6 +73,7 @@ const ImageUploadModal = ({
   };
 
   const handleUpload = () => {
+    // Only close when user explicitly clicks upload
     onClose();
   };
 
@@ -88,12 +99,14 @@ const ImageUploadModal = ({
             <button
               onClick={handleBrowseClick}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              disabled={isProcessing}
             >
               <Plus className="w-5 h-5" />
             </button>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              disabled={isProcessing}
             >
               <X className="w-5 h-5" />
             </button>
@@ -120,6 +133,7 @@ const ImageUploadModal = ({
                 <Button
                   onClickHandler={handleBrowseClick}
                   additionalClasses="primarybtn min-h-fit min-w-fit px-6 py-2"
+                  isDisabled={isProcessing}
                 >
                   Browse
                 </Button>
@@ -139,6 +153,7 @@ const ImageUploadModal = ({
                   <button
                     onClick={() => removeImage(image.id)}
                     className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                    disabled={isProcessing}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -152,15 +167,16 @@ const ImageUploadModal = ({
           <button
             onClick={onClose}
             className="px-6 py-2 text-secondary hover:text-gray-800 transition-colors"
+            disabled={isProcessing}
           >
-            Done
+            Cancel
           </button>
           <Button
             onClickHandler={handleUpload}
-            isDisabled={images.length === 0}
+            isDisabled={images.length === 0 || isProcessing}
             additionalClasses="primarybtn px-6 py-2"
           >
-            Upload
+            {isProcessing ? "Processing..." : "Upload"}
           </Button>
         </div>
 
@@ -171,6 +187,7 @@ const ImageUploadModal = ({
           accept="image/*"
           onChange={handleFileSelect}
           className="hidden"
+          disabled={isProcessing}
         />
       </div>
     </div>

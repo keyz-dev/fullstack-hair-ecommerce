@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { ArrowLeftIcon } from "lucide-react";
 import { DetailsForm, ImageUploadStep } from "./add";
-import { ProductVariantsForm, ProductSpecsForm, ProductFeaturesForm } from "./add/index";
+import {
+  ProductVariantsForm,
+  ProductSpecsForm,
+  ProductFeaturesForm,
+} from "./add/index";
 import { useProducts } from "../../../hooks";
 import { Button, ProgressSteps } from "../../ui";
 import { toast } from "react-toastify";
@@ -19,16 +23,16 @@ const AddProductsPage = ({ setView }) => {
     currency: "XAF",
     variants: [],
     specifications: {
-      length: '',
-      texture: '',
-      material: '',
-      weight: '',
-      density: '',
-      capSize: '',
-      hairType: '',
-      origin: '',
-      careInstructions: '',
-      warranty: ''
+      length: "",
+      texture: "",
+      material: "",
+      weight: "",
+      density: "",
+      capSize: "",
+      hairType: "",
+      origin: "",
+      careInstructions: "",
+      warranty: "",
     },
     features: [],
     tags: [],
@@ -43,16 +47,16 @@ const AddProductsPage = ({ setView }) => {
   const steps = [
     {
       label: "Basic Info",
-      description: "Product details & pricing"
+      description: "Product details & pricing",
     },
     {
       label: "Images",
-      description: "Upload product images"
+      description: "Upload product images",
     },
     {
       label: "Specifications",
-      description: "Product specs & features"
-    }
+      description: "Product specs & features",
+    },
   ];
 
   // Step 1: Basic Info
@@ -82,11 +86,10 @@ const AddProductsPage = ({ setView }) => {
         productImages: imageFiles,
       });
 
-      if (response.success){
-        toast.success(`${response.message || "Product created successfully"}`)
+      if (response.success) {
+        toast.success(`${response.message || "Product created successfully"}`);
         setView("main");
       }
-
     } catch (error) {
       toast.error(error.message || "Failed to create product");
     }
@@ -97,9 +100,12 @@ const AddProductsPage = ({ setView }) => {
   };
 
   // Handlers for modular subcomponents
-  const setVariants = (variants) => setProductData((prev) => ({ ...prev, variants }));
-  const setSpecs = (specifications) => setProductData((prev) => ({ ...prev, specifications }));
-  const setFeatures = (features) => setProductData((prev) => ({ ...prev, features }));
+  const setVariants = (variants) =>
+    setProductData((prev) => ({ ...prev, variants }));
+  const setSpecs = (specifications) =>
+    setProductData((prev) => ({ ...prev, specifications }));
+  const setFeatures = (features) =>
+    setProductData((prev) => ({ ...prev, features }));
 
   const handleStepClick = (stepIndex) => {
     // Only allow going back to completed steps
@@ -122,9 +128,9 @@ const AddProductsPage = ({ setView }) => {
       </div>
 
       {/* Progress Steps */}
-      <ProgressSteps 
-        steps={steps} 
-        currentStep={step - 1} 
+      <ProgressSteps
+        steps={steps}
+        currentStep={step - 1}
         onStepClick={handleStepClick}
       />
 
@@ -137,7 +143,7 @@ const AddProductsPage = ({ setView }) => {
             data={productData}
           />
         )}
-        
+
         {step === 2 && (
           <ImageUploadStep
             isOpen={step === 2}
@@ -148,16 +154,27 @@ const AddProductsPage = ({ setView }) => {
             onImagesChange={setProductImages}
           />
         )}
-        
+
         {step === 3 && (
           <div className="w-full max-w-4xl">
-            <h2 className="text-2xl font-bold text-primary mb-6 text-center">Product Specifications</h2>
-            
+            <h2 className="text-2xl font-bold text-primary mb-6 text-center">
+              Product Specifications
+            </h2>
+
             <form onSubmit={handleSpecsSubmit} className="space-y-6">
-              <ProductVariantsForm variants={productData.variants} setVariants={setVariants} />
-              <ProductSpecsForm specs={productData.specifications} setSpecs={setSpecs} />
-              <ProductFeaturesForm features={productData.features} setFeatures={setFeatures} />
-              
+              <ProductVariantsForm
+                variants={productData.variants}
+                setVariants={setVariants}
+              />
+              <ProductSpecsForm
+                specs={productData.specifications}
+                setSpecs={setSpecs}
+              />
+              <ProductFeaturesForm
+                features={productData.features}
+                setFeatures={setFeatures}
+              />
+
               <div className="flex justify-between pt-6 border-t border-gray-200">
                 <Button
                   type="button"

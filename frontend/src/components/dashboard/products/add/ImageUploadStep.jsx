@@ -1,16 +1,34 @@
 import { useState } from "react";
 import { ImageUploadModal } from "./";
-import { X, ImageIcon, PlusIcon, ArrowLeftIcon } from "lucide-react";
+import {
+  X,
+  ImageIcon,
+  PlusIcon,
+  ArrowLeftIcon,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "../../../ui";
 
-const ImageUploadStep = ({ images = [], onImagesChange, onSave, loading, onBack }) => {
+const ImageUploadStep = ({
+  images = [],
+  onImagesChange,
+  onSave,
+  loading,
+  onBack,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const primaryImage = images[0];
   const hasImages = images.length > 0;
 
+  // Filter only valid images (excluding pending validation)
+  const validImages = images.filter((img) => img.isValid === true);
+  const pendingImages = images.filter((img) => img.isValid === null);
+  const hasValidImages = validImages.length >= 2;
+
   const handleAddPhotos = () => {
-    setIsModalOpen(true); 
+    setIsModalOpen(true);
   };
 
   const handleModalClose = () => {
@@ -25,36 +43,53 @@ const ImageUploadStep = ({ images = [], onImagesChange, onSave, loading, onBack 
     onImagesChange((prev) => prev.filter((img) => img.id !== imageId));
   };
 
+  const handleSave = () => {
+    // Only proceed with valid images
+    if (hasValidImages) {
+      onSave();
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto py-6 px-2">
       <div className="text-center mb-2">
         <h1 className="text-2xl font-semibold mb-2">
-          {hasImages
+          {hasValidImages
             ? "How does this Look?"
             : `Add some photos of your Product`}
         </h1>
-        {hasImages ? (
+        {hasValidImages ? (
           <p className="text-secondary">Confirm images</p>
         ) : (
           <p className="text-secondary">
-            You'll need at least 2 photos to get started. You can add more or
-            make changes later
+            You'll need at least 2 valid hair photos to get started. Add images
+            and validate them when ready.
           </p>
         )}
       </div>
 
       <section className="flex flex-col gap-4">
-        <div className="flex justify-end">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2 text-sm text-secondary">
+            {pendingImages.length > 0 && (
+              <span className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded">
+                <AlertCircle className="w-4 h-4" />
+                {pendingImages.length} image
+                {pendingImages.length > 1 ? "s" : ""} pending validation
+              </span>
+            )}
+          </div>
           <Button
             onClickHandler={handleAddMorePhotos}
             additionalClasses="border border-line_clr text-secondary"
           >
             <PlusIcon className="w-4 h-4" />
-            Add Image
+            {pendingImages.length > 0 ? "Manage Images" : "Add Image"}
           </Button>
         </div>
+
         <div className="bg-light_bg rounded-sm border-[1px] border-dashed border-line_clr [border-style:dashed] [border-spacing:1rem] [border-width:2px] h-[47vh] overflow-y-auto">
-          {hasImages ? (
+          {hasValidImages ? (
             <div className="space-y-6">
               {/* Primary Image */}
               <div className="relative">
@@ -65,15 +100,16 @@ const ImageUploadStep = ({ images = [], onImagesChange, onSave, loading, onBack 
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="absolute top-4 left-4 bg-white bg-opacity-70 text-primary px-3 py-1 rounded text-sm">
+                <div className="absolute top-4 left-4 bg-white bg-opacity-70 text-primary px-3 py-1 rounded text-sm flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
                   Primary Photo
                 </div>
               </div>
 
               {/* Additional Images Grid */}
-              {images.length > 1 && (
+              {validImages.length > 1 && (
                 <div className="grid grid-cols-2 gap-4">
-                  {images.slice(1, 5).map((image, index) => (
+                  {validImages.slice(1, 5).map((image, index) => (
                     <div key={image.id} className="relative group">
                       <div className="aspect-square rounded-sm overflow-hidden bg-gray-100">
                         <img
@@ -81,6 +117,9 @@ const ImageUploadStep = ({ images = [], onImagesChange, onSave, loading, onBack 
                           alt={`Photo ${index + 2}`}
                           className="w-full h-full object-cover"
                         />
+                      </div>
+                      <div className="absolute top-2 left-2 w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center">
+                        <CheckCircle className="w-3 h-3" />
                       </div>
                       <button
                         className="absolute top-2 right-2 w-8 h-8 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black hover:bg-opacity-70"
@@ -93,10 +132,51 @@ const ImageUploadStep = ({ images = [], onImagesChange, onSave, loading, onBack 
                 </div>
               )}
 
+              {/* Pending Images Section */}
+              {pendingImages.length > 0 && (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h4 className="font-medium text-yellow-700 mb-2">
+                      Images Pending Validation
+                    </h4>
+                    <p className="text-sm text-yellow-600">
+                      Click "Manage Images" to validate these images
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {pendingImages.slice(0, 4).map((image, index) => (
+                      <div key={image.id} className="relative group">
+                        <div className="aspect-square rounded-sm overflow-hidden bg-gray-100">
+                          <img
+                            src={image.url}
+                            alt={`Pending ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="absolute top-2 left-2 w-6 h-6 bg-yellow-500 text-white rounded-full flex items-center justify-center">
+                          <AlertCircle className="w-3 h-3" />
+                        </div>
+                        <button
+                          className="absolute top-2 right-2 w-8 h-8 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black hover:bg-opacity-70"
+                          onClick={() => removeImageFromMain(image.id)}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  {pendingImages.length > 4 && (
+                    <div className="text-center text-gray-500 text-sm">
+                      +{pendingImages.length - 4} more pending images
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Show more indicator */}
-              {images.length > 5 && (
+              {validImages.length > 5 && (
                 <div className="text-center text-gray-500 text-sm">
-                  +{images.length - 5} more photos
+                  +{validImages.length - 5} more photos
                 </div>
               )}
             </div>
@@ -108,6 +188,15 @@ const ImageUploadStep = ({ images = [], onImagesChange, onSave, loading, onBack 
                   <ImageIcon className="w-6 h-6 text-orange-600" />
                 </div>
               </div>
+              <div className="text-center mb-6">
+                <h3 className="font-medium text-primary mb-2">
+                  Add Hair Product Photos
+                </h3>
+                <p className="text-sm text-secondary">
+                  Upload photos of your hair product. All images will be
+                  automatically validated to ensure they are hair-related.
+                </p>
+              </div>
               <Button
                 onClickHandler={handleAddPhotos}
                 additionalClasses="border border-line_clr text-secondary"
@@ -117,6 +206,7 @@ const ImageUploadStep = ({ images = [], onImagesChange, onSave, loading, onBack 
             </div>
           )}
         </div>
+
         <div className="flex justify-between">
           <Button
             onClickHandler={onBack}
@@ -126,12 +216,16 @@ const ImageUploadStep = ({ images = [], onImagesChange, onSave, loading, onBack 
             Back
           </Button>
           <Button
-            onClickHandler={onSave}
+            onClickHandler={handleSave}
             additionalClasses="bg-accent text-white"
             isLoading={loading}
-            isDisabled={images.length < 2 || loading}
+            isDisabled={!hasValidImages || loading}
           >
-            Add Features
+            {hasValidImages
+              ? "Add Features"
+              : pendingImages.length > 0
+              ? `Validate ${pendingImages.length} Images First`
+              : `Need ${2 - validImages.length} more images`}
           </Button>
         </div>
       </section>
