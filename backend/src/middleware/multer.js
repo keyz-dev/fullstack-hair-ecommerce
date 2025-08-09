@@ -90,8 +90,6 @@ const storage = inProduction
 
 // --- File Filter ---
 const fileFilter = (req, file, cb) => {
-  console.log("file: ", file);
-  console.log("req: ", req.body);
   // Allow images for most uploads
   const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg|ico|avif)$/;
   // Allow videos for post uploads

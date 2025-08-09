@@ -120,6 +120,8 @@ class HairValidator {
       try {
         const result = await this.runPrediction(imagePath);
 
+        console.log("prediction result: ", result);
+
         // Clean up temp file if we created one
         if (shouldCleanup && fs.existsSync(imagePath)) {
           try {

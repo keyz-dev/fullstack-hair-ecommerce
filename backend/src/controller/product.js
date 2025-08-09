@@ -12,21 +12,6 @@ const { cleanUpFileImages } = require("../utils/imageCleanup");
 // Create product
 const createProduct = async (req, res, next) => {
   try {
-    console.log("=== CREATE PRODUCT DEBUG ===");
-    console.log("req.body:", JSON.stringify(req.body, null, 2));
-    console.log(
-      "req.files:",
-      req.files
-        ? req.files.map((f) => ({
-            fieldname: f.fieldname,
-            originalname: f.originalname,
-            size: f.size,
-          }))
-        : "No files"
-    );
-    console.log("req.headers:", req.headers);
-    console.log("=== END DEBUG ===");
-
     const { error } = productCreateSchema.validate(req.body);
     if (error) return next(new BadRequestError(error.details[0].message));
 

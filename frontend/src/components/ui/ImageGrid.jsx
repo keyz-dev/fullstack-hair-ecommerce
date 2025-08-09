@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import ValidationOverlay from "./ValidationOverlay";
 
 const ImageGrid = ({
   existingImages = [],
@@ -9,7 +10,9 @@ const ImageGrid = ({
   onAddImages,
   label = "Images",
   gridCols = 4,
-  imageHeight = "h-26"
+  imageHeight = "h-26",
+  validationStates = new Map(),
+  getValidationState = () => ({ status: "pending" }),
 }) => {
   const fileInputRef = useRef(null);
 
@@ -17,11 +20,11 @@ const ImageGrid = ({
   const getGridClass = (cols) => {
     const gridClasses = {
       1: "grid-cols-1",
-      2: "grid-cols-2", 
+      2: "grid-cols-2",
       3: "grid-cols-3",
       4: "grid-cols-4",
       5: "grid-cols-5",
-      6: "grid-cols-6"
+      6: "grid-cols-6",
     };
     return gridClasses[cols] || "grid-cols-3";
   };
@@ -41,7 +44,7 @@ const ImageGrid = ({
       <label className="block text-sm font-medium text-secondary mb-2">
         {label}
       </label>
-      
+
       <div className={`grid ${getGridClass(gridCols)} gap-2`}>
         {/* Existing Images */}
         {existingImages.map((image, index) => (
@@ -60,25 +63,35 @@ const ImageGrid = ({
             </button>
           </div>
         ))}
-        
-        {/* New Images */}
-        {newImages.map((image) => (
-          <div key={image.id} className="relative group">
-            <img
-              src={image.url}
-              alt={image.name}
-              className={`w-full ${imageHeight} object-cover rounded-sm border border-gray-200`}
-            />
-            <button
-              type="button"
-              onClick={() => onRemoveNew(image.id)}
-              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
-            >
-              <Trash2 size={12} />
-            </button>
-          </div>
-        ))}
-        
+
+        {/* New Images with Validation */}
+        {newImages.map((image) => {
+          const validationState = getValidationState(image.id);
+          return (
+            <div key={image.id} className="relative group">
+              <img
+                src={image.url}
+                alt={image.name}
+                className={`w-full ${imageHeight} object-cover rounded-sm border border-gray-200`}
+              />
+
+              {/* Validation Overlay */}
+              <ValidationOverlay
+                validationState={validationState}
+                showConfidence={true}
+              />
+
+              <button
+                type="button"
+                onClick={() => onRemoveNew(image.id)}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 z-10"
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+          );
+        })}
+
         {/* Add Image Button */}
         <button
           type="button"
@@ -89,7 +102,7 @@ const ImageGrid = ({
           <span className="text-xs mt-1">Add Image</span>
         </button>
       </div>
-      
+
       <input
         ref={fileInputRef}
         type="file"
@@ -102,4 +115,4 @@ const ImageGrid = ({
   );
 };
 
-export default ImageGrid; 
+export default ImageGrid;

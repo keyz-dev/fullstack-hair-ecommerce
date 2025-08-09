@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useProducts, useCategory, useImageManager } from "../../../hooks";
-import {
-  ModalWrapper,
-  FormHeader,
-  ProgressSteps
-} from "../../ui";
+import { ModalWrapper, FormHeader, ProgressSteps } from "../../ui";
 import { X } from "lucide-react";
 import { toast } from "react-toastify";
 import { BasicInfoStep, ImagesStep, SpecificationsStep } from "./update";
@@ -27,29 +23,32 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
     isOnSale: false,
     variants: [],
     specifications: {
-      length: '',
-      texture: '',
-      material: '',
-      weight: '',
-      density: '',
-      capSize: '',
-      hairType: '',
-      origin: '',
-      careInstructions: '',
-      warranty: ''
+      length: "",
+      texture: "",
+      material: "",
+      weight: "",
+      density: "",
+      capSize: "",
+      hairType: "",
+      origin: "",
+      careInstructions: "",
+      warranty: "",
     },
     features: [],
     tags: [],
-    metaTitle: '',
-    metaDescription: ''
-  }
-  
+    metaTitle: "",
+    metaDescription: "",
+  };
+
   const [formData, setFormData] = useState(initialFormData);
 
   const [errors, setErrors] = useState({});
-  const [newTag, setNewTag] = useState('');
-  const [newVariant, setNewVariant] = useState({ name: '', options: [], required: false });
-  const [newFeature, setNewFeature] = useState({ title: '', description: '', icon: '' });
+  const [newTag, setNewTag] = useState("");
+  const [newFeature, setNewFeature] = useState({
+    title: "",
+    description: "",
+    icon: "",
+  });
 
   const {
     existingImages,
@@ -59,6 +58,12 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
     removeNewImage,
     getFormData: getImageFormData,
     hasChanges: hasImageChanges,
+    // Validation methods
+    canProceed,
+    getValidationSummary,
+    hasPendingValidations,
+    validationStates,
+    getValidationState,
   } = useImageManager(initialData?.images);
 
   const categoryOptions = categories.map((category) => ({
@@ -69,16 +74,16 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
   const steps = [
     {
       label: "Basic Info",
-      description: "Product details & pricing"
+      description: "Product details & pricing",
     },
     {
       label: "Images",
-      description: "Manage product images"
+      description: "Manage product images",
     },
     {
       label: "Specifications",
-      description: "Product specs & features"
-    }
+      description: "Product specs & features",
+    },
   ];
 
   useEffect(() => {
@@ -91,85 +96,70 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
         stock: initialData.stock || "",
         currency: initialData.currency || "XAF", // Fix: currency is already a string code
         category: initialData.category?._id || initialData.category || "",
-        isActive: initialData.isActive !== undefined ? initialData.isActive : true,
+        isActive:
+          initialData.isActive !== undefined ? initialData.isActive : true,
         isFeatured: initialData.isFeatured || false,
         isOnSale: initialData.isOnSale || false,
         variants: initialData.variants || [],
-        specifications: initialData.specifications || initialFormData.specifications,
+        specifications:
+          initialData.specifications || initialFormData.specifications,
         features: initialData.features || [],
         tags: initialData.tags || [],
-        metaTitle: initialData.metaTitle || '',
-        metaDescription: initialData.metaDescription || ''
+        metaTitle: initialData.metaTitle || "",
+        metaDescription: initialData.metaDescription || "",
       });
     }
   }, [initialData, isOpen]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({ 
-      ...prev, 
-      [name]: type === 'checkbox' ? checked : value 
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleSpecificationChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       specifications: {
         ...prev.specifications,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
   const addTag = () => {
     if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, newTag.trim()]
+        tags: [...prev.tags, newTag.trim()],
       }));
-      setNewTag('');
+      setNewTag("");
     }
   };
 
   const removeTag = (tagToRemove) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
-
-  const addVariant = () => {
-    if (newVariant.name.trim() && newVariant.options.length > 0) {
-      setFormData(prev => ({
-        ...prev,
-        variants: [...prev.variants, { ...newVariant }]
-      }));
-      setNewVariant({ name: '', options: [], required: false });
-    }
-  };
-
-  const removeVariant = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      variants: prev.variants.filter((_, i) => i !== index)
-    }));
-  };
-
+  
   const addFeature = () => {
     if (newFeature.title.trim()) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        features: [...prev.features, { ...newFeature }]
+        features: [...prev.features, { ...newFeature }],
       }));
-      setNewFeature({ title: '', description: '', icon: '' });
+      setNewFeature({ title: "", description: "", icon: "" });
     }
   };
 
   const removeFeature = (index) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      features: prev.features.filter((_, i) => i !== index)
+      features: prev.features.filter((_, i) => index !== i),
     }));
   };
 
@@ -179,7 +169,8 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
     if (!formData.price) newErrors.price = "Price is required.";
     if (!formData.stock) newErrors.stock = "Stock is required.";
     if (!formData.category) newErrors.category = "Category is required.";
-    if (!formData.description) newErrors.description = "Description is required.";
+    if (!formData.description)
+      newErrors.description = "Description is required.";
 
     // Check if any field is actually changed compared to initialData
     const isChanged =
@@ -189,15 +180,21 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
       String(formData.discount) !== String(initialData?.discount || 0) ||
       String(formData.stock) !== String(initialData?.stock || "") ||
       (typeof formData.category === "object"
-        ? formData.category?._id !== (initialData?.category?._id || initialData?.category || "")
-        : formData.category !== (initialData?.category?._id || initialData?.category || "")) ||
+        ? formData.category?._id !==
+          (initialData?.category?._id || initialData?.category || "")
+        : formData.category !==
+          (initialData?.category?._id || initialData?.category || "")) ||
       formData.isActive !== initialData?.isActive ||
       formData.isFeatured !== initialData?.isFeatured ||
       formData.isOnSale !== initialData?.isOnSale ||
-      JSON.stringify(formData.variants) !== JSON.stringify(initialData?.variants || []) ||
-      JSON.stringify(formData.specifications) !== JSON.stringify(initialData?.specifications || {}) ||
-      JSON.stringify(formData.features) !== JSON.stringify(initialData?.features || []) ||
-      JSON.stringify(formData.tags) !== JSON.stringify(initialData?.tags || []) ||
+      JSON.stringify(formData.variants) !==
+        JSON.stringify(initialData?.variants || []) ||
+      JSON.stringify(formData.specifications) !==
+        JSON.stringify(initialData?.specifications || {}) ||
+      JSON.stringify(formData.features) !==
+        JSON.stringify(initialData?.features || []) ||
+      JSON.stringify(formData.tags) !==
+        JSON.stringify(initialData?.tags || []) ||
       formData.metaTitle !== (initialData?.metaTitle || "") ||
       formData.metaDescription !== (initialData?.metaDescription || "") ||
       hasImageChanges(initialData?.images);
@@ -212,20 +209,24 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
+
     const data = new FormData();
-    
+
     // Add form fields
     Object.entries(formData).forEach(([key, value]) => {
       // Handle category field properly
-      if (key === 'category' && typeof value === 'object' && value._id) {
+      if (key === "category" && typeof value === "object" && value._id) {
         data.append(key, value._id);
-      } else if (key === 'variants' || key === 'specifications' || key === 'features') {
+      } else if (
+        key === "variants" ||
+        key === "specifications" ||
+        key === "features"
+      ) {
         // Convert arrays and objects to JSON strings
         data.append(key, JSON.stringify(value));
-      } else if (key === 'tags') {
+      } else if (key === "tags") {
         // Convert tags array to comma-separated string
-        data.append(key, value.join(','));
+        data.append(key, value.join(","));
       } else {
         data.append(key, value);
       }
@@ -242,9 +243,8 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
       toast.success("Product updated successfully");
       // reset the form
       setFormData(initialFormData);
-      setNewTag('');
-      setNewVariant({ name: '', options: [], required: false });
-      setNewFeature({ title: '', description: '', icon: '' });
+      setNewTag("");
+      setNewFeature({ title: "", description: "", icon: "" });
       setErrors({});
       onClose();
     }
@@ -259,9 +259,8 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
 
   const handleClose = () => {
     setFormData(initialFormData);
-    setNewTag('');
-    setNewVariant({ name: '', options: [], required: false });
-    setNewFeature({ title: '', description: '', icon: '' });
+    setNewTag("");
+    setNewFeature({ title: "", description: "", icon: "" });
     setErrors({});
     setStep(1);
     onClose();
@@ -275,8 +274,12 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Update Product</h2>
-            <p className="text-sm text-gray-600 mt-1">Edit product details and settings</p>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Update Product
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Edit product details and settings
+            </p>
           </div>
           <button
             onClick={handleClose}
@@ -288,9 +291,9 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
 
         {/* Progress Steps */}
         <div className="px-6 pt-4">
-          <ProgressSteps 
-            steps={steps} 
-            currentStep={step - 1} 
+          <ProgressSteps
+            steps={steps}
+            currentStep={step - 1}
             onStepClick={handleStepClick}
           />
         </div>
@@ -318,6 +321,12 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
                 onAddImages={addImages}
                 onBack={() => setStep(1)}
                 onNext={() => setStep(3)}
+                // Pass validation props
+                validationStates={validationStates}
+                getValidationState={getValidationState}
+                canProceed={canProceed}
+                getValidationSummary={getValidationSummary}
+                hasPendingValidations={hasPendingValidations}
               />
             )}
 
@@ -329,7 +338,7 @@ const UpdateProductModal = ({ isOpen, onClose, initialData }) => {
                 handleSpecificationChange={handleSpecificationChange}
                 newTag={newTag}
                 setNewTag={setNewTag}
-                addTag={addTag} 
+                addTag={addTag}
                 removeTag={removeTag}
                 newFeature={newFeature}
                 setNewFeature={setNewFeature}
